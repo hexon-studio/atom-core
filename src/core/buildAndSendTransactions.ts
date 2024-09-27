@@ -2,6 +2,7 @@ import { getAssociatedTokenAddressSync } from "@solana/spl-token";
 import { Connection, PublicKey, SendTransactionError } from "@solana/web3.js";
 import {
   APTransactionBuilderConstructor,
+  AtlasFeePayerIDL,
   AtlasPrimeTransactionBuilder,
   PostTransactionArgs,
 } from "@staratlas/atlas-prime";
@@ -10,8 +11,10 @@ import {
   InstructionReturn,
   sendTransaction,
 } from "@staratlas/data-source";
-import { PlayerProfile } from "@staratlas/player-profile";
+import { PlayerProfile, PlayerProfileIDL } from "@staratlas/player-profile";
 import { tokenMints } from "../constants/tokens";
+import { Program } from "@staratlas/anchor";
+import { ProfileVaultIDL } from "@staratlas/profile-vault";
 
 export const buildAndSendTransactions = async ({
   connection,
@@ -19,13 +22,18 @@ export const buildAndSendTransactions = async ({
   vaultAuthority,
   keypair,
   playerProfile,
+  playerProfileProgram,
+  profileVaultProgram,
+  atlasPrimeProgram,
 }: {
   connection: Connection;
   keypair: AsyncSigner;
   ixs: InstructionReturn[];
   vaultAuthority: PublicKey;
   playerProfile: PlayerProfile;
-  playerProfileProgram: PublicKey;
+  playerProfileProgram: Program<PlayerProfileIDL>;
+  profileVaultProgram: Program<ProfileVaultIDL>;
+  atlasPrimeProgram: Program<AtlasFeePayerIDL>;
 }) => {
   const pta: PostTransactionArgs = {
     vault: {
@@ -36,21 +44,21 @@ export const buildAndSendTransactions = async ({
         true
       ), // ATLAS ATA
       keyInput: {
-        key: keypair.publicKey(),
+        key: keypair,
         profile: playerProfile,
         playerProfileProgram,
       },
-      vaultProgram: this.programs.profileVaultProgram,
+      vaultProgram: profileVaultProgram,
     },
   };
 
   const aptbc: APTransactionBuilderConstructor = {
     afpUrl: "https://prime.staratlas.com/",
-    connection: this.provider.connection,
+    connection: connection,
     commitment: "confirmed",
     dummyKeys: this.dummyKeys,
     postArgs: pta,
-    program: this.programs.atlasPrimeProgram,
+    program: atlasPrimeProgram,
   };
 
   const aptb = new AtlasPrimeTransactionBuilder(aptbc);
@@ -62,20 +70,18 @@ export const buildAndSendTransactions = async ({
       throw tx.error;
     }
 
-    const sim = await this.provider.connection.simulateTransaction(
-      tx.value.transaction
-    );
+    const sim = await connection.simulateTransaction(tx.value.transaction);
     console.log("Error: ", sim.value.err);
 
-    const sig = await sendTransaction(tx.value, this.provider.connection, {
+    const sig = await sendTransaction(tx.value, connection, {
       sendOptions: { skipPreflight: true },
     });
     console.log(sig.value);
 
-    console.log("Remaining: ", aptb.ixs.length);
+    console.log("Remaining: ", aptb.instructions.length);
   } catch (e) {
     if (e instanceof SendTransactionError) {
-      const logs = await e.getLogs(this.provider.connection);
+      const logs = await e.getLogs(connection);
       console.log(logs);
     }
     console.log(e);
