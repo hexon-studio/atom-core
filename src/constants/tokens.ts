@@ -1,0 +1,6 @@
+import { PublicKey } from "@solana/web3.js";
+
+export const tokenMints = {
+  atlas: new PublicKey("ATLASXmbPQxBUYbxPsV97usA3fPQYEqzQBUHgiFCUsXx"),
+  polis: new PublicKey("poLisWXnNRwC6oBu1vHiuKQzFjGL4XDSu4g9qjz9qVk"),
+} as const;
