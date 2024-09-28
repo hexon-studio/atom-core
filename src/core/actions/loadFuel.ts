@@ -5,6 +5,7 @@ import { getFleetAccount } from "../fleet-utils/accounts";
 import { getFleetAddressByName } from "../fleet-utils/addresses";
 import { createRefuelFleetIx } from "../fleet-utils/instructions";
 import { GameService } from "../services/GameService";
+
 export const loadFuel = (fleetName: string, fuelAmount: number) =>
   Effect.gen(function* () {
     const fleetPubkey = yield* getFleetAddressByName(fleetName);

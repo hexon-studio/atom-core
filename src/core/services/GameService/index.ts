@@ -12,6 +12,10 @@ import {
   buildAndSignTransaction,
 } from "./utils/buildAndSignTransaction";
 import {
+  BuildAndSignTransactionWithAtlasPrime,
+  buildAndSignTransactionWithAtlasPrime,
+} from "./utils/buildAndSignTransactionWithAtlasPrime";
+import {
   CreateAssociatedTokenAccountIdempotent,
   createAssociatedTokenAccountIdempotent,
 } from "./utils/createAssociatedTokenAccountIdempotent";
@@ -23,6 +27,8 @@ import { SendTransaction, sendTransaction } from "./utils/sendTransaction";
 
 export interface GameContext {
   game: Game;
+  owner: PublicKey;
+  playerProfile: PublicKey;
   planetsLookup: Record<string, PublicKey>;
 }
 
@@ -45,6 +51,7 @@ export class GameService extends Context.Tag("app/GameService")<
       getParsedTokenAccountsByOwner: GetParsedTokenAccountsByOwner;
       createAssociatedTokenAccountIdempotent: CreateAssociatedTokenAccountIdempotent;
       buildAndSignTransaction: BuildAndSignTransaction;
+      buildAndSignTransactionWithAtlasPrime: BuildAndSignTransactionWithAtlasPrime;
       sendTransaction: SendTransaction;
     };
   }
@@ -68,6 +75,7 @@ export const GameServiceLive = Layer.effect(
       ),
       utils: {
         buildAndSignTransaction,
+        buildAndSignTransactionWithAtlasPrime,
         getParsedTokenAccountsByOwner,
         createAssociatedTokenAccountIdempotent,
         sendTransaction,

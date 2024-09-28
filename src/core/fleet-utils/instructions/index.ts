@@ -8,7 +8,6 @@ import {
   ShipStats,
   StartMiningAsteroidInput,
   StopMiningAsteroidInput,
-  WarpToCoordinateInput,
 } from "@staratlas/sage";
 import { Data, Effect, pipe } from "effect";
 import { isNone, isSome } from "effect/Option";
@@ -681,6 +680,7 @@ export const createDepositCargoToFleetIx = (
 
     // Player Profile
     const playerProfilePubkey = fleetAccount.data.ownerProfile;
+
     const sagePlayerProfilePubkey = yield* getSagePlayerProfileAddress(
       fleetAccount.data.gameId,
       playerProfilePubkey
@@ -778,7 +778,6 @@ export const createDepositCargoToFleetIx = (
 
     const gameId = context.game.key;
     const gameState = context.game.data.gameState;
-    const input = { keyIndex: 0, amount: amountBN } as DepositCargoToFleetInput;
     const cargoStatsDefinition = context.game.data.cargo.statsDefinition;
 
     const cargoType = yield* getCargoTypeAddress(
@@ -792,7 +791,7 @@ export const createDepositCargoToFleetIx = (
       signer,
       playerProfilePubkey,
       profileFactionPubkey,
-      signer.publicKey(),
+      "funder",
       starbasePubkey,
       starbasePlayerPubkey,
       fleetPubkey,
@@ -805,7 +804,7 @@ export const createDepositCargoToFleetIx = (
       tokenMint,
       gameId,
       gameState,
-      input
+      { keyIndex: 1, amount: amountBN }
     );
 
     return [ix_0, ix_1];
@@ -1325,6 +1324,7 @@ export const createRearmFleetIx = (fleetPubkey: PublicKey, amount: number) =>
           )
         : new BN(fleetCargoStats.ammoCapacity)
     );
+
     // amount > starbase amount?
     amountBN = BN.min(amountBN, new BN(maybeTokenAccountFrom.value.amount));
 
@@ -1503,70 +1503,70 @@ export const createUnloadAmmoBanksIx = (
     return [ix_0, ix_1];
   });
 
-export const createWarpToCoordinateIx = (
-  fleetPubkey: PublicKey,
-  coordinates: [BN, BN]
-) =>
-  Effect.gen(function* () {
-    const fleetAccount = yield* getFleetAccount(fleetPubkey);
+// export const createWarpToCoordinateIx = (
+//   fleetPubkey: PublicKey,
+//   coordinates: [BN, BN]
+// ) =>
+//   Effect.gen(function* () {
+//     const fleetAccount = yield* getFleetAccount(fleetPubkey);
 
-    // TODO: ensure fleet state is "Idle" - is there a better way to do this?
-    if (!fleetAccount.state.Idle) {
-      yield* Effect.fail(new FleetNotIdleError());
-    }
+//     // TODO: ensure fleet state is "Idle" - is there a better way to do this?
+//     if (!fleetAccount.state.Idle) {
+//       yield* Effect.fail(new FleetNotIdleError());
+//     }
 
-    const gameService = yield* GameService;
-    const solanaService = yield* SolanaService;
-    const context = yield* gameContext;
+//     const gameService = yield* GameService;
+//     const solanaService = yield* SolanaService;
+//     const context = yield* gameContext;
 
-    const gameFuelMint = context.game.data.mints.fuel;
+//     const gameFuelMint = context.game.data.mints.fuel;
 
-    const programs = yield* SagePrograms;
-    const signer = yield* gameService.signer;
+//     const programs = yield* SagePrograms;
+//     const signer = yield* gameService.signer;
 
-    const playerProfile = fleetAccount.data.ownerProfile;
-    const profileFaction = yield* getProfileFactionAddress(playerProfile);
-    const fleetKey = fleetPubkey;
-    const fleetFuelTank = fleetAccount.data.fuelTank;
+//     const playerProfile = fleetAccount.data.ownerProfile;
+//     const profileFaction = yield* getProfileFactionAddress(playerProfile);
+//     const fleetKey = fleetPubkey;
+//     const fleetFuelTank = fleetAccount.data.fuelTank;
 
-    const cargoStatsDefinition = context.game.data.cargo.statsDefinition;
+//     const cargoStatsDefinition = context.game.data.cargo.statsDefinition;
 
-    const fuelCargoType = yield* getCargoTypeAddress(
-      gameFuelMint,
-      cargoStatsDefinition
-    );
-    const tokenMint = gameFuelMint;
-    const tokenFrom = yield* solanaService.getAssociatedTokenAddress(
-      tokenMint,
-      fleetFuelTank,
-      true
-    );
+//     const fuelCargoType = yield* getCargoTypeAddress(
+//       gameFuelMint,
+//       cargoStatsDefinition
+//     );
+//     const tokenMint = gameFuelMint;
+//     const tokenFrom = yield* solanaService.getAssociatedTokenAddress(
+//       tokenMint,
+//       fleetFuelTank,
+//       true
+//     );
 
-    const gameState = context.game.data.gameState;
-    const gameId = context.game.key;
+//     const gameState = context.game.data.gameState;
+//     const gameId = context.game.key;
 
-    const input: WarpToCoordinateInput = {
-      keyIndex: 0, // FIXME: This is the index of the wallet used to sign the transaction in the permissions list of the player profile being used.
-      toSector: coordinates,
-    };
+//     const input: WarpToCoordinateInput = {
+//       keyIndex: 0, // FIXME: This is the index of the wallet used to sign the transaction in the permissions list of the player profile being used.
+//       toSector: coordinates,
+//     };
 
-    return Fleet.warpToCoordinate(
-      programs.sage,
-      signer,
-      playerProfile,
-      profileFaction,
-      fleetKey,
-      fleetFuelTank,
-      fuelCargoType,
-      cargoStatsDefinition,
-      tokenFrom,
-      tokenMint,
-      gameState,
-      gameId,
-      programs.cargo,
-      input
-    );
-  });
+//     return Fleet.warpToCoordinate(
+//       programs.sage,
+//       signer,
+//       playerProfile,
+//       profileFaction,
+//       fleetKey,
+//       fleetFuelTank,
+//       fuelCargoType,
+//       cargoStatsDefinition,
+//       tokenFrom,
+//       tokenMint,
+//       gameState,
+//       gameId,
+//       programs.cargo,
+//       input
+//     );
+//   });
 
 // export const createReadyToExitWarpIx = (fleetPubkey: PublicKey) =>
 //   Effect.gen(function* () {

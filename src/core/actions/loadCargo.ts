@@ -5,22 +5,22 @@ import { createDepositCargoToFleetIx } from "../fleet-utils/instructions";
 import { GameService } from "../services/GameService";
 
 export const loadCargo = ({
+  amount,
   fleetName,
   resourceName,
-  amount,
 }: {
+  amount: number;
   fleetName: string;
   resourceName: ResourceName;
-  amount: number;
 }) =>
   Effect.gen(function* () {
     const fleetPubkey = yield* getFleetAddressByName(fleetName);
 
-    console.log("Loading cargo to fleet...");
+    console.log(`Loading cargo to fleet ${fleetName} (${fleetPubkey})`);
 
     const mintToken = resourceNameToMint[resourceName];
 
-    const ix = yield* createDepositCargoToFleetIx(
+    const ixs = yield* createDepositCargoToFleetIx(
       fleetPubkey,
       mintToken,
       amount
@@ -28,9 +28,13 @@ export const loadCargo = ({
 
     const gameService = yield* GameService;
 
-    const tx = yield* gameService.utils.buildAndSignTransaction(ix);
+    const tx = yield* gameService.utils.buildAndSignTransactionWithAtlasPrime(
+      ixs
+    );
+
     const txId = yield* gameService.utils.sendTransaction(tx);
 
     console.log("Fleet cargo loaded!");
+
     return txId;
   });

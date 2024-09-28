@@ -6,6 +6,7 @@ import {
   AccountStatic,
   readFromRPCOrError,
 } from "@staratlas/data-source";
+import { PlayerProfile } from "@staratlas/player-profile";
 import {
   Fleet,
   Game,
@@ -18,11 +19,11 @@ import {
 import { Data, Effect } from "effect";
 import { SagePrograms } from "../../programs";
 
-class ReadFromRPCError extends Data.TaggedError("readFromRPCError")<{
+export class ReadFromRPCError extends Data.TaggedError("ReadFromRPCError")<{
   readonly error: unknown;
   readonly accountName: string;
 }> {
-  toString() {
+  get message() {
     return `Error reading: ${this.accountName}, from RPC: ${this.error}`;
   }
 }
@@ -109,5 +110,12 @@ export const getCargoTypeAccount = (cargoTypePublicKey: PublicKey) =>
   SagePrograms.pipe(
     Effect.flatMap((programs) =>
       readFromSage(programs.cargo, cargoTypePublicKey, CargoType)
+    )
+  );
+
+export const getPlayerProfileAccout = (playeProfilePublicKey: PublicKey) =>
+  SagePrograms.pipe(
+    Effect.flatMap((programs) =>
+      readFromSage(programs.playerProfile, playeProfilePublicKey, PlayerProfile)
     )
   );

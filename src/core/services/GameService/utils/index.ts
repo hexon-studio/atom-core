@@ -2,7 +2,7 @@ import { Data, Effect, SynchronizedRef } from "effect";
 import { isSome } from "effect/Option";
 import { GameService } from "..";
 
-class GameNotInitializedError extends Data.TaggedError(
+export class GameNotInitializedError extends Data.TaggedError(
   "GameNotInitializedError"
 ) {}
 

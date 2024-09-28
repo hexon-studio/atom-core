@@ -1,13 +1,14 @@
 import { PublicKey } from "@solana/web3.js";
 import { Program } from "@staratlas/anchor";
+import { ATLAS_FEE_PAYER_IDL } from "@staratlas/atlas-prime";
 import { CARGO_IDL } from "@staratlas/cargo";
 import { PLAYER_PROFILE_IDL } from "@staratlas/player-profile";
 import { POINTS_IDL } from "@staratlas/points";
 import { PROFILE_FACTION_IDL } from "@staratlas/profile-faction";
+import { PROFILE_VAULT_IDL } from "@staratlas/profile-vault";
 import { SAGE_IDL } from "@staratlas/sage";
 import { Effect } from "effect";
 import { SolanaService } from "../services/SolanaService";
-
 export const programIds = {
   galacticMarketplaceProgramId: new PublicKey(
     "traderDnaR5w6Tcoi3NFm53i48FTDNbGjBSZwWXDRrg"
@@ -46,7 +47,12 @@ export const SagePrograms = Effect.gen(function* () {
   const solanaService = yield* SolanaService;
   const anchorProvider = yield* solanaService.anchorProvider;
 
-  return yield* Effect.sync(() => ({
+  return yield* Effect.succeed({
+    atlasPrime: new Program(
+      ATLAS_FEE_PAYER_IDL,
+      new PublicKey(programIds.atlasPrimeProgramId),
+      anchorProvider
+    ),
     sage: new Program(
       SAGE_IDL,
       new PublicKey(programIds.sageProgramId),
@@ -72,5 +78,10 @@ export const SagePrograms = Effect.gen(function* () {
       new PublicKey(programIds.profileFactionProgramId),
       anchorProvider
     ),
-  }));
+    profileVaultProgram: new Program(
+      PROFILE_VAULT_IDL,
+      new PublicKey(programIds.profileVaultProgramId),
+      anchorProvider
+    ),
+  });
 });

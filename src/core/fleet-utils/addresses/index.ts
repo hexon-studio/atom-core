@@ -14,32 +14,23 @@ import {
 } from "@staratlas/sage";
 import { Data, Effect, Option, Record } from "effect";
 import { programIds, SagePrograms } from "../../programs";
-import { GameService } from "../../services/GameService";
 import { gameContext } from "../../services/GameService/utils";
 import { SolanaService } from "../../services/SolanaService";
 
 export const getFleetAddressByName = (fleetName: string) =>
-  Effect.all([
-    GameService.pipe(Effect.flatMap((service) => service.signer)),
-    SagePrograms,
-    gameContext,
-  ]).pipe(
-    Effect.flatMap(([signer, programs, context]) =>
-      getPlayerProfileAddress(signer.publicKey()).pipe(
-        Effect.flatMap((playerProfile) =>
-          Effect.try(() => {
-            const fleetLabel = stringToByteArray(fleetName, 32);
-            const [fleet] = Fleet.findAddress(
-              programs.sage,
-              context.game.key,
-              playerProfile,
-              fleetLabel
-            );
+  Effect.all([SagePrograms, gameContext]).pipe(
+    Effect.flatMap(([programs, context]) =>
+      Effect.try(() => {
+        const fleetLabel = stringToByteArray(fleetName, 32);
+        const [fleet] = Fleet.findAddress(
+          programs.sage,
+          context.game.key,
+          context.playerProfile,
+          fleetLabel
+        );
 
-            return fleet;
-          })
-        )
-      )
+        return fleet;
+      })
     )
   );
 

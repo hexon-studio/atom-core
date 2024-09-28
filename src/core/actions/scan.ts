@@ -1,22 +1,13 @@
 import { Effect } from "effect";
-import { getFleetAddressByName } from "../fleet-utils/addresses";
-import { createScanForSurveyDataUnitsIx } from "../fleet-utils/instructions";
-import { GameService } from "../services/GameService";
 
 export const scanSDUs = (fleetName: string) =>
   Effect.gen(function* () {
-    const fleetPubkey = yield* getFleetAddressByName(fleetName);
-
-    console.log("Start sdu scanning...");
-
-    const ixs = yield* createScanForSurveyDataUnitsIx(fleetPubkey);
-
-    const gameService = yield* GameService;
-
-    const tx = yield* gameService.utils.buildAndSignTransaction(ixs);
-    const txId = yield* gameService.utils.sendTransaction(tx);
-
-    console.log(`Scan completed for ${fleetName}!`);
-
-    return txId;
+    // const fleetPubkey = yield* getFleetAddressByName(fleetName);
+    // console.log("Start sdu scanning...");
+    // const ixs = yield* createScanForSurveyDataUnitsIx(fleetPubkey);
+    // const gameService = yield* GameService;
+    // const tx = yield* gameService.utils.buildAndSignTransaction(ixs);
+    // const txId = yield* gameService.utils.sendTransaction(tx);
+    // console.log(`Scan completed for ${fleetName}!`);
+    // return txId;
   });
