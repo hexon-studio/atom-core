@@ -1,30 +1,25 @@
 import { Effect } from "effect";
-import { ResourceName, resourceNameToMint } from "../../constants/resources";
-import { getFleetAddressByName } from "../fleet-utils/addresses";
 import { createDepositCargoToFleetIx } from "../fleet-utils/instructions";
 import { GameService } from "../services/GameService";
+import { PublicKey } from "@solana/web3.js";
 
 export const loadCargo = ({
   amount,
-  fleetName,
-  resourceName,
+  fleetAddress,
+  mint,
 }: {
   amount: number;
-  fleetName: string;
-  resourceName: ResourceName;
+  fleetAddress: PublicKey;
+  mint: PublicKey;
 }) =>
   Effect.gen(function* () {
-    const fleetPubkey = yield* getFleetAddressByName(fleetName);
+    // const fleetPubkey = yield* getFleetAddressByName(fleetName);
 
-    console.log(`Loading cargo to fleet ${fleetName} (${fleetPubkey})`);
+    console.log(`Loading cargo to fleet ${fleetAddress}`);
 
-    const mintToken = resourceNameToMint[resourceName];
+    // const mintToken = resourceNameToMint[resourceName];
 
-    const ixs = yield* createDepositCargoToFleetIx(
-      fleetPubkey,
-      mintToken,
-      amount
-    );
+    const ixs = yield* createDepositCargoToFleetIx(fleetAddress, mint, amount);
 
     const gameService = yield* GameService;
 

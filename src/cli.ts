@@ -3,7 +3,6 @@ import bs58 from "bs58";
 import { Command, InvalidOptionArgumentError, Option } from "commander";
 import { Cause, Effect, Exit } from "effect";
 import { zipWith } from "lodash-es";
-import { ResourceMint, resourceMintToName } from "./constants/resources";
 import { loadCargo } from "./core/actions/loadCargo";
 import { GameService } from "./core/services/GameService";
 import { CargoPodKind } from "./types";
@@ -44,17 +43,17 @@ const program = new Command("atom")
   );
 
 program
-  .command("load-cargo <fleetName>")
-  .option("--resourceMints <resourcesMints...>", "Food to load")
-  .option("-a, --requiredAmounts <resourceMinAmounts...>", "Required amounts")
-  .option("-c, --cargoTypes <resourceMinAmounts...>", "Cargo types")
+  .command("load-cargo <fleet>") // pbk
+  .option("-m, --mints <mints...>", "Resources to load") // pbk
+  .option("-a, --amounts <amounts...>", "The amount of each resource") // pbk
+  .option("--pods <pods...>", "Fleet cargo pods") // fuel_tank, ammo_bank, cargo_hold
   .action(
     async (
-      fleetName: string,
+      fleet: string,
       options: {
-        resourceMints: string[];
-        requiredAmounts: String[];
-        cargoTypes: string[];
+        mints: string[];
+        amounts: String[];
+        pods: string[];
       }
     ) => {
       const { keypair, rpcUrl, owner, playerProfile } = program.opts<{
@@ -69,12 +68,12 @@ program
         rpcUrl,
       });
 
-      const minResources = zipWith(
-        options.resourceMints,
-        options.requiredAmounts,
-        options.cargoTypes,
-        (mint, amout, cargoType) => [mint, amout, cargoType] as const
-      ) as [ResourceMint, string, CargoPodKind][];
+      const resourcesToLoad = zipWith(
+        options.mints,
+        options.amounts,
+        options.pods,
+        (mint, amount, pod) => [mint, amount, pod] as const
+      ) as [string, string, CargoPodKind][];
 
       await Effect.runPromiseExit(
         GameService.pipe(
@@ -85,12 +84,12 @@ program
         )
       );
 
-      for (const [resourceMint, amount] of minResources) {
+      for (const [mint, amount] of resourcesToLoad) {
         const exit = await Effect.runPromiseExit(
           loadCargo({
-            resourceName: resourceMintToName[resourceMint],
+            mint: new PublicKey(mint),
             amount: Number(amount),
-            fleetName,
+            fleetAddress: new PublicKey(fleet),
           }).pipe(Effect.provide(MainLive))
         );
 

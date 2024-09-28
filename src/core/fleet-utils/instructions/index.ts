@@ -660,8 +660,8 @@ class StarbaseCargoPodTokenAccountNotFoundError extends Data.TaggedError(
 ) {}
 
 export const createDepositCargoToFleetIx = (
-  fleetPubkey: PublicKey,
-  tokenMint: PublicKey,
+  fleetAddress: PublicKey,
+  mint: PublicKey,
   amount: number
 ) =>
   Effect.gen(function* () {
@@ -670,7 +670,7 @@ export const createDepositCargoToFleetIx = (
     }
 
     // Fleet data
-    const fleetAccount = yield* getFleetAccount(fleetPubkey);
+    const fleetAccount = yield* getFleetAccount(fleetAddress);
 
     if (!fleetAccount.state.StarbaseLoadingBay) {
       return yield* Effect.fail(new FleetNotInStarbaseError());
@@ -717,7 +717,7 @@ export const createDepositCargoToFleetIx = (
       ),
       Effect.flatMap(
         Effect.findFirst((account) =>
-          Effect.succeed(account.mint.toBase58() === tokenMint.toBase58())
+          Effect.succeed(account.mint.toBase58() === mint.toBase58())
         )
       )
     );
@@ -738,14 +738,14 @@ export const createDepositCargoToFleetIx = (
       gameService.utils.getParsedTokenAccountsByOwner(fleetCargoHoldsPubkey),
       Effect.flatMap(
         Effect.findFirst((account) =>
-          Effect.succeed(account.mint.toBase58() === tokenMint.toBase58())
+          Effect.succeed(account.mint.toBase58() === mint.toBase58())
         )
       )
     );
 
     const tokenAccountToATA =
       yield* gameService.utils.createAssociatedTokenAccountIdempotent(
-        tokenMint,
+        mint,
         fleetCargoHoldsPubkey,
         true
       );
@@ -780,10 +780,7 @@ export const createDepositCargoToFleetIx = (
     const gameState = context.game.data.gameState;
     const cargoStatsDefinition = context.game.data.cargo.statsDefinition;
 
-    const cargoType = yield* getCargoTypeAddress(
-      tokenMint,
-      cargoStatsDefinition
-    );
+    const cargoType = yield* getCargoTypeAddress(mint, cargoStatsDefinition);
 
     const ix_1 = Fleet.depositCargoToFleet(
       programs.sage,
@@ -794,14 +791,14 @@ export const createDepositCargoToFleetIx = (
       "funder",
       starbasePubkey,
       starbasePlayerPubkey,
-      fleetPubkey,
+      fleetAddress,
       starbasePlayerCargoPodsPubkey,
       fleetCargoHoldsPubkey,
       cargoType,
       cargoStatsDefinition,
       tokenAccountFromPubkey,
       tokenAccountToPubkey,
-      tokenMint,
+      mint,
       gameId,
       gameState,
       { keyIndex: 1, amount: amountBN }
