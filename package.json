@@ -38,6 +38,7 @@
     "@staratlas/score": "^0.12.0",
     "bs58": "^6.0.0",
     "commander": "^12.1.0",
+    "effect": "^3.8.4",
     "lodash-es": "^4.17.21",
     "ts-pattern": "^5.4.0"
   },

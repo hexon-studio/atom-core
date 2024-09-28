@@ -1,9 +1,11 @@
 import { Keypair, PublicKey } from "@solana/web3.js";
-import { Argument, Command, Option } from "commander";
+import { Command, Option } from "commander";
+import { Effect, Exit } from "effect";
 import { zipWith } from "lodash-es";
-import { ResourceMint } from "./constants/resources";
-import { loadCargo } from "./core/loadCargo";
+import { ResourceMint, resourceMintToName } from "./constants/resources";
+import { loadCargo } from "./core/actions/loadCargo";
 import { CargoPodKind } from "./types";
+import { createMainLiveService } from "./utils/createLiveService";
 import { parsePublicKey } from "./utils/public-key";
 
 const program = new Command("atom")
@@ -31,45 +33,53 @@ const program = new Command("atom")
 //   );
 
 program
-  .command("load-cargo")
-  .addArgument(
-    new Argument(
-      "<starbaseAddress>",
-      "The public key of the starbase"
-    ).argParser(parsePublicKey)
-  )
+  .command("load-cargo <fleetName>")
   .option("-r, --resourceMints <resourcesMints...>", "Food to load")
   .option("-a, --requiredAmounts <resourceMinAmounts...>", "Required amounts")
   .option("-c, --cargoTypes <resourceMinAmounts...>", "Cargo types")
   .action(
-    (
-      starbaseAddress: PublicKey,
+    async (
+      fleetName: string,
       options: {
         resourceMints: string[];
         requiredAmounts: number[];
         cargoTypes: string[];
       }
     ) => {
-      const globalOpts = program.opts<{
+      const { keypair, rpcUrl } = program.opts<{
         player: PublicKey;
         keypair: Keypair;
         rpcUrl: string;
       }>();
+
+      const MainLive = createMainLiveService({
+        keypair,
+        rpcUrl,
+      });
 
       const minResources = zipWith(
         options.resourceMints,
         options.requiredAmounts,
         options.cargoTypes,
         (mint, amout, cargoType) => [mint, amout, cargoType] as const
-      );
+      ) as [ResourceMint, number, CargoPodKind][];
 
-      loadCargo({
-        ...globalOpts,
-        starbaseAddress,
-        minResources: minResources as Array<
-          [ResourceMint, number, CargoPodKind]
-        >,
-      });
+      for (const [resourceMint, amount] of minResources) {
+        const exit = await Effect.runPromiseExit(
+          loadCargo({
+            resourceName: resourceMintToName[resourceMint],
+            amount,
+            fleetName,
+          }).pipe(Effect.provide(MainLive))
+        );
+
+        exit.pipe(
+          Exit.match({
+            onSuccess: (txId) => console.log(`Transaction ${txId} completed`),
+            onFailure: (txId) => console.log(`Transaction ${txId} completed`),
+          })
+        );
+      }
     }
   );
 
