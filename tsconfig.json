@@ -8,6 +8,7 @@
     "strictNullChecks": true /* When type checking, take into account 'null' and 'undefined'. */,
     "noUncheckedIndexedAccess": true /* Add 'undefined' to a type when accessed using an index. */,
     "skipLibCheck": true /* Skip type checking all .d.ts files. */,
-    "outDir": "dist"
+    "outDir": "dist",
+    "resolveJsonModule": true
   }
 }

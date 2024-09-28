@@ -71,6 +71,9 @@ importers:
       commander:
         specifier: ^12.1.0
         version: 12.1.0
+      effect:
+        specifier: ^3.8.4
+        version: 3.8.4
       lodash-es:
         specifier: ^4.17.21
         version: 4.17.21
@@ -785,6 +788,9 @@ packages:
 
   duplexer2@0.1.4:
     resolution: {integrity: sha512-asLFVfWWtJ90ZyOUHMqk7/S2w2guQKxUI2itj3d92ADHhxUSbCMGi1f1cBcJ7xM1To+pE/Khbwo1yuNbMEPKeA==}
+
+  effect@3.8.4:
+    resolution: {integrity: sha512-rOZ1XAi+Fb+fAHoUJ5FnJPSPZEBxVbCl5QWtOWFTgOeFHx0QpbK3pezWvq9OIxQPdwvSkPOw926qrs4xdD9dLA==}
 
   err@1.1.1:
     resolution: {integrity: sha512-N97Ybd2jJHVQ+Ft3Q5+C2gM3kgygkdeQmEqbN2z15UTVyyEsIwLA1VK39O1DHEJhXbwIFcJLqm6iARNhFANcQA==}
@@ -2400,6 +2406,8 @@ snapshots:
   duplexer2@0.1.4:
     dependencies:
       readable-stream: 2.3.8
+
+  effect@3.8.4: {}
 
   err@1.1.1:
     dependencies:
