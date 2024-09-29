@@ -2,10 +2,10 @@ import { PublicKey } from "@solana/web3.js";
 import { UserPoints } from "@staratlas/points";
 import { Effect } from "effect";
 import { SagePrograms } from "../programs";
-import { gameContext } from "../services/GameService/utils";
+import { getGameContext } from "../services/GameService/utils";
 
 export const getMiningXpKey = (playerProfilePublicKey: PublicKey) =>
-  Effect.all([gameContext, SagePrograms]).pipe(
+  Effect.all([getGameContext(), SagePrograms]).pipe(
     Effect.flatMap(([context, programs]) =>
       Effect.try(() => {
         const [pubKey] = UserPoints.findAddress(
@@ -21,7 +21,7 @@ export const getMiningXpKey = (playerProfilePublicKey: PublicKey) =>
   );
 
 export const getPilotXpKey = (playerProfilePublicKey: PublicKey) =>
-  Effect.all([gameContext, SagePrograms]).pipe(
+  Effect.all([getGameContext(), SagePrograms]).pipe(
     Effect.flatMap(([context, programs]) =>
       Effect.try(() => {
         const [pubKey] = UserPoints.findAddress(
@@ -36,7 +36,7 @@ export const getPilotXpKey = (playerProfilePublicKey: PublicKey) =>
   );
 
 export const getCouncilRankXpKey = (playerProfilePublicKey: PublicKey) =>
-  Effect.all([gameContext, SagePrograms]).pipe(
+  Effect.all([getGameContext(), SagePrograms]).pipe(
     Effect.flatMap(([context, programs]) =>
       Effect.try(() => {
         const [pubKey] = UserPoints.findAddress(

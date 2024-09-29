@@ -23,7 +23,7 @@ import {
 } from "../../points-utils/accounts";
 import { SagePrograms } from "../../programs";
 import { GameService } from "../../services/GameService";
-import { gameContext } from "../../services/GameService/utils";
+import { getGameContext } from "../../services/GameService/utils";
 import { SolanaService } from "../../services/SolanaService";
 import {
   getFleetAccount,
@@ -67,7 +67,9 @@ export const createIdleToLoadingBayIx = ({
 
     const [context, signer] = yield* pipe(
       GameService,
-      Effect.flatMap((service) => Effect.all([gameContext, service.signer]))
+      Effect.flatMap((service) =>
+        Effect.all([getGameContext(), service.signer])
+      )
     );
 
     return yield* Effect.try({
@@ -271,7 +273,7 @@ export const createUndockFromStarbaseIx = (fleetPubkey: PublicKey) =>
     const [programs, context, signer] = yield* pipe(
       GameService,
       Effect.flatMap((service) =>
-        Effect.all([SagePrograms, gameContext, service.signer])
+        Effect.all([SagePrograms, getGameContext(), service.signer])
       )
     );
 
@@ -385,7 +387,7 @@ export const createStartMiningIx = (
     const signer = yield* GameService.pipe(
       Effect.flatMap((service) => service.signer)
     );
-    const context = yield* gameContext;
+    const context = yield* getGameContext();
     const fleetAccount = yield* getFleetAccount(fleetPubkey);
 
     // TODO: ensure fleet state is "Idle" - is there a better way to do this?
@@ -483,7 +485,7 @@ export const createStopMiningIx = (fleetPubkey: PublicKey) =>
     const gameService = yield* GameService;
     const solanaService = yield* SolanaService;
 
-    const context = yield* gameContext;
+    const context = yield* getGameContext();
 
     const gameFoodMint = context.game.data.mints.food;
     const gameAmmoMint = context.game.data.mints.ammo;
@@ -774,7 +776,7 @@ export const createDepositCargoToFleetIx = (
     const programs = yield* SagePrograms;
     const signer = yield* gameService.signer;
 
-    const context = yield* gameContext;
+    const context = yield* getGameContext();
 
     const gameId = context.game.key;
     const gameState = context.game.data.gameState;
@@ -904,7 +906,7 @@ export const createWithdrawCargoFromFleetIx = (
 
     const programs = yield* SagePrograms;
 
-    const context = yield* gameContext;
+    const context = yield* getGameContext();
     const signer = yield* gameService.signer;
     const gameId = context.game.key;
     const gameState = context.game.data.gameState;
@@ -1051,7 +1053,7 @@ export const createRefuelFleetIx = (fleetPubkey: PublicKey, amount: number) =>
 
     const programs = yield* SagePrograms;
 
-    const context = yield* gameContext;
+    const context = yield* getGameContext();
     const signer = yield* gameService.signer;
     const gameId = context.game.key;
     const gameState = context.game.data.gameState;
@@ -1185,7 +1187,7 @@ export const createUnloadFuelTanksIx = (
     }
 
     const programs = yield* SagePrograms;
-    const context = yield* gameContext;
+    const context = yield* getGameContext();
     const signer = yield* gameService.signer;
     const gameId = context.game.key;
     const gameState = context.game.data.gameState;
@@ -1330,7 +1332,7 @@ export const createRearmFleetIx = (fleetPubkey: PublicKey, amount: number) =>
     }
 
     const programs = yield* SagePrograms;
-    const context = yield* gameContext;
+    const context = yield* getGameContext();
     const signer = yield* gameService.signer;
     const gameId = context.game.key;
     const gameState = context.game.data.gameState;
@@ -1464,7 +1466,7 @@ export const createUnloadAmmoBanksIx = (
 
     const programs = yield* SagePrograms;
 
-    const context = yield* gameContext;
+    const context = yield* getGameContext();
     const signer = yield* gameService.signer;
     const gameId = context.game.key;
     const gameState = context.game.data.gameState;
