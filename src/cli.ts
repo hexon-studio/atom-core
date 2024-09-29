@@ -1,28 +1,20 @@
 import { Keypair, PublicKey } from "@solana/web3.js";
 import bs58 from "bs58";
 import { Command, InvalidOptionArgumentError, Option } from "commander";
-import { Cause, Effect, Exit } from "effect";
-import { zipWith } from "lodash-es";
-import { loadCargo } from "./core/actions/loadCargo";
-import { GameService } from "./core/services/GameService";
-import { CargoPodKind } from "./types";
-import { createMainLiveService } from "./utils/createLiveService";
 import { parsePublicKey } from "./utils/public-key";
+import { createMainLiveService } from "./utils/createLiveService";
 
 const program = new Command("atom")
   .addOption(
     new Option(
-      "-o, --owner <publickKey>",
+      "-o, --owner <publicKey>",
       "The publicKey of the player's wallet"
     )
       .argParser(parsePublicKey)
       .makeOptionMandatory()
   )
   .addOption(
-    new Option(
-      "-p, --playerProfile <publickKey>",
-      "The publicKey of the player"
-    )
+    new Option("-p, --playerProfile <publicKey>", "The publicKey of the player")
       .argParser(parsePublicKey)
       .makeOptionMandatory()
   )
@@ -43,19 +35,18 @@ const program = new Command("atom")
   );
 
 program
-  .command("load-cargo <fleet>") // pbk
-  .option("-m, --mints <mints...>", "Resources to load") // pbk
-  .option("-a, --amounts <amounts...>", "The amount of each resource") // pbk
-  .option("--pods <pods...>", "Fleet cargo pods") // fuel_tank, ammo_bank, cargo_hold
+  .command("load-cargo") // pbk
+  .option("--fleet <fleet>", "The fleet address") // pbk
+  .option("--mints <mints...>", "Resources to load") // pbk
+  .option("--amounts <amounts...>", "The amount of each resource") // pbk
+  .option("--pods <pods...>", "Fleet cargo pods type") // fuel_tank, ammo_bank, cargo_hold
   .action(
-    async (
-      fleet: string,
-      options: {
-        mints: string[];
-        amounts: String[];
-        pods: string[];
-      }
-    ) => {
+    async (options: {
+      fleet: string;
+      mints: string[];
+      amounts: String[];
+      pods: string[];
+    }) => {
       const { keypair, rpcUrl, owner, playerProfile } = program.opts<{
         owner: PublicKey;
         playerProfile: PublicKey;
@@ -68,39 +59,39 @@ program
         rpcUrl,
       });
 
-      const resourcesToLoad = zipWith(
-        options.mints,
-        options.amounts,
-        options.pods,
-        (mint, amount, pod) => [mint, amount, pod] as const
-      ) as [string, string, CargoPodKind][];
+      // const resourcesToLoad = zipWith(
+      //   options.mints,
+      //   options.amounts,
+      //   options.pods,
+      //   (mint, amount, pod) => [mint, amount, pod] as const
+      // ) as [string, string, CargoPodKind][];
 
-      await Effect.runPromiseExit(
-        GameService.pipe(
-          Effect.andThen((service) =>
-            service.methods.initGame(owner, playerProfile, service.context)
-          ),
-          Effect.provide(MainLive)
-        )
-      );
+      // await Effect.runPromiseExit(
+      //   GameService.pipe(
+      //     Effect.andThen((service) =>
+      //       service.methods.initGame(owner, playerProfile, service.context)
+      //     ),
+      //     Effect.provide(MainLive)
+      //   )
+      // );
 
-      for (const [mint, amount] of resourcesToLoad) {
-        const exit = await Effect.runPromiseExit(
-          loadCargo({
-            mint: new PublicKey(mint),
-            amount: Number(amount),
-            fleetAddress: new PublicKey(fleet),
-          }).pipe(Effect.provide(MainLive))
-        );
+      // for (const [mint, amount] of resourcesToLoad) {
+      //   const exit = await Effect.runPromiseExit(
+      //     loadCargo({
+      //       mint: new PublicKey(mint),
+      //       amount: Number(amount),
+      //       fleetAddress: new PublicKey(options.fleet),
+      //     }).pipe(Effect.provide(MainLive))
+      //   );
 
-        exit.pipe(
-          Exit.match({
-            onSuccess: (txId) => console.log(`Transaction ${txId} completed`),
-            onFailure: (cause) =>
-              console.log(`Transaction error: ${Cause.pretty(cause)}`),
-          })
-        );
-      }
+      //   exit.pipe(
+      //     Exit.match({
+      //       onSuccess: (txId) => console.log(`Transaction ${txId} completed`),
+      //       onFailure: (cause) =>
+      //         console.log(`Transaction error: ${Cause.pretty(cause)}`),
+      //     })
+      //   );
+      // }
     }
   );
 

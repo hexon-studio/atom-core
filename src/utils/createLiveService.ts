@@ -1,7 +1,7 @@
 import { Keypair } from "@solana/web3.js";
 import { Layer } from "effect";
-import { GameServiceLive } from "../core/services/GameService";
 import { createSolanaServiceLive } from "../core/services/SolanaService";
+import { GameServiceLive } from "../core/services/GameService";
 
 export const createMainLiveService = ({
   keypair,

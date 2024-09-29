@@ -29,7 +29,7 @@ export interface GameContext {
   game: Game;
   owner: PublicKey;
   playerProfile: PublicKey;
-  planetsLookup: Record<string, PublicKey>;
+  // planetsLookup: Record<string, PublicKey>;
 }
 
 export class GameService extends Context.Tag("app/GameService")<
