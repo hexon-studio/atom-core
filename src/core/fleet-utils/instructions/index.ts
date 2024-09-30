@@ -769,7 +769,7 @@ export const createDepositCargoToFleetIx = (
     // amount > starbase amount?
     amountBN = BN.min(amountBN, tokenAccountFromAmount);
 
-    if (amountBN <= 0) {
+    if (amountBN.lte(new BN(0))) {
       return [ix_0];
     }
 
@@ -805,7 +805,7 @@ export const createDepositCargoToFleetIx = (
       gameState,
       { keyIndex: 1, amount: amountBN }
     );
-
+    console.log("Heyy");
     return [ix_0, ix_1];
   });
 

@@ -2,6 +2,7 @@ import { Effect } from "effect";
 import { createDepositCargoToFleetIx } from "../fleet-utils/instructions";
 import { GameService } from "../services/GameService";
 import { PublicKey } from "@solana/web3.js";
+import { Console } from "effect";
 
 export const loadCargo = ({
   amount,
@@ -27,7 +28,11 @@ export const loadCargo = ({
       ixs
     );
 
-    const txId = yield* gameService.utils.sendTransaction(tx);
+    // const txId = yield* gameService.utils.sendTransaction(tx);
+
+    const txId = yield* gameService.utils
+      .sendTransaction(tx)
+      .pipe(Effect.tapError((error) => Console.log(error)));
 
     console.log("Fleet cargo loaded!");
 

@@ -3,6 +3,11 @@ import bs58 from "bs58";
 import { Command, InvalidOptionArgumentError, Option } from "commander";
 import { parsePublicKey } from "./utils/public-key";
 import { createMainLiveService } from "./utils/createLiveService";
+import { zipWith } from "lodash-es";
+import { CargoPodKind } from "./types";
+import { Cause, Effect, Exit } from "effect";
+import { GameService } from "./core/services/GameService";
+import { loadCargo } from "./core/actions/loadCargo";
 
 const program = new Command("atom")
   .addOption(
@@ -35,7 +40,7 @@ const program = new Command("atom")
   );
 
 program
-  .command("load-cargo") // pbk
+  .command("load-cargo")
   .option("--fleet <fleet>", "The fleet address") // pbk
   .option("--mints <mints...>", "Resources to load") // pbk
   .option("--amounts <amounts...>", "The amount of each resource") // pbk
@@ -59,39 +64,39 @@ program
         rpcUrl,
       });
 
-      // const resourcesToLoad = zipWith(
-      //   options.mints,
-      //   options.amounts,
-      //   options.pods,
-      //   (mint, amount, pod) => [mint, amount, pod] as const
-      // ) as [string, string, CargoPodKind][];
+      const resourcesToLoad = zipWith(
+        options.mints,
+        options.amounts,
+        options.pods,
+        (mint, amount, pod) => [mint, amount, pod] as const
+      ) as [string, string, CargoPodKind][];
 
-      // await Effect.runPromiseExit(
-      //   GameService.pipe(
-      //     Effect.andThen((service) =>
-      //       service.methods.initGame(owner, playerProfile, service.context)
-      //     ),
-      //     Effect.provide(MainLive)
-      //   )
-      // );
+      await Effect.runPromiseExit(
+        GameService.pipe(
+          Effect.andThen((service) =>
+            service.methods.initGame(owner, playerProfile, service.context)
+          ),
+          Effect.provide(MainLive)
+        )
+      );
 
-      // for (const [mint, amount] of resourcesToLoad) {
-      //   const exit = await Effect.runPromiseExit(
-      //     loadCargo({
-      //       mint: new PublicKey(mint),
-      //       amount: Number(amount),
-      //       fleetAddress: new PublicKey(options.fleet),
-      //     }).pipe(Effect.provide(MainLive))
-      //   );
+      for (const [mint, amount] of resourcesToLoad) {
+        const exit = await Effect.runPromiseExit(
+          loadCargo({
+            mint: new PublicKey(mint),
+            amount: Number(amount),
+            fleetAddress: new PublicKey(options.fleet),
+          }).pipe(Effect.provide(MainLive))
+        );
 
-      //   exit.pipe(
-      //     Exit.match({
-      //       onSuccess: (txId) => console.log(`Transaction ${txId} completed`),
-      //       onFailure: (cause) =>
-      //         console.log(`Transaction error: ${Cause.pretty(cause)}`),
-      //     })
-      //   );
-      // }
+        exit.pipe(
+          Exit.match({
+            onSuccess: (txId) => console.log(`Transaction ${txId} completed`),
+            onFailure: (cause) =>
+              console.log(`Transaction error: ${Cause.pretty(cause)}`),
+          })
+        );
+      }
     }
   );
 
