@@ -12,6 +12,7 @@ type Param = RequiredParam & {
 		amount: number;
 	}>;
 };
+
 export const runLoadCargo = async ({
 	fleetAddress,
 	items,

@@ -29,6 +29,7 @@ import { GameService } from "../../services/GameService";
 import { getGameContext } from "../../services/GameService/utils";
 import { SolanaService } from "../../services/SolanaService";
 import {
+	getCargoStatDefinition,
 	getFleetAccount,
 	getMineItemAccount,
 	getPlanetAccount,
@@ -787,9 +788,16 @@ export const createDepositCargoToFleetIx = (
 
 		const gameId = context.game.key;
 		const gameState = context.game.data.gameState;
-		const cargoStatsDefinition = context.game.data.cargo.statsDefinition;
 
-		const cargoType = yield* getCargoTypeAddress(mint, cargoStatsDefinition);
+		const cargoStatsDefinition = yield* getCargoStatDefinition(
+			context.game.data.cargo.statsDefinition,
+		);
+
+		const cargoType = yield* getCargoTypeAddress(
+			mint,
+			cargoStatsDefinition.key,
+			cargoStatsDefinition.data.seqId,
+		);
 
 		const ix_1 = Fleet.depositCargoToFleet(
 			programs.sage,
@@ -804,7 +812,7 @@ export const createDepositCargoToFleetIx = (
 			starbasePlayerCargoPodsPubkey,
 			fleetCargoHoldsPubkey,
 			cargoType,
-			cargoStatsDefinition,
+			cargoStatsDefinition.key,
 			tokenAccountFromPubkey,
 			tokenAccountToPubkey,
 			mint,
@@ -812,7 +820,7 @@ export const createDepositCargoToFleetIx = (
 			gameState,
 			{ keyIndex: 1, amount: amountBN },
 		);
-		console.log("Heyy");
+
 		return [ix_0, ix_1];
 	});
 

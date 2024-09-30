@@ -1,6 +1,6 @@
 import type { PublicKey, TransactionConfirmationStatus } from "@solana/web3.js";
 import type { Idl, Program } from "@staratlas/anchor";
-import { CargoPod, CargoType } from "@staratlas/cargo";
+import { CargoPod, CargoStatsDefinition, CargoType } from "@staratlas/cargo";
 import {
 	type Account,
 	type AccountStatic,
@@ -96,6 +96,17 @@ export const getStarbaseAccount = (starbasePubkey: PublicKey) =>
 	SagePrograms.pipe(
 		Effect.flatMap((programs) =>
 			readFromSage(programs.sage, starbasePubkey, Starbase),
+		),
+	);
+
+export const getCargoStatDefinition = (cargoStatsDefPublicKey: PublicKey) =>
+	SagePrograms.pipe(
+		Effect.flatMap((programs) =>
+			readFromSage(
+				programs.cargo,
+				cargoStatsDefPublicKey,
+				CargoStatsDefinition,
+			),
 		),
 	);
 

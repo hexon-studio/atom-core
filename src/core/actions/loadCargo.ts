@@ -1,7 +1,15 @@
 import type { PublicKey } from "@solana/web3.js";
-import { Console, Effect } from "effect";
+import { Console, Data, Effect } from "effect";
 import { createDepositCargoToFleetIx } from "../fleet-utils/instructions";
 import { GameService } from "../services/GameService";
+
+export class BuildOptinalTxError extends Data.TaggedError(
+	"BuildOptinalTxError",
+)<{ error: unknown }> {
+	override get message() {
+		return String(this.error);
+	}
+}
 
 export const loadCargo = ({
 	amount,
@@ -19,12 +27,14 @@ export const loadCargo = ({
 
 		const gameService = yield* GameService;
 
-		const tx =
+		const txs =
 			yield* gameService.utils.buildAndSignTransactionWithAtlasPrime(ixs);
 
-		const txId = yield* gameService.utils.sendTransaction(tx);
+		const txIds = yield* Effect.all(
+			txs.map((tx) => gameService.utils.sendTransaction(tx)),
+		);
 
 		yield* Console.log("Fleet cargo loaded!");
 
-		return txId;
+		return txIds;
 	});

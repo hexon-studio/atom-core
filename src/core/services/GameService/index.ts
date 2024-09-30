@@ -12,13 +12,13 @@ import {
 	buildAndSignTransaction,
 } from "./utils/buildAndSignTransaction";
 import {
-	type BuildAndSignTransactionWithAtlasPrime,
-	buildAndSignTransactionWithAtlasPrime,
-} from "./utils/buildAndSignTransactionWithAtlasPrime";
-import {
 	type CreateAssociatedTokenAccountIdempotent,
 	createAssociatedTokenAccountIdempotent,
 } from "./utils/createAssociatedTokenAccountIdempotent";
+import {
+	type BuildAndSignTransactionWithAtlasPrime,
+	buildAndSignTransactionWithAtlasPrime,
+} from "./utils/createAtlasPrimeTransactionBuilder";
 import {
 	type GetParsedTokenAccountsByOwner,
 	getParsedTokenAccountsByOwner,

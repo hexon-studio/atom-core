@@ -1,3 +1,4 @@
+import type { SendOptions } from "@solana/web3.js";
 import {
 	type TransactionReturn,
 	sendTransaction as sageSendTransaction,
@@ -11,7 +12,10 @@ export class SendTransactionError extends Data.TaggedError(
 	readonly error: unknown;
 }> {}
 
-export const sendTransaction = (tx: TransactionReturn) =>
+export const sendTransaction = (
+	tx: TransactionReturn,
+	sendOptions?: SendOptions,
+) =>
 	SolanaService.pipe(
 		Effect.flatMap((solanaService) => solanaService.anchorProvider),
 		Effect.flatMap((provider) =>
@@ -19,7 +23,11 @@ export const sendTransaction = (tx: TransactionReturn) =>
 				Console.log("Sending transaction").pipe(
 					Effect.flatMap(() =>
 						Effect.tryPromise({
-							try: () => sageSendTransaction(tx, provider.connection),
+							try: () =>
+								sageSendTransaction(tx, provider.connection, {
+									commitment: "confirmed",
+									sendOptions,
+								}),
 							catch: (error) => new SendTransactionError({ error }),
 						}),
 					),

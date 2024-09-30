@@ -38,7 +38,7 @@
 		"@staratlas/points-store": "^1.1.0",
 		"@staratlas/profile-faction": "^0.6.0",
 		"@staratlas/profile-vault": "^0.11.0",
-		"@staratlas/sage": "^1.8.0",
+		"@staratlas/sage": "^1.8.1",
 		"@staratlas/score": "^0.12.0",
 		"bs58": "^5",
 		"commander": "^12.1.0",

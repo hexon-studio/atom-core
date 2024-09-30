@@ -45,7 +45,7 @@ export class BuildOptinalTxError extends Data.TaggedError(
 export const buildAndSignTransactionWithAtlasPrime = (
 	instructions: Array<InstructionReturn>,
 ): Effect.Effect<
-	TransactionReturn,
+	TransactionReturn[],
 	| BuildAndSignTransactionWithAtlasPrimeError
 	| BuildOptinalTxError
 	| FetchDummyKeysError
@@ -102,7 +102,7 @@ export const buildAndSignTransactionWithAtlasPrime = (
 
 							builder.add(instructions);
 
-							return builder.buildNextOptimalTransaction();
+							return builder.buildDynamic();
 						},
 						catch: (error) =>
 							new BuildAndSignTransactionWithAtlasPrimeError({

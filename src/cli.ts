@@ -1,50 +1,35 @@
-import { Keypair, PublicKey } from "@solana/web3.js";
-import bs58 from "bs58";
-import { Command, InvalidOptionArgumentError, Option } from "commander";
+import { type Keypair, PublicKey } from "@solana/web3.js";
+import { Command } from "commander";
 import lodash from "lodash";
 import { runLoadCargo } from "./commands/loadCargo";
+import { parseSecretKey } from "./utils/keypair";
 import { parsePublicKey } from "./utils/public-key";
 
 const program = new Command("atom")
-	.addOption(
-		new Option(
-			"-o, --owner <publickKey>",
-			"The publicKey of the player's wallet",
-		)
-			.argParser(parsePublicKey)
-			.makeOptionMandatory(),
+	.requiredOption(
+		"-o, --owner <publickKey>",
+		"The publicKey of the player's wallet",
+		parsePublicKey,
 	)
-	.addOption(
-		new Option(
-			"-p, --playerProfile <publickKey>",
-			"The publicKey of the player",
-		)
-			.argParser(parsePublicKey)
-			.makeOptionMandatory(),
+	.requiredOption(
+		"-p, --playerProfile <publickKey>",
+		"The publicKey of the player",
+		parsePublicKey,
 	)
 	.requiredOption("-r, --rpcUrl <rpcUrl>", "The solona rpc url")
-	.addOption(
-		new Option(
-			"-k, --keypair <secretKey>",
-			"The secret key of the hot wallet as a base58 string",
-		)
-			.argParser((secretKey) => {
-				try {
-					return Keypair.fromSecretKey(bs58.decode(secretKey));
-				} catch (e) {
-					throw new InvalidOptionArgumentError("Invalid keypair");
-				}
-			})
-			.makeOptionMandatory(),
+	.requiredOption(
+		"-k, --keypair <secretKey>",
+		"The secret key of the hot wallet as a base58 string",
+		parseSecretKey,
 	);
 
 program
-	.command("load-cargo ")
-	.addOption(
-		new Option("--fleet <publickKey>", "The publicKey of the fleet")
-			.argParser(parsePublicKey)
-			.makeOptionMandatory(),
-	) // pbk
+	.command("load-cargo")
+	.requiredOption(
+		"--fleet <publicKey>",
+		"The publicKey of the fleet",
+		parsePublicKey,
+	)
 	.requiredOption("--mints <mints...>", "Resources to load") // pbk
 	.requiredOption("--amounts <amounts...>", "The amount of each resource") // pbk
 	// .requiredOption("--pods <pods...>", "Fleet cargo pods type") // fuel_tank, ammo_bank, cargo_hold
