@@ -3,7 +3,6 @@ import * as bs58 from "bs58";
 import { Command, InvalidOptionArgumentError, Option } from "commander";
 import { zipWith } from "lodash";
 import { runLoadCargo } from "./commands/loadCargo";
-import type { CargoPodKind } from "./types";
 import { parsePublicKey } from "./utils/public-key";
 
 const program = new Command("atom")
@@ -40,19 +39,23 @@ const program = new Command("atom")
 	);
 
 program
-	.command("load-cargo")
-	.option("--fleet <fleet>", "The fleet address") // pbk
-	.option("--mints <mints...>", "Resources to load") // pbk
-	.option("--amounts <amounts...>", "The amount of each resource") // pbk
-	.option("--pods <pods...>", "Fleet cargo pods type") // fuel_tank, ammo_bank, cargo_hold
+	.command("load-cargo ")
+	.addOption(
+		new Option("--fleet <publickKey>", "The publicKey of the fleet")
+			.argParser(parsePublicKey)
+			.makeOptionMandatory(),
+	) // pbk
+	.requiredOption("--mints <mints...>", "Resources to load") // pbk
+	.requiredOption("--amounts <amounts...>", "The amount of each resource") // pbk
+	// .requiredOption("--pods <pods...>", "Fleet cargo pods type") // fuel_tank, ammo_bank, cargo_hold
 	.action(
 		async (
-			fleetName: string,
+			_,
 			options: {
 				fleet: string;
 				mints: string[];
 				amounts: string[];
-				pods: string[];
+				// pods: string[];
 			},
 		) => {
 			const globalOpts = program.opts<{
@@ -68,13 +71,14 @@ program
 				items: zipWith(
 					options.mints,
 					options.amounts,
-					options.pods,
-					(mint, amount, pod) => ({
+					// options.pods,
+					(mint, amount) => ({
 						mint: new PublicKey(mint),
 						amount: Number(amount),
-						cargoType: cargoType as CargoPodKind,
 					}),
 				),
 			});
 		},
 	);
+
+program.parse(process.argv);

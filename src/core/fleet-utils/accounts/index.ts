@@ -23,7 +23,7 @@ export class ReadFromRPCError extends Data.TaggedError("ReadFromRPCError")<{
 	readonly error: unknown;
 	readonly accountName: string;
 }> {
-	get message() {
+	override get message() {
 		return `Error reading: ${this.accountName}, from RPC: ${this.error}`;
 	}
 }
