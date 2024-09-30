@@ -1,5 +1,5 @@
 import type { PublicKey } from "@solana/web3.js";
-import { Data, Effect, Option, SynchronizedRef } from "effect";
+import { Data, Effect, Option, Ref } from "effect";
 import type { GameContext } from "../..";
 import { getGameAccount } from "../../../../fleet-utils/accounts";
 import { findGame } from "../findGame";
@@ -11,10 +11,10 @@ export class AlreadyInitializedError extends Data.TaggedError(
 export const initGame = (
 	owner: PublicKey,
 	playerProfile: PublicKey,
-	contextRef: SynchronizedRef.SynchronizedRef<Option.Option<GameContext>>,
+	contextRef: Ref.Ref<Option.Option<GameContext>>,
 ) =>
 	Effect.gen(function* () {
-		const context = yield* SynchronizedRef.get(contextRef);
+		const context = yield* Ref.get(contextRef);
 
 		if (Option.isSome(context)) {
 			return yield* Effect.fail(new AlreadyInitializedError());
@@ -42,7 +42,7 @@ export const initGame = (
 		//   }
 		// );
 
-		return yield* SynchronizedRef.updateAndGet(contextRef, () =>
+		return yield* Ref.updateAndGet(contextRef, () =>
 			Option.some({
 				game,
 				playerProfile,

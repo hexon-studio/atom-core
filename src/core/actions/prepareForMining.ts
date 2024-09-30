@@ -1,6 +1,5 @@
 import { BN } from "@staratlas/anchor";
 import { Effect, pipe } from "effect";
-
 import type { ResourceName } from "../../constants/resources";
 import { getFleetAddressByName } from "../fleet-utils/addresses";
 import { getTimeAndNeededResourcesToFullCargoInMining } from "../fleet-utils/instructions";

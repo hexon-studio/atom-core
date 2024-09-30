@@ -1,7 +1,7 @@
 {
 	"name": "atom-core",
 	"version": "1.0.0",
-	"type": "module",
+	"type": "commonjs",
 	"scripts": {
 		"build": "tsup",
 		"dev": "tsx src/cli.ts",

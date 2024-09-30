@@ -30,16 +30,13 @@ export const runLoadCargo = async ({
 			service.methods.initGame(owner, playerProfile, service.context),
 		),
 		Effect.tap(() => Console.log("Game initialized.")),
-		Effect.andThen(
-			Effect.forEach(
-				items,
-				({ amount, mint }) =>
-					loadCargo({
-						fleetAddress,
-						mint,
-						amount: amount,
-					}),
-				{ concurrency: 3 },
+		Effect.flatMap(() =>
+			Effect.forEach(items, ({ amount, mint }) =>
+				loadCargo({
+					fleetAddress,
+					mint,
+					amount: amount,
+				}),
 			),
 		),
 		Effect.provide(mainServiceLive),
@@ -50,7 +47,7 @@ export const runLoadCargo = async ({
 	exit.pipe(
 		Exit.match({
 			onSuccess: (txId) => {
-				console.log(`Transaction ${txId} completed`);
+				console.log(`Transactions ${txId.join(",")} completed`);
 				process.exit(0);
 			},
 			onFailure: (cause) => {

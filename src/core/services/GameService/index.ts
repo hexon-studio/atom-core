@@ -1,7 +1,7 @@
 import type { Keypair, PublicKey } from "@solana/web3.js";
 import { type AsyncSigner, keypairToAsyncSigner } from "@staratlas/data-source";
 import type { Game } from "@staratlas/sage";
-import { Context, Effect, Layer, Option, SynchronizedRef } from "effect";
+import { Context, Effect, Layer, Option, Ref } from "effect";
 import { type CreateKeypairError, SolanaService } from "../SolanaService";
 import { type FindFleets, findFleets } from "./methods/findFleets";
 import { type FindGame, findGame } from "./methods/findGame";
@@ -36,7 +36,7 @@ export interface GameContext {
 export class GameService extends Context.Tag("app/GameService")<
 	GameService,
 	{
-		context: SynchronizedRef.SynchronizedRef<Option.Option<GameContext>>;
+		context: Ref.Ref<Option.Option<GameContext>>;
 		signer: Effect.Effect<
 			AsyncSigner<Keypair>,
 			CreateKeypairError,
@@ -58,7 +58,7 @@ export class GameService extends Context.Tag("app/GameService")<
 	}
 >() {}
 
-const gameContextRef = SynchronizedRef.unsafeMake(Option.none<GameContext>());
+const gameContextRef = Ref.unsafeMake(Option.none<GameContext>());
 
 export const GameServiceLive = Layer.effect(
 	GameService,

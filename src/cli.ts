@@ -1,7 +1,7 @@
 import { Keypair, PublicKey } from "@solana/web3.js";
-import * as bs58 from "bs58";
+import bs58 from "bs58";
 import { Command, InvalidOptionArgumentError, Option } from "commander";
-import { zipWith } from "lodash";
+import lodash from "lodash";
 import { runLoadCargo } from "./commands/loadCargo";
 import { parsePublicKey } from "./utils/public-key";
 
@@ -49,15 +49,12 @@ program
 	.requiredOption("--amounts <amounts...>", "The amount of each resource") // pbk
 	// .requiredOption("--pods <pods...>", "Fleet cargo pods type") // fuel_tank, ammo_bank, cargo_hold
 	.action(
-		async (
-			_,
-			options: {
-				fleet: string;
-				mints: string[];
-				amounts: string[];
-				// pods: string[];
-			},
-		) => {
+		async (options: {
+			fleet: PublicKey;
+			mints: string[];
+			amounts: string[];
+			// pods: string[];
+		}) => {
 			const globalOpts = program.opts<{
 				owner: PublicKey;
 				playerProfile: PublicKey;
@@ -67,8 +64,8 @@ program
 
 			return runLoadCargo({
 				...globalOpts,
-				fleetAddress: new PublicKey(options.fleet),
-				items: zipWith(
+				fleetAddress: options.fleet,
+				items: lodash.zipWith(
 					options.mints,
 					options.amounts,
 					// options.pods,
