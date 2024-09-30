@@ -14,11 +14,11 @@ import {
 } from "@staratlas/sage";
 import { Data, Effect, Option, Record } from "effect";
 import { SagePrograms, programIds } from "../../programs";
-import { gameContext } from "../../services/GameService/utils";
+import { getGameContext } from "../../services/GameService/utils";
 import { SolanaService } from "../../services/SolanaService";
 
 export const getFleetAddressByName = (fleetName: string) =>
-	Effect.all([SagePrograms, gameContext]).pipe(
+	Effect.all([SagePrograms, getGameContext()]).pipe(
 		Effect.flatMap(([programs, context]) =>
 			Effect.try(() => {
 				const fleetLabel = stringToByteArray(fleetName, 32);
@@ -172,7 +172,7 @@ export class PlanetNotFoundError extends Data.TaggedError(
 }> {}
 
 export const getPlanetAddressbyCoordinates = (coordinates: [BN, BN]) =>
-	gameContext.pipe(
+	getGameContext().pipe(
 		Effect.map((context) => context.planetsLookup),
 		Effect.map(Record.get(coordinates.toString())),
 		Effect.andThen((maybePlanetAddress) =>

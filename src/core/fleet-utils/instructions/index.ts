@@ -26,7 +26,7 @@ import {
 } from "../../points-utils/accounts";
 import { SagePrograms } from "../../programs";
 import { GameService } from "../../services/GameService";
-import { gameContext } from "../../services/GameService/utils";
+import { getGameContext } from "../../services/GameService/utils";
 import { SolanaService } from "../../services/SolanaService";
 import {
 	getFleetAccount,
@@ -70,7 +70,9 @@ export const createIdleToLoadingBayIx = ({
 
 		const [context, signer] = yield* pipe(
 			GameService,
-			Effect.flatMap((service) => Effect.all([gameContext, service.signer])),
+			Effect.flatMap((service) =>
+				Effect.all([getGameContext(), service.signer]),
+			),
 		);
 
 		return yield* Effect.try({
@@ -274,7 +276,7 @@ export const createUndockFromStarbaseIx = (fleetPubkey: PublicKey) =>
 		const [programs, context, signer] = yield* pipe(
 			GameService,
 			Effect.flatMap((service) =>
-				Effect.all([SagePrograms, gameContext, service.signer]),
+				Effect.all([SagePrograms, getGameContext(), service.signer]),
 			),
 		);
 
@@ -390,7 +392,7 @@ export const createStartMiningIx = (
 		const signer = yield* GameService.pipe(
 			Effect.flatMap((service) => service.signer),
 		);
-		const context = yield* gameContext;
+		const context = yield* getGameContext();
 		const fleetAccount = yield* getFleetAccount(fleetPubkey);
 
 		// TODO: ensure fleet state is "Idle" - is there a better way to do this?
@@ -490,7 +492,7 @@ export const createStopMiningIx = (fleetPubkey: PublicKey) =>
 		const gameService = yield* GameService;
 		const solanaService = yield* SolanaService;
 
-		const context = yield* gameContext;
+		const context = yield* getGameContext();
 
 		const gameFoodMint = context.game.data.mints.food;
 		const gameAmmoMint = context.game.data.mints.ammo;
@@ -669,8 +671,8 @@ export class StarbaseCargoPodTokenAccountNotFoundError extends Data.TaggedError(
 ) {}
 
 export const createDepositCargoToFleetIx = (
-	fleetPubkey: PublicKey,
-	tokenMint: PublicKey,
+	fleetAddress: PublicKey,
+	mint: PublicKey,
 	amount: number,
 ) =>
 	Effect.gen(function* () {
@@ -679,7 +681,7 @@ export const createDepositCargoToFleetIx = (
 		}
 
 		// Fleet data
-		const fleetAccount = yield* getFleetAccount(fleetPubkey);
+		const fleetAccount = yield* getFleetAccount(fleetAddress);
 
 		if (!fleetAccount.state.StarbaseLoadingBay) {
 			return yield* Effect.fail(new FleetNotInStarbaseError());
@@ -724,7 +726,7 @@ export const createDepositCargoToFleetIx = (
 			),
 			Effect.flatMap(
 				Effect.findFirst((account) =>
-					Effect.succeed(account.mint.toBase58() === tokenMint.toBase58()),
+					Effect.succeed(account.mint.toBase58() === mint.toBase58()),
 				),
 			),
 		);
@@ -745,14 +747,14 @@ export const createDepositCargoToFleetIx = (
 			gameService.utils.getParsedTokenAccountsByOwner(fleetCargoHoldsPubkey),
 			Effect.flatMap(
 				Effect.findFirst((account) =>
-					Effect.succeed(account.mint.toBase58() === tokenMint.toBase58()),
+					Effect.succeed(account.mint.toBase58() === mint.toBase58()),
 				),
 			),
 		);
 
 		const tokenAccountToATA =
 			yield* gameService.utils.createAssociatedTokenAccountIdempotent(
-				tokenMint,
+				mint,
 				fleetCargoHoldsPubkey,
 				true,
 			);
@@ -774,23 +776,20 @@ export const createDepositCargoToFleetIx = (
 		// amount > starbase amount?
 		amountBN = BN.min(amountBN, tokenAccountFromAmount);
 
-		if (amountBN <= 0) {
+		if (amountBN.lte(new BN(0))) {
 			return [ix_0];
 		}
 
 		const programs = yield* SagePrograms;
 		const signer = yield* gameService.signer;
 
-		const context = yield* gameContext;
+		const context = yield* getGameContext();
 
 		const gameId = context.game.key;
 		const gameState = context.game.data.gameState;
 		const cargoStatsDefinition = context.game.data.cargo.statsDefinition;
 
-		const cargoType = yield* getCargoTypeAddress(
-			tokenMint,
-			cargoStatsDefinition,
-		);
+		const cargoType = yield* getCargoTypeAddress(mint, cargoStatsDefinition);
 
 		const ix_1 = Fleet.depositCargoToFleet(
 			programs.sage,
@@ -801,19 +800,19 @@ export const createDepositCargoToFleetIx = (
 			"funder",
 			starbasePubkey,
 			starbasePlayerPubkey,
-			fleetPubkey,
+			fleetAddress,
 			starbasePlayerCargoPodsPubkey,
 			fleetCargoHoldsPubkey,
 			cargoType,
 			cargoStatsDefinition,
 			tokenAccountFromPubkey,
 			tokenAccountToPubkey,
-			tokenMint,
+			mint,
 			gameId,
 			gameState,
 			{ keyIndex: 1, amount: amountBN },
 		);
-
+		console.log("Heyy");
 		return [ix_0, ix_1];
 	});
 
@@ -912,7 +911,7 @@ export const createWithdrawCargoFromFleetIx = (
 
 		const programs = yield* SagePrograms;
 
-		const context = yield* gameContext;
+		const context = yield* getGameContext();
 		const signer = yield* gameService.signer;
 		const gameId = context.game.key;
 		const gameState = context.game.data.gameState;
@@ -1057,7 +1056,7 @@ export const createRefuelFleetIx = (fleetPubkey: PublicKey, amount: number) =>
 
 		const programs = yield* SagePrograms;
 
-		const context = yield* gameContext;
+		const context = yield* getGameContext();
 		const signer = yield* gameService.signer;
 		const gameId = context.game.key;
 		const gameState = context.game.data.gameState;
@@ -1189,7 +1188,7 @@ export const createUnloadFuelTanksIx = (
 		}
 
 		const programs = yield* SagePrograms;
-		const context = yield* gameContext;
+		const context = yield* getGameContext();
 		const signer = yield* gameService.signer;
 		const gameId = context.game.key;
 		const gameState = context.game.data.gameState;
@@ -1332,7 +1331,7 @@ export const createRearmFleetIx = (fleetPubkey: PublicKey, amount: number) =>
 		}
 
 		const programs = yield* SagePrograms;
-		const context = yield* gameContext;
+		const context = yield* getGameContext();
 		const signer = yield* gameService.signer;
 		const gameId = context.game.key;
 		const gameState = context.game.data.gameState;
@@ -1464,7 +1463,7 @@ export const createUnloadAmmoBanksIx = (
 
 		const programs = yield* SagePrograms;
 
-		const context = yield* gameContext;
+		const context = yield* getGameContext();
 		const signer = yield* gameService.signer;
 		const gameId = context.game.key;
 		const gameState = context.game.data.gameState;

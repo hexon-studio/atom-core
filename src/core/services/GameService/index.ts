@@ -29,6 +29,7 @@ export interface GameContext {
 	game: Game;
 	owner: PublicKey;
 	playerProfile: PublicKey;
+
 	planetsLookup: Record<string, PublicKey>;
 }
 

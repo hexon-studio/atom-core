@@ -1,25 +1,24 @@
+import type { PublicKey } from "@solana/web3.js";
 import { Cause, Console, Effect, Exit, Option } from "effect";
-import { type ResourceMint, resourceMintToName } from "../constants/resources";
 import { loadCargo } from "../core/actions/loadCargo";
 import { GameService } from "../core/services/GameService";
-import type { CargoPodKind, RequiredParam } from "../types";
+import type { RequiredParam } from "../types";
 import { createMainLiveService } from "../utils/createLiveService";
 
 type Param = RequiredParam & {
-	fleetName: string;
+	fleetAddress: PublicKey;
 	items: Array<{
-		mint: ResourceMint;
+		mint: PublicKey;
 		amount: number;
-		cargoType: CargoPodKind;
 	}>;
 };
 export const runLoadCargo = async ({
-	keypair,
-	fleetName,
-	rpcUrl,
+	fleetAddress,
 	items,
+	keypair,
 	owner,
 	playerProfile,
+	rpcUrl,
 }: Param) => {
 	const mainServiceLive = createMainLiveService({
 		keypair,
@@ -36,8 +35,8 @@ export const runLoadCargo = async ({
 				items,
 				({ amount, mint }) =>
 					loadCargo({
-						fleetName,
-						resourceName: resourceMintToName[mint],
+						fleetAddress,
+						mint,
 						amount: amount,
 					}),
 				{ concurrency: 3 },

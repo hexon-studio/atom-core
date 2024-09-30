@@ -1,9 +1,8 @@
-import { Keypair, type PublicKey } from "@solana/web3.js";
+import { Keypair, PublicKey } from "@solana/web3.js";
 import * as bs58 from "bs58";
 import { Command, InvalidOptionArgumentError, Option } from "commander";
 import { zipWith } from "lodash";
 import { runLoadCargo } from "./commands/loadCargo";
-import type { ResourceMint } from "./constants/resources";
 import type { CargoPodKind } from "./types";
 import { parsePublicKey } from "./utils/public-key";
 
@@ -41,17 +40,19 @@ const program = new Command("atom")
 	);
 
 program
-	.command("load-cargo <fleetName>")
-	.option("--resourceMints <resourcesMints...>", "Food to load")
-	.option("-a, --requiredAmounts <resourceMinAmounts...>", "Required amounts")
-	.option("-c, --cargoTypes <resourceMinAmounts...>", "Cargo types")
+	.command("load-cargo")
+	.option("--fleet <fleet>", "The fleet address") // pbk
+	.option("--mints <mints...>", "Resources to load") // pbk
+	.option("--amounts <amounts...>", "The amount of each resource") // pbk
+	.option("--pods <pods...>", "Fleet cargo pods type") // fuel_tank, ammo_bank, cargo_hold
 	.action(
 		async (
 			fleetName: string,
 			options: {
-				resourceMints: string[];
-				requiredAmounts: string[];
-				cargoTypes: string[];
+				fleet: string;
+				mints: string[];
+				amounts: string[];
+				pods: string[];
 			},
 		) => {
 			const globalOpts = program.opts<{
@@ -63,13 +64,13 @@ program
 
 			return runLoadCargo({
 				...globalOpts,
-				fleetName,
+				fleetAddress: new PublicKey(options.fleet),
 				items: zipWith(
-					options.resourceMints,
-					options.requiredAmounts,
-					options.cargoTypes,
-					(mint, amount, cargoType) => ({
-						mint: mint as ResourceMint,
+					options.mints,
+					options.amounts,
+					options.pods,
+					(mint, amount, pod) => ({
+						mint: new PublicKey(mint),
 						amount: Number(amount),
 						cargoType: cargoType as CargoPodKind,
 					}),
@@ -77,5 +78,3 @@ program
 			});
 		},
 	);
-
-program.parse(process.argv);

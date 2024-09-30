@@ -6,7 +6,7 @@ import type {
 } from "@staratlas/data-source";
 import { ProfileVault } from "@staratlas/profile-vault";
 import { Data, Effect } from "effect";
-import { type GameNotInitializedError, gameContext } from "..";
+import { type GameNotInitializedError, getGameContext } from "..";
 import { GameService } from "../..";
 import { tokenMints } from "../../../../../constants/tokens";
 import {
@@ -61,7 +61,7 @@ export const buildAndSignTransactionWithAtlasPrime = (
 				SagePrograms,
 				solanaService.anchorProvider,
 				gameService.signer,
-				gameContext,
+				getGameContext(),
 				fetchDummyKeys(),
 			]),
 		),
