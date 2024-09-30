@@ -1,19 +1,19 @@
-import { Keypair } from "@solana/web3.js";
+import type { Keypair } from "@solana/web3.js";
 import { Layer } from "effect";
 import { GameServiceLive } from "../core/services/GameService";
 import { createSolanaServiceLive } from "../core/services/SolanaService";
 
 export const createMainLiveService = ({
-  keypair,
-  rpcUrl,
+	keypair,
+	rpcUrl,
 }: {
-  rpcUrl: string;
-  keypair: Keypair;
+	rpcUrl: string;
+	keypair: Keypair;
 }) => {
-  const SolanaServiceLive = createSolanaServiceLive({ rpcUrl, keypair });
+	const SolanaServiceLive = createSolanaServiceLive({ rpcUrl, keypair });
 
-  return Layer.mergeAll(
-    SolanaServiceLive,
-    GameServiceLive.pipe(Layer.provide(SolanaServiceLive))
-  );
+	return Layer.mergeAll(
+		SolanaServiceLive,
+		GameServiceLive.pipe(Layer.provide(SolanaServiceLive)),
+	);
 };
