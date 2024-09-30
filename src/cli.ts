@@ -1,29 +1,25 @@
 import { Keypair, PublicKey } from "@solana/web3.js";
 import bs58 from "bs58";
 import { Command, InvalidOptionArgumentError, Option } from "commander";
-import { Cause, Effect, Exit } from "effect";
-import { zipWith } from "lodash-es";
-import { ResourceMint, resourceMintToName } from "./constants/resources";
-import { loadCargo } from "./core/actions/loadCargo";
-import { GameService } from "./core/services/GameService";
-import { CargoPodKind } from "./types";
-import { createMainLiveService } from "./utils/createLiveService";
 import { parsePublicKey } from "./utils/public-key";
+import { createMainLiveService } from "./utils/createLiveService";
+import { zipWith } from "lodash-es";
+import { CargoPodKind } from "./types";
+import { Cause, Effect, Exit } from "effect";
+import { GameService } from "./core/services/GameService";
+import { loadCargo } from "./core/actions/loadCargo";
 
 const program = new Command("atom")
   .addOption(
     new Option(
-      "-o, --owner <publickKey>",
+      "-o, --owner <publicKey>",
       "The publicKey of the player's wallet"
     )
       .argParser(parsePublicKey)
       .makeOptionMandatory()
   )
   .addOption(
-    new Option(
-      "-p, --playerProfile <publickKey>",
-      "The publicKey of the player"
-    )
+    new Option("-p, --playerProfile <publicKey>", "The publicKey of the player")
       .argParser(parsePublicKey)
       .makeOptionMandatory()
   )
@@ -44,19 +40,18 @@ const program = new Command("atom")
   );
 
 program
-  .command("load-cargo <fleetName>")
-  .option("--resourceMints <resourcesMints...>", "Food to load")
-  .option("-a, --requiredAmounts <resourceMinAmounts...>", "Required amounts")
-  .option("-c, --cargoTypes <resourceMinAmounts...>", "Cargo types")
+  .command("load-cargo")
+  .option("--fleet <fleet>", "The fleet address") // pbk
+  .option("--mints <mints...>", "Resources to load") // pbk
+  .option("--amounts <amounts...>", "The amount of each resource") // pbk
+  .option("--pods <pods...>", "Fleet cargo pods type") // fuel_tank, ammo_bank, cargo_hold
   .action(
-    async (
-      fleetName: string,
-      options: {
-        resourceMints: string[];
-        requiredAmounts: String[];
-        cargoTypes: string[];
-      }
-    ) => {
+    async (options: {
+      fleet: string;
+      mints: string[];
+      amounts: String[];
+      pods: string[];
+    }) => {
       const { keypair, rpcUrl, owner, playerProfile } = program.opts<{
         owner: PublicKey;
         playerProfile: PublicKey;
@@ -69,12 +64,12 @@ program
         rpcUrl,
       });
 
-      const minResources = zipWith(
-        options.resourceMints,
-        options.requiredAmounts,
-        options.cargoTypes,
-        (mint, amout, cargoType) => [mint, amout, cargoType] as const
-      ) as [ResourceMint, string, CargoPodKind][];
+      const resourcesToLoad = zipWith(
+        options.mints,
+        options.amounts,
+        options.pods,
+        (mint, amount, pod) => [mint, amount, pod] as const
+      ) as [string, string, CargoPodKind][];
 
       await Effect.runPromiseExit(
         GameService.pipe(
@@ -85,12 +80,12 @@ program
         )
       );
 
-      for (const [resourceMint, amount] of minResources) {
+      for (const [mint, amount] of resourcesToLoad) {
         const exit = await Effect.runPromiseExit(
           loadCargo({
-            resourceName: resourceMintToName[resourceMint],
+            mint: new PublicKey(mint),
             amount: Number(amount),
-            fleetName,
+            fleetAddress: new PublicKey(options.fleet),
           }).pipe(Effect.provide(MainLive))
         );
 
