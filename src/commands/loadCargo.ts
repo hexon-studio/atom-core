@@ -2,7 +2,7 @@ import type { PublicKey } from "@solana/web3.js";
 import { Cause, Console, Effect, Exit, Option } from "effect";
 import { loadCargo } from "../core/actions/loadCargo";
 import { GameService } from "../core/services/GameService";
-import type { RequiredParam } from "../types";
+import type { CargoPodKind, RequiredParam } from "../types";
 import { createMainLiveService } from "../utils/createLiveService";
 
 type Param = RequiredParam & {
@@ -10,6 +10,7 @@ type Param = RequiredParam & {
 	items: Array<{
 		mint: PublicKey;
 		amount: number;
+		pod: string;
 	}>;
 };
 
@@ -32,11 +33,12 @@ export const runLoadCargo = async ({
 		),
 		Effect.tap(() => Console.log("Game initialized.")),
 		Effect.flatMap(() =>
-			Effect.forEach(items, ({ amount, mint }) =>
+			Effect.forEach(items, ({ amount, mint, pod }) =>
 				loadCargo({
 					fleetAddress,
 					mint,
 					amount: amount,
+					pod: pod as CargoPodKind,
 				}),
 			),
 		),

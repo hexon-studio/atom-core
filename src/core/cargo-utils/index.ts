@@ -62,12 +62,8 @@ export const getCurrentCargoDataByType = ({
 			Match.when("ammo_bank", () => new BN(cargoStats.ammoCapacity)),
 			Match.when("cargo_hold", () => new BN(cargoStats.cargoCapacity)),
 			Match.when("fuel_tank", () => new BN(cargoStats.fuelCapacity)),
-			Match.orElse(() => new BN(0)),
+			Match.exhaustive,
 		);
-
-		if (cargoPodMaxCapacity.eq(new BN(0))) {
-			return yield* Effect.fail(new InvalidPodMaxCapacityError());
-		}
 
 		const cargoPod = yield* getCargoPodAccount(cargoPodType);
 
@@ -75,20 +71,6 @@ export const getCurrentCargoDataByType = ({
 
 		const cargoPodTokenAccounts =
 			yield* gameService.utils.getParsedTokenAccountsByOwner(cargoPod.key);
-
-		// if (!cargoPodTokenAccounts.length) {
-		//   const cpe: CargoPodEnhanced = {
-		//     key: cargoPod.data.key,
-		//     loadedAmount: new BN(0),
-		//     resources: [],
-		//     maxCapacity: cargoPodMaxCapacity,
-		//     fullLoad: false,
-		//   };
-		//   return {
-		//     type: "Success" as const,
-		//     data: cpe,
-		//   };
-		// }
 
 		const resources = [];
 
@@ -99,8 +81,8 @@ export const getCurrentCargoDataByType = ({
 
 			resources.push({
 				mint: cargoPodTokenAccount.mint,
-				amount: new BN(cargoPodTokenAccount.amount),
-				spaceInCargo: new BN(cargoPodTokenAccount.amount).mul(
+				amount: new BN(cargoPodTokenAccount.amount.toString()),
+				spaceInCargo: new BN(cargoPodTokenAccount.amount.toString()).mul(
 					resourceSpaceInCargoPerUnit,
 				),
 				cargoTypeKey: cargoType.key,
@@ -108,20 +90,20 @@ export const getCurrentCargoDataByType = ({
 			});
 		}
 
-		let loadedAmount = new BN(0);
+		const loadedAmount = resources.reduce(
+			(acc, item) => acc.add(item.spaceInCargo),
+			new BN(0),
+		);
 
-		for (const item of resources) {
-			loadedAmount = loadedAmount.add(item.spaceInCargo);
-		}
-
-		// const cpe: CargoPodEnhanced = {
-		const cpe = {
+		return yield* Effect.succeed({
 			key: cargoPod.key,
 			loadedAmount,
 			resources,
 			maxCapacity: cargoPodMaxCapacity,
 			fullLoad: loadedAmount.eq(cargoPodMaxCapacity),
-		};
-
-		return yield* Effect.succeed(cpe);
+		});
 	});
+
+export type CargoPodEnhanced = Effect.Effect.Success<
+	ReturnType<typeof getCurrentCargoDataByType>
+>;

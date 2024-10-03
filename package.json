@@ -15,6 +15,7 @@
 		"@biomejs/biome": "^1.9.2",
 		"@total-typescript/ts-reset": "^0.6.1",
 		"@total-typescript/tsconfig": "^1.0.4",
+		"@types/bn.js": "^5.1.6",
 		"@types/lodash": "^4.17.9",
 		"@types/node": "^20",
 		"tsup": "^8.3.0",

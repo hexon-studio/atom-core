@@ -32,13 +32,13 @@ program
 	)
 	.requiredOption("--mints <mints...>", "Resources to load") // pbk
 	.requiredOption("--amounts <amounts...>", "The amount of each resource") // pbk
-	// .requiredOption("--pods <pods...>", "Fleet cargo pods type") // fuel_tank, ammo_bank, cargo_hold
+	.requiredOption("--pods <pods...>", "Fleet cargo pods type") // fuel_tank, ammo_bank, cargo_hold
 	.action(
 		async (options: {
 			fleet: PublicKey;
 			mints: string[];
 			amounts: string[];
-			// pods: string[];
+			pods: string[];
 		}) => {
 			const globalOpts = program.opts<{
 				owner: PublicKey;
@@ -53,10 +53,11 @@ program
 				items: lodash.zipWith(
 					options.mints,
 					options.amounts,
-					// options.pods,
-					(mint, amount) => ({
+					options.pods,
+					(mint, amount, pod) => ({
 						mint: new PublicKey(mint),
 						amount: Number(amount),
+						pod,
 					}),
 				),
 			});
