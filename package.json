@@ -1,12 +1,14 @@
 {
 	"name": "atom-core",
 	"version": "1.0.0",
-	"type": "commonjs",
+	"type": "module",
 	"scripts": {
 		"build": "tsup",
 		"dev": "tsx src/cli.ts",
 		"typecheck": "tsc --noEmit",
-		"lint": "biome check"
+		"lint": "biome check",
+		"test": "vitest --run",
+		"test:watch": "vitest"
 	},
 	"author": "",
 	"license": "ISC",
@@ -16,11 +18,14 @@
 		"@total-typescript/ts-reset": "^0.6.1",
 		"@total-typescript/tsconfig": "^1.0.4",
 		"@types/bn.js": "^5.1.6",
-		"@types/lodash": "^4.17.9",
+		"@types/mock-fs": "^4.13.4",
 		"@types/node": "^20",
+		"mock-fs": "^5.3.0",
 		"tsup": "^8.3.0",
 		"tsx": "^4.19.1",
-		"typescript": "^5.6.2"
+		"typescript": "^5.6.2",
+		"vite-tsconfig-paths": "^5.0.1",
+		"vitest": "^2.1.2"
 	},
 	"dependencies": {
 		"@solana/spl-token": "^0.4.8",
@@ -41,11 +46,12 @@
 		"@staratlas/profile-vault": "^0.11.0",
 		"@staratlas/sage": "^1.8.1",
 		"@staratlas/score": "^0.12.0",
+		"bn.js": "^5.2.1",
 		"bs58": "^5",
 		"commander": "^12.1.0",
 		"effect": "^3.8.4",
-		"lodash": "^4.17.21",
-		"ts-pattern": "^5.4.0"
+		"ts-pattern": "^5.4.0",
+		"zod": "^3.23.8"
 	},
 	"pnpm": {
 		"overrides": {

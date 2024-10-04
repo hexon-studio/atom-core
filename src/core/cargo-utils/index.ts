@@ -1,10 +1,10 @@
 import type { PublicKey } from "@solana/web3.js";
-import { BN } from "@staratlas/anchor";
 import {
 	type CargoStats,
 	type Fleet,
 	getCargoPodsByAuthority as sageGetCargoPodsByAuthority,
 } from "@staratlas/sage";
+import BN from "bn.js";
 import { Data, Effect, Match } from "effect";
 import type { CargoPodKind } from "../../types";
 import {

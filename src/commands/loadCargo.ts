@@ -8,9 +8,9 @@ import { createMainLiveService } from "../utils/createLiveService";
 type Param = RequiredParam & {
 	fleetAddress: PublicKey;
 	items: Array<{
-		mint: PublicKey;
+		resourceMint: PublicKey;
 		amount: number;
-		pod: string;
+		cargoPodKind: CargoPodKind;
 	}>;
 };
 
@@ -33,12 +33,12 @@ export const runLoadCargo = async ({
 		),
 		Effect.tap(() => Console.log("Game initialized.")),
 		Effect.flatMap(() =>
-			Effect.forEach(items, ({ amount, mint, pod }) =>
+			Effect.forEach(items, ({ amount, resourceMint, cargoPodKind }) =>
 				loadCargo({
 					fleetAddress,
-					mint,
+					resourceMint,
 					amount: amount,
-					pod: pod as CargoPodKind,
+					cargoPodKind,
 				}),
 			),
 		),

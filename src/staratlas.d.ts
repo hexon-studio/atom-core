@@ -1,0 +1,1 @@
+import "@staratlas/anchor";
