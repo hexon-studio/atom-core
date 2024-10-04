@@ -14,7 +14,7 @@ import { findGame } from "../../../services/GameService/methods/findGame";
 import { findPlanets } from "../../../services/GameService/methods/findPlanets";
 import { initGame } from "../../../services/GameService/methods/initGame";
 import { SolanaService } from "../../../services/SolanaService";
-import { getFleetAccount } from "../../accounts";
+import { getFleetAccount } from "../../../utils/accounts";
 import {
 	FleetNotInStarbaseError,
 	InvalidAmountError,

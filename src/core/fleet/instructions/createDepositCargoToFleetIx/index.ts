@@ -18,13 +18,13 @@ import {
 	getCargoStatDefinition,
 	getFleetAccount,
 	getStarbaseAccount,
-} from "../../accounts";
+} from "../../../utils/accounts";
 import {
 	getCargoTypeAddress,
 	getProfileFactionAddress,
 	getSagePlayerProfileAddress,
 	getStarbasePlayerAddress,
-} from "../../addresses";
+} from "../../../utils/pdas";
 import {
 	FleetCargoPodFullError,
 	FleetNotInStarbaseError,

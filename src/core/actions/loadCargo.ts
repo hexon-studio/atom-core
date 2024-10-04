@@ -1,7 +1,7 @@
 import type { PublicKey } from "@solana/web3.js";
 import { Console, Data, Effect } from "effect";
 import type { CargoPodKind } from "../../types";
-import { createDepositCargoToFleetIx } from "../fleet-utils/instructions";
+import { createDepositCargoToFleetIx } from "../fleet/instructions";
 import { GameService } from "../services/GameService";
 
 export class BuildOptinalTxError extends Data.TaggedError(

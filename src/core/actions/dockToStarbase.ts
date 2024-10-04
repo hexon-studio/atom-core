@@ -1,6 +1,6 @@
 import { Effect } from "effect";
-import { getFleetAddressByName } from "../fleet-utils/addresses";
-import { createDockToStarbaseIx } from "../fleet-utils/instructions";
+import { getFleetAddressByName } from "../utils/pdas";
+import { createDockToStarbaseIx } from "../fleet/instructions";
 import { GameService } from "../services/GameService";
 
 export const dockToStarbase = (fleetName: string) =>

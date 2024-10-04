@@ -1,7 +1,7 @@
 import type { PublicKey } from "@solana/web3.js";
 import { Data, Effect, Option, Ref } from "effect";
 import type { GameContext } from "../..";
-import { getGameAccount } from "../../../../fleet-utils/accounts";
+import { getGameAccount } from "../../../../utils/accounts";
 import { findGame } from "../findGame";
 
 export class AlreadyInitializedError extends Data.TaggedError(

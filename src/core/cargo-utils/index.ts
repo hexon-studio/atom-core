@@ -10,7 +10,7 @@ import type { CargoPodKind } from "../../types";
 import {
 	getCargoPodAccount,
 	getCargoTypeAccount,
-} from "../fleet-utils/accounts";
+} from "../utils/accounts";
 import { SagePrograms } from "../programs";
 import { GameService } from "../services/GameService";
 import { SolanaService } from "../services/SolanaService";

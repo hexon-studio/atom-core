@@ -7,8 +7,7 @@ import {
 	type StopMiningAsteroidInput,
 } from "@staratlas/sage";
 import BN from "bn.js";
-import { Data, Effect, Match, pipe } from "effect";
-import { isNone } from "effect/Option";
+import { Data, Effect, pipe } from "effect";
 import {
 	type ResourceMint,
 	type ResourceName,
@@ -17,10 +16,7 @@ import {
 } from "../../../constants/resources";
 import type { CargoPodKind } from "../../../types";
 import { getAssociatedTokenAddress } from "../../../utils/getAssociatedTokenAddress";
-import {
-	getCargoPodsByAuthority,
-	getCurrentCargoDataByType,
-} from "../../cargo-utils";
+import { getCurrentCargoDataByType } from "../../cargo-utils";
 import {
 	getCouncilRankXpKey,
 	getMiningXpKey,
@@ -30,22 +26,22 @@ import { SagePrograms } from "../../programs";
 import { GameService } from "../../services/GameService";
 import { getGameContext } from "../../services/GameService/utils";
 import {
+	getCargoStatDefinition,
 	getFleetAccount,
 	getMineItemAccount,
 	getPlanetAccount,
 	getResourceAccount,
 	getStarbaseAccount,
-} from "../accounts";
+} from "../../utils/accounts";
 import {
 	getCargoTypeAddress,
 	getMineItemAddress,
-	getPlanetAddressbyCoordinates,
 	getProfileFactionAddress,
 	getResourceAddress,
 	getSagePlayerProfileAddress,
 	getStarbaseAddressbyCoordinates,
 	getStarbasePlayerAddress,
-} from "../addresses";
+} from "../../utils/pdas";
 
 export class CreateIdleToLoadingBayIxError extends Data.TaggedError(
 	"CreateIdleToLoadingBayIxError",
@@ -316,69 +312,69 @@ export const createUndockFromStarbaseIx = (fleetPubkey: PublicKey) =>
 		);
 	});
 
-export const getTimeAndNeededResourcesToFullCargoInMining = (
-	fleetPubkey: PublicKey,
-	resourceName: ResourceName,
-	starbaseCoordinates: [BN, BN],
-) =>
-	Effect.gen(function* () {
-		const fleetAccount = yield* getFleetAccount(fleetPubkey);
+// export const getTimeAndNeededResourcesToFullCargoInMining = (
+// 	fleetPubkey: PublicKey,
+// 	resourceName: ResourceName,
+// 	starbaseCoordinates: [BN, BN],
+// ) =>
+// 	Effect.gen(function* () {
+// 		const fleetAccount = yield* getFleetAccount(fleetPubkey);
 
-		const fleetStats = fleetAccount.data.stats as ShipStats;
-		const cargoStats = fleetStats.cargoStats;
+// 		const fleetStats = fleetAccount.data.stats as ShipStats;
+// 		const cargoStats = fleetStats.cargoStats;
 
-		const mint = resourceNameToMint[resourceName];
+// 		const mint = resourceNameToMint[resourceName];
 
-		const mineItemPubkey = yield* getMineItemAddress(
-			fleetAccount.data.gameId,
-			mint,
-		);
+// 		const mineItemPubkey = yield* getMineItemAddress(
+// 			fleetAccount.data.gameId,
+// 			mint,
+// 		);
 
-		const mineItemAccount = yield* getMineItemAccount(mineItemPubkey);
+// 		const mineItemAccount = yield* getMineItemAccount(mineItemPubkey);
 
-		const starbasePubkey = yield* getStarbaseAddressbyCoordinates(
-			fleetAccount.data.gameId,
-			starbaseCoordinates,
-		);
-		const starbaseAccount = yield* getStarbaseAccount(starbasePubkey);
+// 		const starbasePubkey = yield* getStarbaseAddressbyCoordinates(
+// 			fleetAccount.data.gameId,
+// 			starbaseCoordinates,
+// 		);
+// 		const starbaseAccount = yield* getStarbaseAccount(starbasePubkey);
 
-		const planetPubkey = yield* getPlanetAddressbyCoordinates(
-			starbaseAccount.data.sector as [BN, BN],
-		);
+// 		const planetPubkey = yield* getPlanetAddressbyCoordinates(
+// 			starbaseAccount.data.sector as [BN, BN],
+// 		);
 
-		const resourcePubkey = yield* getResourceAddress(
-			mineItemPubkey,
-			planetPubkey,
-		);
-		const resourceAccount = yield* getResourceAccount(resourcePubkey);
+// 		const resourcePubkey = yield* getResourceAddress(
+// 			mineItemPubkey,
+// 			planetPubkey,
+// 		);
+// 		const resourceAccount = yield* getResourceAccount(resourcePubkey);
 
-		const timeInSeconds =
-			Fleet.calculateAsteroidMiningResourceExtractionDuration(
-				fleetStats,
-				mineItemAccount.data,
-				resourceAccount.data,
-				cargoStats.cargoCapacity,
-			);
+// 		const timeInSeconds =
+// 			Fleet.calculateAsteroidMiningResourceExtractionDuration(
+// 				fleetStats,
+// 				mineItemAccount.data,
+// 				resourceAccount.data,
+// 				cargoStats.cargoCapacity,
+// 			);
 
-		const food = Fleet.calculateAsteroidMiningFoodToConsume(
-			fleetStats,
-			999_999_999,
-			timeInSeconds,
-		);
+// 		const food = Fleet.calculateAsteroidMiningFoodToConsume(
+// 			fleetStats,
+// 			999_999_999,
+// 			timeInSeconds,
+// 		);
 
-		const ammo = Fleet.calculateAsteroidMiningAmmoToConsume(
-			fleetStats,
-			999_999_999,
-			timeInSeconds,
-		);
+// 		const ammo = Fleet.calculateAsteroidMiningAmmoToConsume(
+// 			fleetStats,
+// 			999_999_999,
+// 			timeInSeconds,
+// 		);
 
-		return {
-			fuel: fleetStats.movementStats.planetExitFuelAmount,
-			ammo,
-			food,
-			timeInSeconds,
-		};
-	});
+// 		return {
+// 			fuel: fleetStats.movementStats.planetExitFuelAmount,
+// 			ammo,
+// 			food,
+// 			timeInSeconds,
+// 		};
+// 	});
 
 export class FuelNotEnoughError extends Data.TaggedError(
 	"FuelNotEnoughError",
@@ -387,6 +383,7 @@ export class FuelNotEnoughError extends Data.TaggedError(
 export const createStartMiningIx = (
 	fleetPubkey: PublicKey,
 	resourceName: ResourceName,
+	planetPubkey: PublicKey,
 ) =>
 	Effect.gen(function* () {
 		const programs = yield* SagePrograms;
@@ -425,10 +422,6 @@ export const createStartMiningIx = (
 			starbaseAccount.data.seqId,
 		);
 
-		const planetKey = yield* getPlanetAddressbyCoordinates(
-			starbaseAccount.data.sector as [BN, BN],
-		);
-
 		const mint = resourceNameToMint[resourceName];
 
 		const mineItemKey = yield* getMineItemAddress(
@@ -436,7 +429,7 @@ export const createStartMiningIx = (
 			mint,
 		);
 
-		const resourceKey = yield* getResourceAddress(mineItemKey, planetKey);
+		const resourceKey = yield* getResourceAddress(mineItemKey, planetPubkey);
 
 		const profileFaction = yield* getProfileFactionAddress(playerProfile);
 
@@ -468,7 +461,7 @@ export const createStartMiningIx = (
 				starbasePlayerKey,
 				mineItemKey,
 				resourceKey,
-				planetKey,
+				planetPubkey,
 				context.game.data.gameState,
 				context.game.key,
 				fuelInTankData.tokenAccountKey,
@@ -563,17 +556,22 @@ export const createStopMiningIx = (fleetPubkey: PublicKey) =>
 
 		const cargoStatsDefinition = context.game.data.cargo.statsDefinition;
 
+		const cargoStatsDefinitionAccount = yield* getCargoStatDefinition(cargoStatsDefinition);
+
 		const foodCargoType = yield* getCargoTypeAddress(
 			gameFoodMint,
 			cargoStatsDefinition,
+			cargoStatsDefinitionAccount.data.seqId
 		);
 		const ammoCargoType = yield* getCargoTypeAddress(
 			gameAmmoMint,
 			cargoStatsDefinition,
+			cargoStatsDefinitionAccount.data.seqId
 		);
 		const resourceCargoType = yield* getCargoTypeAddress(
 			mint,
 			cargoStatsDefinition,
+			cargoStatsDefinitionAccount.data.seqId
 		);
 
 		const gameState = context.game.data.gameState;
@@ -613,6 +611,7 @@ export const createStopMiningIx = (fleetPubkey: PublicKey) =>
 		const fuelCargoType = yield* getCargoTypeAddress(
 			gameFuelMint,
 			cargoStatsDefinition,
+			cargoStatsDefinitionAccount.data.seqId
 		);
 
 		const fuelTokenFrom = fleetFuelToken;
@@ -704,147 +703,6 @@ export class StarbaseCargoPodEmptyError extends Data.TaggedError(
 		return `Starbase cargo pod for ${resourceMintToName[this.resourceMint.toString() as ResourceMint]} is empty`;
 	}
 }
-
-export class FleetCargoPodTokenAccountNotFoundError extends Data.TaggedError(
-	"FleetCargoPodTokenAccountNotFoundError",
-) {}
-
-export const createWithdrawCargoFromFleetIx = (
-	fleetAddress: PublicKey,
-	mint: PublicKey,
-	amount: number,
-	podKind: CargoPodKind,
-) =>
-	Effect.gen(function* () {
-		if (amount <= 0) {
-			return yield* Effect.fail(
-				new InvalidAmountError({ resourceMint: mint, amount }),
-			);
-		}
-
-		const isAllowed = Match.value(podKind).pipe(
-			Match.when("fuel_tank", () => mint.equals(resourceNameToMint.Fuel)),
-			Match.when("ammo_bank", () => mint.equals(resourceNameToMint.Ammunition)),
-			Match.when("cargo_hold", () => true),
-			Match.exhaustive,
-		);
-
-		if (!isAllowed) {
-			return yield* Effect.fail(new InvalidResourceForPodKind());
-		}
-
-		// Fleet data
-		const fleetAccount = yield* getFleetAccount(fleetAddress);
-
-		if (!fleetAccount.state.StarbaseLoadingBay) {
-			return yield* Effect.fail(new FleetNotInStarbaseError());
-		}
-
-		const gameService = yield* GameService;
-
-		// Player Profile
-		const playerProfilePubkey = fleetAccount.data.ownerProfile;
-
-		const sagePlayerProfilePubkey = yield* getSagePlayerProfileAddress(
-			fleetAccount.data.gameId,
-			playerProfilePubkey,
-		);
-
-		const profileFactionPubkey =
-			yield* getProfileFactionAddress(playerProfilePubkey);
-
-		const cargoPod = yield* getCurrentCargoDataByType({
-			fleetAccount,
-			type: podKind,
-		});
-
-		const maybeTokenAccountFrom = yield* pipe(
-			gameService.utils.getParsedTokenAccountsByOwner(cargoPod.key),
-			Effect.flatMap(
-				Effect.findFirst((account) =>
-					Effect.succeed(account.mint.toBase58() === mint.toBase58()),
-				),
-			),
-		);
-
-		if (isNone(maybeTokenAccountFrom)) {
-			return yield* Effect.fail(new FleetCargoPodTokenAccountNotFoundError());
-		}
-
-		const tokenAccountFromPubkey = maybeTokenAccountFrom.value.address;
-
-		// Starbase where the fleet is located
-		const starbasePubkey = fleetAccount.state.StarbaseLoadingBay.starbase;
-		const starbaseAccount = yield* getStarbaseAccount(starbasePubkey);
-
-		// PDA Starbase - Player
-		const starbasePlayerPubkey = yield* getStarbasePlayerAddress(
-			starbasePubkey,
-			sagePlayerProfilePubkey,
-			starbaseAccount.data.seqId,
-		);
-
-		// This PDA account is the owner of all player resource token accounts
-		// in the starbase where the fleet is located (Starbase Cargo Pods - Deposito merci nella Starbase)
-		const starbasePlayerCargoPodsAccount =
-			yield* getCargoPodsByAuthority(starbasePlayerPubkey);
-
-		const starbasePlayerCargoPodsPubkey = starbasePlayerCargoPodsAccount.key;
-
-		const tokenAccountToATA =
-			yield* gameService.utils.createAssociatedTokenAccountIdempotent(
-				mint,
-				starbasePlayerCargoPodsPubkey,
-				true,
-			);
-
-		const tokenAccountToPubkey = tokenAccountToATA.address;
-
-		const ix_0 = tokenAccountToATA.instructions;
-
-		const amountBN = BN.min(
-			new BN(amount),
-			new BN(maybeTokenAccountFrom.value.amount.toString()),
-		);
-
-		if (amountBN.lte(new BN(0))) {
-			return [ix_0];
-		}
-
-		const programs = yield* SagePrograms;
-
-		const context = yield* getGameContext();
-		const signer = yield* gameService.signer;
-		const gameId = context.game.key;
-		const gameState = context.game.data.gameState;
-		const cargoStatsDefinition = context.game.data.cargo.statsDefinition;
-
-		const cargoType = yield* getCargoTypeAddress(mint, cargoStatsDefinition);
-
-		const ix_1 = Fleet.withdrawCargoFromFleet(
-			programs.sage,
-			programs.cargo,
-			signer,
-			"funder",
-			playerProfilePubkey,
-			profileFactionPubkey,
-			starbasePubkey,
-			starbasePlayerPubkey,
-			fleetAddress,
-			cargoPod.key,
-			starbasePlayerCargoPodsPubkey,
-			cargoType,
-			cargoStatsDefinition,
-			tokenAccountFromPubkey,
-			tokenAccountToPubkey,
-			mint,
-			gameId,
-			gameState,
-			{ keyIndex: 1, amount: amountBN },
-		);
-
-		return [ix_0, ix_1];
-	});
 
 // export const createWarpToCoordinateIx = (
 //   fleetPubkey: PublicKey,

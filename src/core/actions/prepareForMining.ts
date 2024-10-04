@@ -1,8 +1,8 @@
-import BN from "bn.js";
+/* import BN from "bn.js";
 import { Effect, pipe } from "effect";
 import type { ResourceName } from "../../constants/resources";
-import { getFleetAddressByName } from "../fleet-utils/addresses";
-import { getTimeAndNeededResourcesToFullCargoInMining } from "../fleet-utils/instructions";
+import { getFleetAddressByName } from "../utils/pdas";
+import { getTimeAndNeededResourcesToFullCargoInMining } from "../fleet/instructions";
 
 export const prepareForMining = (
 	fleetName: string,
@@ -18,3 +18,4 @@ export const prepareForMining = (
 			]),
 		),
 	);
+ */

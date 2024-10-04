@@ -1,7 +1,7 @@
 import { Data, Effect } from "effect";
-import { getFleetAccount } from "../fleet-utils/accounts";
-import { getFleetAddressByName } from "../fleet-utils/addresses";
-import { createStopMiningIx } from "../fleet-utils/instructions";
+import { getFleetAccount } from "../utils/accounts";
+import { getFleetAddressByName } from "../utils/pdas";
+import { createStopMiningIx } from "../fleet/instructions";
 import { GameService } from "../services/GameService";
 
 export class FleetNotMiningError extends Data.TaggedError(

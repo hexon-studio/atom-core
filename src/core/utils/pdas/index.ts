@@ -12,10 +12,9 @@ import {
 	Starbase,
 	StarbasePlayer,
 } from "@staratlas/sage";
-import { Data, Effect, Option, Record } from "effect";
-import { SagePrograms, programIds } from "../../programs";
+import { Effect } from "effect";
+import { SagePrograms } from "../../programs";
 import { getGameContext } from "../../services/GameService/utils";
-import { SolanaService } from "../../services/SolanaService";
 
 export const getFleetAddressByName = (fleetName: string) =>
 	Effect.all([SagePrograms, getGameContext()]).pipe(
@@ -37,7 +36,7 @@ export const getFleetAddressByName = (fleetName: string) =>
 export const getCargoTypeAddress = (
 	mint: PublicKey,
 	cargoStatsDefinition: PublicKey,
-	cargoStatsDefinitionSeqId = 1,
+	cargoStatsDefinitionSeqId: number,
 ) =>
 	SagePrograms.pipe(
 		Effect.flatMap((programs) =>
@@ -87,38 +86,38 @@ export const getProfileFactionAddress = (playerProfile: PublicKey) =>
 		),
 	);
 
-export class GetPlayerProfileError extends Data.TaggedError(
-	"GetPlayerProfileError",
-)<{
-	readonly error: unknown;
-}> {}
+// export class GetPlayerProfileError extends Data.TaggedError(
+// 	"GetPlayerProfileError",
+// )<{
+// 	readonly error: unknown;
+// }> {}
 
-export const getPlayerProfileAddress = (playerPubkey: PublicKey) => {
-	return SolanaService.pipe(
-		Effect.flatMap((service) => service.anchorProvider),
-		Effect.flatMap((provider) =>
-			Effect.tryPromise({
-				try: () =>
-					provider.connection.getProgramAccounts(
-						new PublicKey(programIds.playerProfileProgramId),
-						{
-							filters: [
-								{
-									memcmp: {
-										offset: 30,
-										bytes: playerPubkey.toBase58(),
-									},
-								},
-							],
-						},
-					),
-				catch: (error) => new GetPlayerProfileError({ error }),
-			}),
-		),
-		Effect.head,
-		Effect.map((accountInfo) => accountInfo.pubkey),
-	);
-};
+// export const getPlayerProfileAddress = (playerPubkey: PublicKey) => {
+// 	return SolanaService.pipe(
+// 		Effect.flatMap((service) => service.anchorProvider),
+// 		Effect.flatMap((provider) =>
+// 			Effect.tryPromise({
+// 				try: () =>
+// 					provider.connection.getProgramAccounts(
+// 						new PublicKey(programIds.playerProfileProgramId),
+// 						{
+// 							filters: [
+// 								{
+// 									memcmp: {
+// 										offset: 30,
+// 										bytes: playerPubkey.toBase58(),
+// 									},
+// 								},
+// 							],
+// 						},
+// 					),
+// 				catch: (error) => new GetPlayerProfileError({ error }),
+// 			}),
+// 		),
+// 		Effect.head,
+// 		Effect.map((accountInfo) => accountInfo.pubkey),
+// 	);
+// };
 
 export const getSagePlayerProfileAddress = (
 	gameId: PublicKey,
@@ -165,22 +164,23 @@ export const getStarbaseAddressbyCoordinates = (
 			}),
 		),
 	);
-export class PlanetNotFoundError extends Data.TaggedError(
-	"PlanetNotFoundError",
-)<{
-	readonly coordinates: [BN, BN];
-}> {}
+	
+// export class PlanetNotFoundError extends Data.TaggedError(
+// 	"PlanetNotFoundError",
+// )<{
+// 	readonly coordinates: [BN, BN];
+// }> {}
 
-export const getPlanetAddressbyCoordinates = (coordinates: [BN, BN]) =>
-	getGameContext().pipe(
-		Effect.map((context) => context.planetsLookup),
-		Effect.map(Record.get(coordinates.toString())),
-		Effect.andThen((maybePlanetAddress) =>
-			Option.isSome(maybePlanetAddress)
-				? Effect.succeed(maybePlanetAddress.value)
-				: Effect.fail(new PlanetNotFoundError({ coordinates })),
-		),
-	);
+// export const getPlanetAddressbyCoordinates = (coordinates: [BN, BN]) =>
+// 	getGameContext().pipe(
+// 		Effect.map((context) => context.planetsLookup),
+// 		Effect.map(Record.get(coordinates.toString())),
+// 		Effect.andThen((maybePlanetAddress) =>
+// 			Option.isSome(maybePlanetAddress)
+// 				? Effect.succeed(maybePlanetAddress.value)
+// 				: Effect.fail(new PlanetNotFoundError({ coordinates })),
+// 		),
+// 	);
 
 export const getResourceAddress = (mint: PublicKey, planet: PublicKey) =>
 	SagePrograms.pipe(

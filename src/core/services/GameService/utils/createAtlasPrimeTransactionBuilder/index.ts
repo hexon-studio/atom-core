@@ -16,7 +16,7 @@ import {
 import {
 	type ReadFromRPCError,
 	getPlayerProfileAccout,
-} from "../../../../fleet-utils/accounts";
+} from "../../../../utils/accounts";
 import { SagePrograms } from "../../../../programs";
 import {
 	type CreateKeypairError,
