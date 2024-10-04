@@ -1,4 +1,4 @@
-import { BN } from "@staratlas/anchor";
+import BN from "bn.js";
 import { Effect, pipe } from "effect";
 import type { ResourceName } from "../../constants/resources";
 import { getFleetAddressByName } from "../fleet-utils/addresses";

@@ -15,23 +15,23 @@ export class BuildOptinalTxError extends Data.TaggedError(
 export const loadCargo = ({
 	amount,
 	fleetAddress,
-	mint,
-	pod,
+	resourceMint,
+	cargoPodKind,
 }: {
 	amount: number;
 	fleetAddress: PublicKey;
-	mint: PublicKey;
-	pod: CargoPodKind;
+	resourceMint: PublicKey;
+	cargoPodKind: CargoPodKind;
 }) =>
 	Effect.gen(function* () {
 		yield* Console.log(`Loading cargo to fleet ${fleetAddress}`);
 
-		const ixs = yield* createDepositCargoToFleetIx(
-			fleetAddress,
-			mint,
+		const ixs = yield* createDepositCargoToFleetIx({
 			amount,
-			pod,
-		);
+			fleetAddress,
+			resourceMint,
+			cargoPodKind,
+		});
 
 		const gameService = yield* GameService;
 
