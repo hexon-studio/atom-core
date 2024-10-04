@@ -14,6 +14,8 @@ import {
 import { SagePrograms } from "../programs";
 import { GameService } from "../services/GameService";
 import { SolanaService } from "../services/SolanaService";
+import { getCargoTypeAddress } from "../utils/pdas";
+import { getGameContext } from "../services/GameService/utils";
 
 export class GetCargoPodsByAuthorityError extends Data.TaggedError(
 	"GetCargoPodsByAuthorityError",
@@ -68,6 +70,7 @@ export const getCurrentCargoDataByType = ({
 		const cargoPod = yield* getCargoPodAccount(cargoPodType);
 
 		const gameService = yield* GameService;
+		const context = yield* getGameContext();
 
 		const cargoPodTokenAccounts =
 			yield* gameService.utils.getParsedTokenAccountsByOwner(cargoPod.key);
@@ -75,7 +78,8 @@ export const getCurrentCargoDataByType = ({
 		const resources = [];
 
 		for (const cargoPodTokenAccount of cargoPodTokenAccounts) {
-			const cargoType = yield* getCargoTypeAccount(cargoPodTokenAccount.mint);
+			const cargoTypeKey = yield* getCargoTypeAddress(cargoPodTokenAccount.mint, context.cargoStatsDefinition);
+			const cargoType = yield* getCargoTypeAccount(cargoTypeKey);
 
 			const resourceSpaceInCargoPerUnit = cargoType.stats[0] as BN;
 

@@ -26,7 +26,7 @@ import { SagePrograms } from "../../programs";
 import { GameService } from "../../services/GameService";
 import { getGameContext } from "../../services/GameService/utils";
 import {
-	getCargoStatDefinition,
+	getCargoStatsDefinition,
 	getFleetAccount,
 	getMineItemAccount,
 	getPlanetAccount,
@@ -554,24 +554,21 @@ export const createStopMiningIx = (fleetPubkey: PublicKey) =>
 		const fleetKey = fleetAccount.key;
 		const ammoBank = fleetAccount.data.ammoBank;
 
-		const cargoStatsDefinition = context.game.data.cargo.statsDefinition;
+		const cargoStatsDefinitionKey = context.game.data.cargo.statsDefinition;
 
-		const cargoStatsDefinitionAccount = yield* getCargoStatDefinition(cargoStatsDefinition);
+		const cargoStatsDefinition = yield* getCargoStatsDefinition(cargoStatsDefinitionKey);
 
 		const foodCargoType = yield* getCargoTypeAddress(
 			gameFoodMint,
-			cargoStatsDefinition,
-			cargoStatsDefinitionAccount.data.seqId
+			cargoStatsDefinition
 		);
 		const ammoCargoType = yield* getCargoTypeAddress(
 			gameAmmoMint,
-			cargoStatsDefinition,
-			cargoStatsDefinitionAccount.data.seqId
+			cargoStatsDefinition
 		);
 		const resourceCargoType = yield* getCargoTypeAddress(
 			mint,
-			cargoStatsDefinition,
-			cargoStatsDefinitionAccount.data.seqId
+			cargoStatsDefinition
 		);
 
 		const gameState = context.game.data.gameState;
@@ -594,7 +591,7 @@ export const createStopMiningIx = (fleetPubkey: PublicKey) =>
 			foodCargoType,
 			ammoCargoType,
 			resourceCargoType,
-			cargoStatsDefinition,
+			cargoStatsDefinition.key,
 			gameState,
 			gameId,
 			foodTokenFrom,
@@ -610,8 +607,7 @@ export const createStopMiningIx = (fleetPubkey: PublicKey) =>
 
 		const fuelCargoType = yield* getCargoTypeAddress(
 			gameFuelMint,
-			cargoStatsDefinition,
-			cargoStatsDefinitionAccount.data.seqId
+			cargoStatsDefinition
 		);
 
 		const fuelTokenFrom = fleetFuelToken;
@@ -635,7 +631,7 @@ export const createStopMiningIx = (fleetPubkey: PublicKey) =>
 			planetKey,
 			fuelTank,
 			fuelCargoType,
-			cargoStatsDefinition,
+			cargoStatsDefinition.key,
 			miningXpKey,
 			//@ts-ignore
 			context.game.data.points.miningXpCategory.category,

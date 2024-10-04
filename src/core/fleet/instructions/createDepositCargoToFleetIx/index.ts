@@ -15,7 +15,7 @@ import { GameService } from "../../../services/GameService";
 import { getGameContext } from "../../../services/GameService/utils";
 import { SolanaService } from "../../../services/SolanaService";
 import {
-	getCargoStatDefinition,
+	getCargoStatsDefinition,
 	getFleetAccount,
 	getStarbaseAccount,
 } from "../../../utils/accounts";
@@ -167,8 +167,9 @@ export const createDepositCargoToFleetIx = ({
 		const anchorProvider = yield* solanaService.anchorProvider;
 
 		const starbasePodMintAta = yield* getAssociatedTokenAddress(
-			starbasePlayerCargoPodsPubkey,
 			resourceMint,
+			starbasePlayerCargoPodsPubkey,
+			true
 		);
 
 		const starbasePodMintAtaBalance = yield* Effect.tryPromise({
@@ -196,14 +197,13 @@ export const createDepositCargoToFleetIx = ({
 		const gameId = context.game.key;
 		const gameState = context.game.data.gameState;
 
-		const cargoStatsDefinition = yield* getCargoStatDefinition(
+		const cargoStatsDefinition = yield* getCargoStatsDefinition(
 			context.game.data.cargo.statsDefinition,
 		);
 
 		const cargoType = yield* getCargoTypeAddress(
 			resourceMint,
-			cargoStatsDefinition.key,
-			cargoStatsDefinition.data.seqId,
+			cargoStatsDefinition
 		);
 
 		const ix_1 = Fleet.depositCargoToFleet(

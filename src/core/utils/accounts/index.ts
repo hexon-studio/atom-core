@@ -10,6 +10,7 @@ import { PlayerProfile } from "@staratlas/player-profile";
 import {
 	Fleet,
 	Game,
+	GameState,
 	MineItem,
 	Planet,
 	Resource,
@@ -57,6 +58,24 @@ export const getGameAccount = (gamePublicKey: PublicKey) =>
 		),
 	);
 
+export const getGameStateAccount = (gameStatePublicKey: PublicKey) =>
+	SagePrograms.pipe(
+		Effect.flatMap((programs) =>
+			readFromSage(programs.sage, gameStatePublicKey, GameState),
+		),
+	);
+
+export const getCargoStatsDefinition = (cargoStatsDefPublicKey: PublicKey) =>
+	SagePrograms.pipe(
+		Effect.flatMap((programs) =>
+			readFromSage(
+				programs.cargo,
+				cargoStatsDefPublicKey,
+				CargoStatsDefinition,
+			),
+		),
+	);
+
 export const getFleetAccount = (fleetPubkey: PublicKey) =>
 	SagePrograms.pipe(
 		Effect.flatMap((programs) =>
@@ -96,17 +115,6 @@ export const getStarbaseAccount = (starbasePubkey: PublicKey) =>
 	SagePrograms.pipe(
 		Effect.flatMap((programs) =>
 			readFromSage(programs.sage, starbasePubkey, Starbase),
-		),
-	);
-
-export const getCargoStatDefinition = (cargoStatsDefPublicKey: PublicKey) =>
-	SagePrograms.pipe(
-		Effect.flatMap((programs) =>
-			readFromSage(
-				programs.cargo,
-				cargoStatsDefPublicKey,
-				CargoStatsDefinition,
-			),
 		),
 	);
 

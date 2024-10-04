@@ -10,7 +10,7 @@ import { getCurrentCargoDataByType } from "../../../cargo-utils";
 import { SagePrograms } from "../../../programs";
 import { GameService } from "../../../services/GameService";
 import { getGameContext } from "../../../services/GameService/utils";
-import { getFleetAccount, getStarbaseAccount, getCargoStatDefinition } from "../../../utils/accounts";
+import { getFleetAccount, getStarbaseAccount, getCargoStatsDefinition } from "../../../utils/accounts";
 import { getSagePlayerProfileAddress, getProfileFactionAddress, getStarbasePlayerAddress, getCargoTypeAddress } from "../../../utils/pdas";
 import { InvalidAmountError, InvalidResourceForPodKind, FleetNotInStarbaseError } from "../ixs";
 
@@ -127,11 +127,11 @@ export const createWithdrawCargoFromFleetIx = (
 		const gameId = context.game.key;
 		const gameState = context.game.data.gameState;
 		
-		const cargoStatsDefinition = context.game.data.cargo.statsDefinition;
+		const cargoStatsDefinitionKey = context.game.data.cargo.statsDefinition;
 
-		const cargoStatsDefinitionAccount = yield* getCargoStatDefinition(cargoStatsDefinition);
+		const cargoStatsDefinition = yield* getCargoStatsDefinition(cargoStatsDefinitionKey);
 
-		const cargoType = yield* getCargoTypeAddress(mint, cargoStatsDefinition, cargoStatsDefinitionAccount.data.seqId);
+		const cargoType = yield* getCargoTypeAddress(mint, cargoStatsDefinition);
 
 		const ix_1 = Fleet.withdrawCargoFromFleet(
 			programs.sage,
@@ -146,7 +146,7 @@ export const createWithdrawCargoFromFleetIx = (
 			cargoPod.key,
 			starbasePlayerCargoPodsPubkey,
 			cargoType,
-			cargoStatsDefinition,
+			cargoStatsDefinition.key,
 			tokenAccountFromPubkey,
 			tokenAccountToPubkey,
 			mint,

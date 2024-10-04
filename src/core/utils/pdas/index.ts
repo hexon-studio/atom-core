@@ -1,6 +1,6 @@
 import { PublicKey } from "@solana/web3.js";
 import type { BN } from "@staratlas/anchor";
-import { CargoType } from "@staratlas/cargo";
+import { CargoStatsDefinition, CargoType } from "@staratlas/cargo";
 import { stringToByteArray } from "@staratlas/data-source";
 import { ProfileFactionAccount } from "@staratlas/profile-faction";
 import {
@@ -35,17 +35,16 @@ export const getFleetAddressByName = (fleetName: string) =>
 
 export const getCargoTypeAddress = (
 	mint: PublicKey,
-	cargoStatsDefinition: PublicKey,
-	cargoStatsDefinitionSeqId: number,
+	cargoStatsDefinition: CargoStatsDefinition
 ) =>
 	SagePrograms.pipe(
 		Effect.flatMap((programs) =>
 			Effect.try(() => {
 				const [cargoType] = CargoType.findAddress(
 					programs.cargo,
-					cargoStatsDefinition,
+					cargoStatsDefinition.key,
 					mint,
-					cargoStatsDefinitionSeqId,
+					cargoStatsDefinition.data.seqId,
 				);
 
 				return cargoType;
