@@ -1,9 +1,18 @@
 {
-	"name": "atom-core",
+	"name": "@atom/core",
 	"version": "1.0.0",
 	"type": "module",
+	"main": "dist/main.cjs",
+	"exports": {
+		"./package.json": "./package.json",
+		".": {
+			"import": "./dist/main.js",
+			"require": "./dist/main.cjs"
+		}
+	},
 	"scripts": {
 		"build": "tsup",
+		"check-exports": "attw --pack .",
 		"dev": "tsx src/cli.ts",
 		"typecheck": "tsc --noEmit",
 		"lint": "biome check",
@@ -14,6 +23,7 @@
 	"license": "ISC",
 	"description": "",
 	"devDependencies": {
+		"@arethetypeswrong/cli": "^0.16.4",
 		"@biomejs/biome": "^1.9.2",
 		"@total-typescript/ts-reset": "^0.6.1",
 		"@total-typescript/tsconfig": "^1.0.4",
