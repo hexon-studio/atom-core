@@ -20,7 +20,8 @@ import {
 	getSagePlayerProfileAddress,
 	getStarbasePlayerAddress,
 } from "../../../utils/pdas";
-import { FleetNotInStarbaseError } from "../../errors";
+import { InvalidFleetStateError } from "../../errors";
+import { getCurrentFleetStateName } from "../../utils/getCurrentFleetStateName";
 import { InvalidAmountError, InvalidResourceForPodKind } from "../ixs";
 import { getCargoPodsByAuthority } from "./../../../cargo-utils";
 
@@ -58,7 +59,14 @@ export const createWithdrawCargoFromFleetIx = ({
 		const fleetAccount = yield* getFleetAccount(fleetAddress);
 
 		if (!fleetAccount.state.StarbaseLoadingBay) {
-			return yield* Effect.fail(new FleetNotInStarbaseError());
+			const fleetStateName = getCurrentFleetStateName(fleetAccount.state);
+
+			return yield* Effect.fail(
+				new InvalidFleetStateError({
+					state: fleetStateName,
+					reason: "Fleet is not in a starbase",
+				}),
+			);
 		}
 
 		const gameService = yield* GameService;

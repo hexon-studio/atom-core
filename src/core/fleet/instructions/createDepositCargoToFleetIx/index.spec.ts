@@ -12,7 +12,7 @@ import type { CargoPodKind } from "../../../../types";
 import { type GameContext, GameService } from "../../../services/GameService";
 import { findFleets } from "../../../services/GameService/methods/findFleets";
 import { findGame } from "../../../services/GameService/methods/findGame";
-import { findPlanets } from "../../../services/GameService/methods/findPlanets";
+import { findAllPlanets } from "../../../services/GameService/methods/findPlanets";
 import { initGame } from "../../../services/GameService/methods/initGame";
 import { SolanaService } from "../../../services/SolanaService";
 import { getFleetAccount } from "../../../utils/accounts";
@@ -49,7 +49,7 @@ const MockedGameService = Layer.effect(
 			methods: {
 				initGame,
 				findFleets,
-				findPlanets,
+				findPlanets: findAllPlanets,
 				findGame,
 			},
 			signer: SolanaService.pipe(

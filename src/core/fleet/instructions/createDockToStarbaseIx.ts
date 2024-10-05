@@ -1,12 +1,9 @@
 import { Keypair, type PublicKey } from "@solana/web3.js";
+import type { InstructionReturn } from "@staratlas/data-source";
 import { Fleet, StarbasePlayer } from "@staratlas/sage";
-import { Effect, Match, Option } from "effect";
-import { resourceNameToMint } from "../../../constants/resources";
+import { Effect, Option } from "effect";
+import { isNone } from "effect/Option";
 import { getCargoPodsByAuthority } from "../../cargo-utils";
-import {
-	getCouncilRankXpKey,
-	getPilotXpKey,
-} from "../../points-utils/accounts";
 import { SagePrograms } from "../../programs";
 import { GameService } from "../../services/GameService";
 import { getGameContext } from "../../services/GameService/utils";
@@ -16,17 +13,36 @@ import {
 	getStarbasePlayerAccount,
 } from "../../utils/accounts";
 import {
-	getCargoTypeAddress,
 	getProfileFactionAddress,
 	getSagePlayerProfileAddress,
 	getStarbaseAddressbyCoordinates,
 	getStarbasePlayerAddress,
 } from "../../utils/pdas";
-import { getCurrentFleetSectorCoordinates } from "../utils/getCurrentFleetSector";
+import { InvalidFleetStateError } from "../errors";
+import { getCurrentFleetSectorCoordinates } from "../utils/getCurrentFleetSectorCoordinates";
+import { createMovementHandlerIx } from "./createMovementHandlerIx";
 
 export const createDockToStarbaseIx = (fleetAddress: PublicKey) =>
 	Effect.gen(function* () {
 		const fleetAccount = yield* getFleetAccount(fleetAddress);
+
+		if (fleetAccount.state.StarbaseLoadingBay) {
+			return yield* Effect.fail(
+				new InvalidFleetStateError({
+					state: "StarbaseLoadingBay",
+					reason: "Fleet is already docked to a starbase",
+				}),
+			);
+		}
+
+		if (fleetAccount.state.MineAsteroid) {
+			return yield* Effect.fail(
+				new InvalidFleetStateError({
+					state: "MineAsteroid",
+					reason: "Fleet is currently mining on an asteroid",
+				}),
+			);
+		}
 
 		const gameService = yield* GameService;
 		const signer = yield* gameService.signer;
@@ -40,7 +56,9 @@ export const createDockToStarbaseIx = (fleetAddress: PublicKey) =>
 			fleetAccount.data.ownerProfile,
 		);
 
-		const fleetCoords = yield* getCurrentFleetSectorCoordinates(fleetAccount);
+		const fleetCoords = yield* getCurrentFleetSectorCoordinates(
+			fleetAccount.state,
+		);
 
 		const starbaseAddress = yield* getStarbaseAddressbyCoordinates(
 			fleetAccount.data.gameId,
@@ -57,9 +75,9 @@ export const createDockToStarbaseIx = (fleetAddress: PublicKey) =>
 
 		const starbasePlayerAccount = yield* getStarbasePlayerAccount(
 			starbasePlayerAddress,
-		);
+		).pipe(Effect.option);
 
-		const ixs = [];
+		const ixs: InstructionReturn[] = [];
 
 		const programs = yield* SagePrograms;
 
@@ -68,7 +86,7 @@ export const createDockToStarbaseIx = (fleetAddress: PublicKey) =>
 		const gameId = context.game.key;
 		const gameState = context.game.data.gameState;
 
-		if (!starbasePlayerAccount) {
+		if (isNone(starbasePlayerAccount)) {
 			const ix_0 = StarbasePlayer.registerStarbasePlayer(
 				programs.sage,
 				playerFactionAddress,
@@ -110,72 +128,9 @@ export const createDockToStarbaseIx = (fleetAddress: PublicKey) =>
 			ixs.push(ix_1);
 		}
 
-		const pilotXpKey = yield* getPilotXpKey(context.playerProfile);
-		const councilRankXpKey = yield* getCouncilRankXpKey(context.playerProfile);
+		const maybeMoveHandlerIx = yield* createMovementHandlerIx(fleetAccount);
 
-		const cargoTypeAddress = yield* getCargoTypeAddress(
-			resourceNameToMint.Fuel,
-			context.cargoStatsDefinition,
-		);
-
-		const { address: fuelTankAta } =
-			yield* gameService.utils.createAssociatedTokenAccountIdempotent(
-				resourceNameToMint.Fuel,
-				fleetAccount.data.fuelTank,
-				true,
-			);
-
-		const maybeMoveHandlerIx = Match.value(fleetAccount.state).pipe(
-			Match.when({ MoveWarp: {} }, () =>
-				Fleet.moveWarpHandler(
-					programs.sage,
-					programs.points,
-					context.playerProfile,
-					fleetAddress,
-					pilotXpKey,
-					// @ts-ignore
-					context.game.data.points.pilotXpCategory.category,
-					// @ts-ignore
-					context.game.data.points.pilotXpCategory.modifier,
-					councilRankXpKey,
-					// @ts-ignore
-					context.game.data.points.councilRankXpCategory.category,
-					// @ts-ignore
-					context.game.data.points.councilRankXpCategory.modifier,
-					gameId,
-				),
-			),
-			Match.when({ MoveSubwarp: {} }, () =>
-				Fleet.movementSubwarpHandler(
-					programs.sage,
-					programs.cargo,
-					programs.points,
-					context.playerProfile,
-					fleetAddress,
-					fleetAccount.data.fuelTank,
-					cargoTypeAddress,
-					context.cargoStatsDefinition.key,
-					fuelTankAta,
-					resourceNameToMint.Fuel,
-					pilotXpKey,
-					// @ts-ignore
-					context.game.data.points.pilotXpCategory.category,
-					// @ts-ignore
-					context.game.data.points.pilotXpCategory.modifier,
-					councilRankXpKey,
-					// @ts-ignore
-					context.game.data.points.councilRankXpCategory.category,
-					// @ts-ignore
-					context.game.data.points.councilRankXpCategory.modifier,
-					gameId,
-				),
-			),
-			Match.orElse(() => null),
-		);
-
-		if (maybeMoveHandlerIx) {
-			ixs.push(maybeMoveHandlerIx);
-		}
+		ixs.push(...maybeMoveHandlerIx);
 
 		const dockIx = Fleet.idleToLoadingBay(
 			programs.sage,

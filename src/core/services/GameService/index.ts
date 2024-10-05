@@ -6,7 +6,7 @@ import { Context, Effect, Layer, Option, Ref } from "effect";
 import { type CreateKeypairError, SolanaService } from "../SolanaService";
 import { type FindFleets, findFleets } from "./methods/findFleets";
 import { type FindGame, findGame } from "./methods/findGame";
-import { type FindPlanets, findPlanets } from "./methods/findPlanets";
+import { type FindPlanets, findAllPlanets } from "./methods/findPlanets";
 import { type InitGame, initGame } from "./methods/initGame";
 import {
 	type BuildAndSignTransaction,
@@ -69,7 +69,7 @@ export const GameServiceLive = Layer.effect(
 			methods: {
 				initGame,
 				findFleets,
-				findPlanets,
+				findPlanets: findAllPlanets,
 				findGame,
 			},
 			signer: SolanaService.pipe(

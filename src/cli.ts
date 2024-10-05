@@ -4,6 +4,7 @@ import { Array as EffectArray, pipe } from "effect";
 import { z } from "zod";
 import { runDock } from "./commands/dock";
 import { runLoadCargo } from "./commands/loadCargo";
+import { runStartMining } from "./commands/startMining";
 import { runUndock } from "./commands/undock";
 import { runUnloadCargo } from "./commands/unloadCargo";
 import { cargoPodKindDecoder } from "./types";
@@ -159,6 +160,31 @@ const main = async () => {
 
 			return runUndock({
 				...globalOpts,
+				fleetNameOrAddress: isPublicKey(fleetNameOrAddress)
+					? new PublicKey(fleetNameOrAddress)
+					: fleetNameOrAddress,
+			});
+		});
+
+	program
+		.command("start-mining")
+		.argument("<fleetNameOrAddress>", "The fleet to start mining")
+		.argument(
+			"<resourceMint>",
+			"The mint of the resource to mine",
+			parsePublicKey,
+		)
+		.action(async (fleetNameOrAddress: string, resourceMint: PublicKey) => {
+			const globalOpts = program.opts<{
+				owner: PublicKey;
+				playerProfile: PublicKey;
+				keypair: Keypair;
+				rpcUrl: string;
+			}>();
+
+			return runStartMining({
+				...globalOpts,
+				resourceMint,
 				fleetNameOrAddress: isPublicKey(fleetNameOrAddress)
 					? new PublicKey(fleetNameOrAddress)
 					: fleetNameOrAddress,

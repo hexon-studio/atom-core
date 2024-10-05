@@ -2,20 +2,16 @@ import type { PublicKey } from "@solana/web3.js";
 import {
 	Fleet,
 	type ShipStats,
-	type StartMiningAsteroidInput,
 	type StopMiningAsteroidInput,
 } from "@staratlas/sage";
 import type BN from "bn.js";
 import { Data, Effect } from "effect";
 import {
 	type ResourceMint,
-	type ResourceName,
 	resourceMintToName,
-	resourceNameToMint,
 } from "../../../constants/resources";
 import type { CargoPodKind } from "../../../types";
 import { getAssociatedTokenAddress } from "../../../utils/getAssociatedTokenAddress";
-import { getFleetCargoPodInfoByType } from "../../cargo-utils";
 import {
 	getCouncilRankXpKey,
 	getMiningXpKey,
@@ -30,18 +26,13 @@ import {
 	getMineItemAccount,
 	getPlanetAccount,
 	getResourceAccount,
-	getStarbaseAccount,
 } from "../../utils/accounts";
 import {
 	getCargoTypeAddress,
-	getMineItemAddress,
 	getProfileFactionAddress,
-	getResourceAddress,
-	getSagePlayerProfileAddress,
 	getStarbaseAddressbyCoordinates,
-	getStarbasePlayerAddress,
 } from "../../utils/pdas";
-import { FleetNotIdleError } from "../errors";
+import { FleetNotIdleError, FleetNotMintingError } from "../errors";
 
 export class NoEnoughRepairKitsError extends Data.TaggedError(
 	"NoEnoughRepairKitsError",
@@ -232,104 +223,6 @@ export class NoEnoughRepairKitsError extends Data.TaggedError(
 // 			timeInSeconds,
 // 		};
 // 	});
-
-export class FuelNotEnoughError extends Data.TaggedError(
-	"FuelNotEnoughError",
-) {}
-
-export const createStartMiningIx = (
-	fleetPubkey: PublicKey,
-	resourceName: ResourceName,
-	planetPubkey: PublicKey,
-) =>
-	Effect.gen(function* () {
-		const programs = yield* SagePrograms;
-		const signer = yield* GameService.pipe(
-			Effect.flatMap((service) => service.signer),
-		);
-		const context = yield* getGameContext();
-		const fleetAccount = yield* getFleetAccount(fleetPubkey);
-
-		// TODO: ensure fleet state is "Idle" - is there a better way to do this?
-		if (!fleetAccount.state.Idle) {
-			return yield* Effect.fail(new FleetNotIdleError());
-		}
-
-		// TODO: is there a better way determine if anything is mineable (mint) at this 'location'?
-		// see `getPlanetAddress` in sageGameHandler.ts (cache of planet addresses on load)
-		const coordinates = fleetAccount.state.Idle.sector as [BN, BN];
-
-		const starbaseKey = yield* getStarbaseAddressbyCoordinates(
-			fleetAccount.data.gameId,
-			coordinates,
-		);
-
-		const starbaseAccount = yield* getStarbaseAccount(starbaseKey);
-
-		const playerProfile = fleetAccount.data.ownerProfile;
-
-		const sagePlayerProfile = yield* getSagePlayerProfileAddress(
-			fleetAccount.data.gameId,
-			playerProfile,
-		);
-
-		const starbasePlayerKey = yield* getStarbasePlayerAddress(
-			starbaseKey,
-			sagePlayerProfile,
-			starbaseAccount.data.seqId,
-		);
-
-		const mint = resourceNameToMint[resourceName];
-
-		const mineItemKey = yield* getMineItemAddress(
-			fleetAccount.data.gameId,
-			mint,
-		);
-
-		const resourceKey = yield* getResourceAddress(mineItemKey, planetPubkey);
-
-		const profileFaction = yield* getProfileFactionAddress(playerProfile);
-
-		const fleetKey = fleetAccount.key;
-
-		const input = { keyIndex: 0 } as StartMiningAsteroidInput;
-
-		const fuelTank = yield* getFleetCargoPodInfoByType({
-			type: "fuel_tank",
-			fleetAccount,
-		});
-
-		const fuelInTankData = fuelTank.resources.find((item) =>
-			item.mint.equals(resourceNameToMint.Fuel),
-		);
-
-		if (!fuelInTankData) {
-			return yield* Effect.fail(new FuelNotEnoughError());
-		}
-
-		return yield* Effect.try(() =>
-			Fleet.startMiningAsteroid(
-				programs.sage,
-				signer,
-				playerProfile,
-				profileFaction,
-				fleetKey,
-				starbaseKey,
-				starbasePlayerKey,
-				mineItemKey,
-				resourceKey,
-				planetPubkey,
-				context.game.data.gameState,
-				context.game.key,
-				fuelInTankData.tokenAccountKey,
-				input,
-			),
-		);
-	});
-
-export class FleetNotMintingError extends Data.TaggedError(
-	"FleetNotMintingError",
-) {}
 
 export const createStopMiningIx = (fleetPubkey: PublicKey) =>
 	Effect.gen(function* () {

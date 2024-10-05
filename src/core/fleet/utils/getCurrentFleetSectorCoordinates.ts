@@ -1,10 +1,12 @@
-import type { Fleet } from "@staratlas/sage";
+import type { FleetStateData } from "@staratlas/sage";
 import type BN from "bn.js";
 import { Effect, Match } from "effect";
 import { getPlanetAccount, getStarbaseAccount } from "../../utils/accounts";
 
-export const getCurrentFleetSectorCoordinates = (fleet: Fleet) => {
-	return Match.value(fleet.state).pipe(
+export const getCurrentFleetSectorCoordinates = (
+	fleetState: Readonly<FleetStateData>,
+) => {
+	return Match.value(fleetState).pipe(
 		Match.when({ MoveWarp: Match.defined }, ({ MoveWarp: { toSector } }) =>
 			Effect.succeed(toSector as [BN, BN]),
 		),

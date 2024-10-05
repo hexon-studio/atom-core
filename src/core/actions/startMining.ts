@@ -1,40 +1,40 @@
-import { PublicKey } from "@solana/web3.js";
+import type { PublicKey } from "@solana/web3.js";
 import { Effect } from "effect";
-import type { ResourceName } from "../../constants/resources";
-import { FleetNotIdleError } from "../fleet/errors";
+import { isPublicKey } from "../../utils/public-key";
 import { createStartMiningIx } from "../fleet/instructions";
 import { GameService } from "../services/GameService";
-import { getFleetAccount } from "../utils/accounts";
 import { getFleetAddressByName } from "../utils/pdas";
 
-export const startMining = (
-	fleetName: string,
-	resource: ResourceName,
-	time: number,
-) =>
+export const startMining = ({
+	fleetNameOrAddress,
+	resourceMint,
+}: {
+	fleetNameOrAddress: string | PublicKey;
+	resourceMint: PublicKey;
+}) =>
 	Effect.gen(function* () {
-		const fleetPubkey = yield* getFleetAddressByName(fleetName);
+		const fleetAddress = yield* isPublicKey(fleetNameOrAddress)
+			? Effect.succeed(fleetNameOrAddress)
+			: getFleetAddressByName(fleetNameOrAddress);
 
-		const fleetAccount = yield* getFleetAccount(fleetPubkey);
+		console.log(`Start mining ${resourceMint}...`);
 
-		if (!fleetAccount.state.Idle) {
-			return yield* Effect.fail(new FleetNotIdleError());
-		}
-
-		console.log(`Start mining ${resource}...`);
-
-		const planetPubkey = new PublicKey("");
-
-		const ix = yield* createStartMiningIx(fleetPubkey, resource, planetPubkey);
+		const ix = yield* createStartMiningIx({
+			fleetAddress,
+			resourceMint,
+		});
 
 		const gameService = yield* GameService;
 
-		const tx = yield* gameService.utils.buildAndSignTransaction([ix]);
-		const txId = yield* gameService.utils.sendTransaction(tx);
+		const txs = yield* gameService.utils.buildAndSignTransactionWithAtlasPrime([
+			ix,
+		]);
 
-		console.log(`Mining started! Waiting for ${time} seconds...`);
+		const txIds = yield* Effect.all(
+			txs.map((tx) => gameService.utils.sendTransaction(tx)),
+		);
 
-		yield* Effect.sleep(time * 1000);
+		console.log("Mining started!");
 
-		return txId;
+		return txIds;
 	});
