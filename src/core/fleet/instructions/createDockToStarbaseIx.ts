@@ -2,7 +2,6 @@ import { Keypair, type PublicKey } from "@solana/web3.js";
 import { Fleet, StarbasePlayer } from "@staratlas/sage";
 import { Effect, Match, Option } from "effect";
 import { resourceNameToMint } from "../../../constants/resources";
-import { getCurrentFleetSectorCoordinates } from "../../../utils/getCurrentFleetSector";
 import { getCargoPodsByAuthority } from "../../cargo-utils";
 import {
 	getCouncilRankXpKey,
@@ -23,7 +22,7 @@ import {
 	getStarbaseAddressbyCoordinates,
 	getStarbasePlayerAddress,
 } from "../../utils/pdas";
-import { createIdleToLoadingBayIx } from "./createIdleToLoadingBayIx";
+import { getCurrentFleetSectorCoordinates } from "../utils/getCurrentFleetSector";
 
 export const createDockToStarbaseIx = (fleetAddress: PublicKey) =>
 	Effect.gen(function* () {
@@ -178,14 +177,18 @@ export const createDockToStarbaseIx = (fleetAddress: PublicKey) =>
 			ixs.push(maybeMoveHandlerIx);
 		}
 
-		const dockIx = yield* createIdleToLoadingBayIx({
-			profileFaction: playerFactionAddress,
-			fleet: fleetAccount.key,
-			input: 1,
-			playerProfile: fleetAccount.data.ownerProfile,
-			starbase: starbaseAccount.key,
-			starbasePlayer: starbasePlayerAddress,
-		});
+		const dockIx = Fleet.idleToLoadingBay(
+			programs.sage,
+			signer,
+			fleetAccount.data.ownerProfile,
+			playerFactionAddress,
+			fleetAddress,
+			starbaseAddress,
+			starbasePlayerAddress,
+			context.game.key,
+			context.game.data.gameState,
+			1,
+		);
 
 		ixs.push(dockIx);
 

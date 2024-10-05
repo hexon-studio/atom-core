@@ -4,6 +4,7 @@ import { Array as EffectArray, pipe } from "effect";
 import { z } from "zod";
 import { runDock } from "./commands/dock";
 import { runLoadCargo } from "./commands/loadCargo";
+import { runUndock } from "./commands/undock";
 import { runUnloadCargo } from "./commands/unloadCargo";
 import { cargoPodKindDecoder } from "./types";
 import { parseSecretKey } from "./utils/keypair";
@@ -139,6 +140,24 @@ const main = async () => {
 			}>();
 
 			return runDock({
+				...globalOpts,
+				fleetNameOrAddress: isPublicKey(fleetNameOrAddress)
+					? new PublicKey(fleetNameOrAddress)
+					: fleetNameOrAddress,
+			});
+		});
+
+	program
+		.command("undock <fleetNameOrAddress>")
+		.action(async (fleetNameOrAddress: string) => {
+			const globalOpts = program.opts<{
+				owner: PublicKey;
+				playerProfile: PublicKey;
+				keypair: Keypair;
+				rpcUrl: string;
+			}>();
+
+			return runUndock({
 				...globalOpts,
 				fleetNameOrAddress: isPublicKey(fleetNameOrAddress)
 					? new PublicKey(fleetNameOrAddress)

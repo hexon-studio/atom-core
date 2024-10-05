@@ -1,29 +1,40 @@
+import type { PublicKey } from "@solana/web3.js";
 import { Effect } from "effect";
+import { isPublicKey } from "../../utils/public-key";
 import { createUndockFromStarbaseIx } from "../fleet/instructions";
 import { GameService } from "../services/GameService";
-import { getFleetAccount } from "../utils/accounts";
 import { getFleetAddressByName } from "../utils/pdas";
 
-export const undockFromStarbase = (fleetName: string) =>
+export const undockFromStarbase = ({
+	fleetNameOrAddress,
+}: { fleetNameOrAddress: string | PublicKey }) =>
 	Effect.gen(function* () {
-		const fleetPubkey = yield* getFleetAddressByName(fleetName);
-		const fleetAccount = yield* getFleetAccount(fleetPubkey);
+		const fleetAddress = yield* isPublicKey(fleetNameOrAddress)
+			? Effect.succeed(fleetNameOrAddress)
+			: getFleetAddressByName(fleetNameOrAddress);
 
-		if (fleetAccount.state.Idle) {
-			console.log("Already idle.");
-			return;
-		}
+		// const fleetAccount = yield* getFleetAccount(fleetPubkey);
+
+		// if (fleetAccount.state.Idle) {
+		// 	console.log("Already idle.");
+		// 	return;
+		// }
 
 		console.log("Undocking from starbase...");
 
-		const ix = yield* createUndockFromStarbaseIx(fleetPubkey);
+		const ix = yield* createUndockFromStarbaseIx(fleetAddress);
 
 		const gameService = yield* GameService;
 
-		const tx = yield* gameService.utils.buildAndSignTransaction([ix]);
-		const txId = yield* gameService.utils.sendTransaction(tx);
+		const txs = yield* gameService.utils.buildAndSignTransactionWithAtlasPrime([
+			ix,
+		]);
+
+		const txIds = yield* Effect.all(
+			txs.map((tx) => gameService.utils.sendTransaction(tx)),
+		);
 
 		console.log("Fleet undocked!");
 
-		return txId;
+		return txIds;
 	});

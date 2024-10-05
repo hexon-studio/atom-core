@@ -1,13 +1,12 @@
 import type { PublicKey } from "@solana/web3.js";
 import {
 	Fleet,
-	type LoadingBayToIdleInput,
 	type ShipStats,
 	type StartMiningAsteroidInput,
 	type StopMiningAsteroidInput,
 } from "@staratlas/sage";
 import type BN from "bn.js";
-import { Data, Effect, pipe } from "effect";
+import { Data, Effect } from "effect";
 import {
 	type ResourceMint,
 	type ResourceName,
@@ -42,7 +41,7 @@ import {
 	getStarbaseAddressbyCoordinates,
 	getStarbasePlayerAddress,
 } from "../../utils/pdas";
-import { FleetNotIdleError, FleetNotInStarbaseError } from "../errors";
+import { FleetNotIdleError } from "../errors";
 
 export class NoEnoughRepairKitsError extends Data.TaggedError(
 	"NoEnoughRepairKitsError",
@@ -169,56 +168,6 @@ export class NoEnoughRepairKitsError extends Data.TaggedError(
 
 //     return ix_0 ? [ix_0, ix_1] : [ix_1];
 //   });
-
-export const createUndockFromStarbaseIx = (fleetPubkey: PublicKey) =>
-	Effect.gen(function* () {
-		const fleetAccount = yield* getFleetAccount(fleetPubkey);
-
-		if (!fleetAccount.state.StarbaseLoadingBay) {
-			return yield* Effect.fail(new FleetNotInStarbaseError());
-		}
-
-		const [programs, context, signer] = yield* pipe(
-			GameService,
-			Effect.flatMap((service) =>
-				Effect.all([SagePrograms, getGameContext(), service.signer]),
-			),
-		);
-
-		const starbaseKey = fleetAccount.state.StarbaseLoadingBay.starbase;
-		const starbaseAccount = yield* getStarbaseAccount(starbaseKey);
-
-		const sagePlayerProfileAddress = yield* getSagePlayerProfileAddress(
-			context.game.key,
-			fleetAccount.data.ownerProfile,
-		);
-
-		const playerFactionAddress = yield* getProfileFactionAddress(
-			fleetAccount.data.ownerProfile,
-		);
-
-		const starbasePlayerKey = yield* getStarbasePlayerAddress(
-			starbaseKey,
-			sagePlayerProfileAddress,
-			starbaseAccount.data.seqId,
-		);
-
-		// TODO: when would this change?
-		const input: LoadingBayToIdleInput = 0;
-
-		return Fleet.loadingBayToIdle(
-			programs.sage,
-			signer,
-			fleetAccount.data.ownerProfile,
-			playerFactionAddress,
-			fleetAccount.key,
-			starbaseKey,
-			starbasePlayerKey,
-			context.game.key,
-			context.game.data.gameState,
-			input,
-		);
-	});
 
 // export const getTimeAndNeededResourcesToFullCargoInMining = (
 // 	fleetPubkey: PublicKey,
