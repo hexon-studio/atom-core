@@ -65,7 +65,9 @@ export const getGameStateAccount = (gameStatePublicKey: PublicKey) =>
 		),
 	);
 
-export const getCargoStatsDefinition = (cargoStatsDefPublicKey: PublicKey) =>
+export const getCargoStatsDefinitionAccount = (
+	cargoStatsDefPublicKey: PublicKey,
+) =>
 	SagePrograms.pipe(
 		Effect.flatMap((programs) =>
 			readFromSage(

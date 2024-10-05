@@ -1,4 +1,3 @@
-import { getCargoPodsByAuthority } from './../../../cargo-utils/index';
 import type { PublicKey } from "@solana/web3.js";
 import { Fleet } from "@staratlas/sage";
 import BN from "bn.js";
@@ -10,9 +9,23 @@ import { getCurrentCargoDataByType } from "../../../cargo-utils";
 import { SagePrograms } from "../../../programs";
 import { GameService } from "../../../services/GameService";
 import { getGameContext } from "../../../services/GameService/utils";
-import { getFleetAccount, getStarbaseAccount, getCargoStatsDefinition } from "../../../utils/accounts";
-import { getSagePlayerProfileAddress, getProfileFactionAddress, getStarbasePlayerAddress, getCargoTypeAddress } from "../../../utils/pdas";
-import { InvalidAmountError, InvalidResourceForPodKind, FleetNotInStarbaseError } from "../ixs";
+import {
+	getCargoStatsDefinitionAccount,
+	getFleetAccount,
+	getStarbaseAccount,
+} from "../../../utils/accounts";
+import {
+	getCargoTypeAddress,
+	getProfileFactionAddress,
+	getSagePlayerProfileAddress,
+	getStarbasePlayerAddress,
+} from "../../../utils/pdas";
+import {
+	FleetNotInStarbaseError,
+	InvalidAmountError,
+	InvalidResourceForPodKind,
+} from "../ixs";
+import { getCargoPodsByAuthority } from "./../../../cargo-utils/index";
 
 export class FleetCargoPodTokenAccountNotFoundError extends Data.TaggedError(
 	"FleetCargoPodTokenAccountNotFoundError",
@@ -126,10 +139,12 @@ export const createWithdrawCargoFromFleetIx = (
 		const signer = yield* gameService.signer;
 		const gameId = context.game.key;
 		const gameState = context.game.data.gameState;
-		
+
 		const cargoStatsDefinitionKey = context.game.data.cargo.statsDefinition;
 
-		const cargoStatsDefinition = yield* getCargoStatsDefinition(cargoStatsDefinitionKey);
+		const cargoStatsDefinition = yield* getCargoStatsDefinitionAccount(
+			cargoStatsDefinitionKey,
+		);
 
 		const cargoType = yield* getCargoTypeAddress(mint, cargoStatsDefinition);
 

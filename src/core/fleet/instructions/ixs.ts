@@ -6,7 +6,7 @@ import {
 	type StartMiningAsteroidInput,
 	type StopMiningAsteroidInput,
 } from "@staratlas/sage";
-import BN from "bn.js";
+import type BN from "bn.js";
 import { Data, Effect, pipe } from "effect";
 import {
 	type ResourceMint,
@@ -26,7 +26,7 @@ import { SagePrograms } from "../../programs";
 import { GameService } from "../../services/GameService";
 import { getGameContext } from "../../services/GameService/utils";
 import {
-	getCargoStatsDefinition,
+	getCargoStatsDefinitionAccount,
 	getFleetAccount,
 	getMineItemAccount,
 	getPlanetAccount,
@@ -556,19 +556,21 @@ export const createStopMiningIx = (fleetPubkey: PublicKey) =>
 
 		const cargoStatsDefinitionKey = context.game.data.cargo.statsDefinition;
 
-		const cargoStatsDefinition = yield* getCargoStatsDefinition(cargoStatsDefinitionKey);
+		const cargoStatsDefinition = yield* getCargoStatsDefinitionAccount(
+			cargoStatsDefinitionKey,
+		);
 
 		const foodCargoType = yield* getCargoTypeAddress(
 			gameFoodMint,
-			cargoStatsDefinition
+			cargoStatsDefinition,
 		);
 		const ammoCargoType = yield* getCargoTypeAddress(
 			gameAmmoMint,
-			cargoStatsDefinition
+			cargoStatsDefinition,
 		);
 		const resourceCargoType = yield* getCargoTypeAddress(
 			mint,
-			cargoStatsDefinition
+			cargoStatsDefinition,
 		);
 
 		const gameState = context.game.data.gameState;
@@ -607,7 +609,7 @@ export const createStopMiningIx = (fleetPubkey: PublicKey) =>
 
 		const fuelCargoType = yield* getCargoTypeAddress(
 			gameFuelMint,
-			cargoStatsDefinition
+			cargoStatsDefinition,
 		);
 
 		const fuelTokenFrom = fleetFuelToken;

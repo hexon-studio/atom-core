@@ -1,5 +1,6 @@
 import { Keypair, PublicKey } from "@solana/web3.js";
 import { AnchorProvider } from "@staratlas/anchor";
+import type { CargoStatsDefinition } from "@staratlas/cargo";
 import { keypairToAsyncSigner } from "@staratlas/data-source";
 import type { Fleet, Game, GameState } from "@staratlas/sage";
 import { Effect, Exit, Layer, Option, Ref } from "effect";
@@ -20,7 +21,6 @@ import {
 	InvalidAmountError,
 	InvalidResourceForPodKind,
 } from "../ixs";
-import type { CargoStatsDefinition } from "@staratlas/cargo";
 
 vi.mock("../../accounts");
 

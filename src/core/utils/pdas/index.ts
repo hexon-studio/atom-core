@@ -1,6 +1,6 @@
-import { PublicKey } from "@solana/web3.js";
+import type { PublicKey } from "@solana/web3.js";
 import type { BN } from "@staratlas/anchor";
-import { CargoStatsDefinition, CargoType } from "@staratlas/cargo";
+import { type CargoStatsDefinition, CargoType } from "@staratlas/cargo";
 import { stringToByteArray } from "@staratlas/data-source";
 import { ProfileFactionAccount } from "@staratlas/profile-faction";
 import {
@@ -35,7 +35,7 @@ export const getFleetAddressByName = (fleetName: string) =>
 
 export const getCargoTypeAddress = (
 	mint: PublicKey,
-	cargoStatsDefinition: CargoStatsDefinition
+	cargoStatsDefinition: CargoStatsDefinition,
 ) =>
 	SagePrograms.pipe(
 		Effect.flatMap((programs) =>
@@ -163,7 +163,7 @@ export const getStarbaseAddressbyCoordinates = (
 			}),
 		),
 	);
-	
+
 // export class PlanetNotFoundError extends Data.TaggedError(
 // 	"PlanetNotFoundError",
 // )<{

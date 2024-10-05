@@ -4,9 +4,9 @@ import {
 	resourceNameToMint,
 } from "../../constants/resources";
 import type { CargoPodKind } from "../../types";
-import { getFleetAddressByName } from "../utils/pdas";
 import { createWithdrawCargoFromFleetIx } from "../fleet/instructions";
 import { GameService } from "../services/GameService";
+import { getFleetAddressByName } from "../utils/pdas";
 
 export const unloadCargo = (
 	fleetName: string,

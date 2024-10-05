@@ -1,7 +1,11 @@
 import type { PublicKey } from "@solana/web3.js";
 import { Data, Effect, Option, Ref } from "effect";
 import type { GameContext } from "../..";
-import { getCargoStatsDefinition, getGameAccount, getGameStateAccount } from "../../../../utils/accounts";
+import {
+	getCargoStatsDefinitionAccount,
+	getGameAccount,
+	getGameStateAccount,
+} from "../../../../utils/accounts";
 import { findGame } from "../findGame";
 
 export class AlreadyInitializedError extends Data.TaggedError(
@@ -26,7 +30,9 @@ export const initGame = (
 
 		const gameState = yield* getGameStateAccount(game.data.gameState);
 
-		const cargoStatsDefinition = yield* getCargoStatsDefinition(game.data.cargo.statsDefinition);
+		const cargoStatsDefinition = yield* getCargoStatsDefinitionAccount(
+			game.data.cargo.statsDefinition,
+		);
 
 		// const planets = yield* findPlanets();
 

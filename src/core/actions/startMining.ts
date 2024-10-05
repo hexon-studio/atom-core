@@ -1,13 +1,10 @@
+import { PublicKey } from "@solana/web3.js";
 import { Effect } from "effect";
 import type { ResourceName } from "../../constants/resources";
+import { FleetNotIdleError, createStartMiningIx } from "../fleet/instructions";
+import { GameService } from "../services/GameService";
 import { getFleetAccount } from "../utils/accounts";
 import { getFleetAddressByName } from "../utils/pdas";
-import {
-	FleetNotIdleError,
-	createStartMiningIx,
-} from "../fleet/instructions";
-import { GameService } from "../services/GameService";
-import { PublicKey } from "@solana/web3.js";
 
 export const startMining = (
 	fleetName: string,
@@ -25,7 +22,7 @@ export const startMining = (
 
 		console.log(`Start mining ${resource}...`);
 
-		const planetPubkey = new PublicKey("")
+		const planetPubkey = new PublicKey("");
 
 		const ix = yield* createStartMiningIx(fleetPubkey, resource, planetPubkey);
 

@@ -13,11 +13,11 @@ import {
 	type FetchDummyKeysError,
 	fetchDummyKeys,
 } from "../../../../atlas-core-utils/dummy-keys";
+import { SagePrograms } from "../../../../programs";
 import {
 	type ReadFromRPCError,
 	getPlayerProfileAccout,
 } from "../../../../utils/accounts";
-import { SagePrograms } from "../../../../programs";
 import {
 	type CreateKeypairError,
 	type CreateProviderError,
