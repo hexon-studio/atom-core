@@ -1,22 +1,16 @@
 import type { PublicKey } from "@solana/web3.js";
 import { Cause, Console, Effect, Exit, Option } from "effect";
-import { loadCargo } from "../core/actions/loadCargo";
+import { dockToStarbase } from "../core/actions/dockToStarbase";
 import { GameService } from "../core/services/GameService";
-import type { CargoPodKind, RequiredParam } from "../types";
+import type { RequiredParam } from "../types";
 import { createMainLiveService } from "../utils/createLiveService";
 
 type Param = RequiredParam & {
 	fleetNameOrAddress: string | PublicKey;
-	items: Array<{
-		resourceMint: PublicKey;
-		amount: number;
-		cargoPodKind: CargoPodKind;
-	}>;
 };
 
-export const runLoadCargo = async ({
+export const runDock = async ({
 	fleetNameOrAddress,
-	items,
 	keypair,
 	owner,
 	playerProfile,
@@ -33,14 +27,9 @@ export const runLoadCargo = async ({
 		),
 		Effect.tap(() => Console.log("Game initialized.")),
 		Effect.flatMap(() =>
-			Effect.forEach(items, ({ amount, resourceMint, cargoPodKind }) =>
-				loadCargo({
-					fleetNameOrAddress,
-					resourceMint,
-					amount: amount,
-					cargoPodKind,
-				}),
-			),
+			dockToStarbase({
+				fleetNameOrAddress,
+			}),
 		),
 		Effect.provide(mainServiceLive),
 	);

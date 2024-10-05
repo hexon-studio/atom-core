@@ -2,10 +2,12 @@ import { type Keypair, PublicKey } from "@solana/web3.js";
 import { Command } from "commander";
 import { Array as EffectArray, pipe } from "effect";
 import { z } from "zod";
+import { runDock } from "./commands/dock";
 import { runLoadCargo } from "./commands/loadCargo";
+import { runUnloadCargo } from "./commands/unloadCargo";
 import { cargoPodKindDecoder } from "./types";
 import { parseSecretKey } from "./utils/keypair";
-import { parsePublicKey } from "./utils/public-key";
+import { isPublicKey, parsePublicKey } from "./utils/public-key";
 
 const main = async () => {
 	const program = new Command("atom")
@@ -35,22 +37,19 @@ const main = async () => {
 	);
 
 	program
-		.command("load-cargo")
-		.requiredOption(
-			"--fleet <publicKey>",
-			"The publicKey of the fleet",
-			parsePublicKey,
-		)
+		.command("load-cargo <fleetNameOrAddress>")
 		.requiredOption("--mints <mints...>", "Resources to load") // pbk
 		.requiredOption("--amounts <amounts...>", "The amount of each resource") // pbk
 		.requiredOption("--pods <pods...>", "Fleet cargo pods type") // fuel_tank, ammo_bank, cargo_hold
 		.action(
-			async (options: {
-				fleet: PublicKey;
-				mints: string[];
-				amounts: string[];
-				pods: string[];
-			}) => {
+			async (
+				fleetNameOrAddress: string,
+				options: {
+					mints: string[];
+					amounts: string[];
+					pods: string[];
+				},
+			) => {
 				const globalOpts = program.opts<{
 					owner: PublicKey;
 					playerProfile: PublicKey;
@@ -75,11 +74,77 @@ const main = async () => {
 
 				return runLoadCargo({
 					...globalOpts,
-					fleetAddress: options.fleet,
+					fleetNameOrAddress: isPublicKey(fleetNameOrAddress)
+						? new PublicKey(fleetNameOrAddress)
+						: fleetNameOrAddress,
 					items: parsedItems,
 				});
 			},
 		);
+
+	program
+		.command("unload-cargo <fleetNameOrAddress>")
+		.requiredOption("--mints <mints...>", "Resources to load") // pbk
+		.requiredOption("--amounts <amounts...>", "The amount of each resource") // pbk
+		.requiredOption("--pods <pods...>", "Fleet cargo pods type") // fuel_tank, ammo_bank, cargo_hold
+		.action(
+			async (
+				fleetNameOrAddress: string,
+				options: {
+					mints: string[];
+					amounts: string[];
+					pods: string[];
+				},
+			) => {
+				const globalOpts = program.opts<{
+					owner: PublicKey;
+					playerProfile: PublicKey;
+					keypair: Keypair;
+					rpcUrl: string;
+				}>();
+
+				const items = pipe(
+					options.mints,
+					EffectArray.zip(options.amounts),
+					EffectArray.zipWith(options.pods, ([mint, amount], cargoPodKind) => ({
+						resourceMint: mint,
+						amount: Number(amount),
+						cargoPodKind,
+					})),
+				);
+
+				const parsedItems = itemsDecoder.parse(items).map((item) => ({
+					...item,
+					resourceMint: new PublicKey(item.resourceMint),
+				}));
+
+				return runUnloadCargo({
+					...globalOpts,
+					fleetNameOrAddress: isPublicKey(fleetNameOrAddress)
+						? new PublicKey(fleetNameOrAddress)
+						: fleetNameOrAddress,
+					items: parsedItems,
+				});
+			},
+		);
+
+	program
+		.command("dock <fleetNameOrAddress>")
+		.action(async (fleetNameOrAddress: string) => {
+			const globalOpts = program.opts<{
+				owner: PublicKey;
+				playerProfile: PublicKey;
+				keypair: Keypair;
+				rpcUrl: string;
+			}>();
+
+			return runDock({
+				...globalOpts,
+				fleetNameOrAddress: isPublicKey(fleetNameOrAddress)
+					? new PublicKey(fleetNameOrAddress)
+					: fleetNameOrAddress,
+			});
+		});
 
 	await program.parseAsync(process.argv);
 };

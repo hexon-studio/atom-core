@@ -21,6 +21,7 @@ export const getFleetAddressByName = (fleetName: string) =>
 		Effect.flatMap(([programs, context]) =>
 			Effect.try(() => {
 				const fleetLabel = stringToByteArray(fleetName, 32);
+
 				const [fleet] = Fleet.findAddress(
 					programs.sage,
 					context.game.key,

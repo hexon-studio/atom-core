@@ -1,7 +1,7 @@
 import { PublicKey, type PublicKeyInitData } from "@solana/web3.js";
 import { InvalidArgumentError } from "commander";
 
-export const isPublicKey = (key: PublicKeyInitData): boolean => {
+export const isPublicKey = (key: PublicKeyInitData): key is PublicKey => {
 	try {
 		new PublicKey(key);
 

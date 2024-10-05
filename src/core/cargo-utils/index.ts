@@ -40,7 +40,7 @@ export class InvalidPodMaxCapacityError extends Data.TaggedError(
 	"InvalidPodMaxCapacityError",
 ) {}
 
-export const getCurrentCargoDataByType = ({
+export const getFleetCargoPodInfoByType = ({
 	type,
 	fleetAccount,
 }: {
@@ -48,7 +48,7 @@ export const getCurrentCargoDataByType = ({
 	fleetAccount: Fleet;
 }) =>
 	Effect.gen(function* () {
-		const cargoPodType = Match.value(type).pipe(
+		const cargoPodAddress = Match.value(type).pipe(
 			Match.when("ammo_bank", () => fleetAccount.data.ammoBank),
 			Match.when("cargo_hold", () => fleetAccount.data.cargoHold),
 			Match.when("fuel_tank", () => fleetAccount.data.fuelTank),
@@ -64,7 +64,7 @@ export const getCurrentCargoDataByType = ({
 			Match.exhaustive,
 		);
 
-		const cargoPod = yield* getCargoPodAccount(cargoPodType);
+		const cargoPod = yield* getCargoPodAccount(cargoPodAddress);
 
 		const gameService = yield* GameService;
 		const context = yield* getGameContext();
@@ -86,7 +86,7 @@ export const getCurrentCargoDataByType = ({
 			resources.push({
 				mint: cargoPodTokenAccount.mint,
 				amount: new BN(cargoPodTokenAccount.amount.toString()),
-				spaceInCargo: new BN(cargoPodTokenAccount.amount.toString()).mul(
+				cargoUnitAmount: new BN(cargoPodTokenAccount.amount.toString()).mul(
 					resourceSpaceInCargoPerUnit,
 				),
 				cargoTypeKey: cargoType.key,
@@ -95,7 +95,7 @@ export const getCurrentCargoDataByType = ({
 		}
 
 		const loadedAmount = resources.reduce(
-			(acc, item) => acc.add(item.spaceInCargo),
+			(acc, item) => acc.add(item.cargoUnitAmount),
 			new BN(0),
 		);
 
@@ -104,10 +104,10 @@ export const getCurrentCargoDataByType = ({
 			loadedAmount,
 			resources,
 			maxCapacity: cargoPodMaxCapacity,
-			fullLoad: loadedAmount.eq(cargoPodMaxCapacity),
+			podIsFull: loadedAmount.eq(cargoPodMaxCapacity),
 		});
 	});
 
 export type CargoPodEnhanced = Effect.Effect.Success<
-	ReturnType<typeof getCurrentCargoDataByType>
+	ReturnType<typeof getFleetCargoPodInfoByType>
 >;

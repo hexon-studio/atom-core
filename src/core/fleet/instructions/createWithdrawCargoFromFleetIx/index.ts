@@ -1,11 +1,11 @@
 import type { PublicKey } from "@solana/web3.js";
 import { Fleet } from "@staratlas/sage";
 import BN from "bn.js";
-import { Data, Effect, Match, pipe } from "effect";
+import { Data, Effect, pipe } from "effect";
 import { isNone } from "effect/Option";
-import { resourceNameToMint } from "../../../../constants/resources";
 import type { CargoPodKind } from "../../../../types";
-import { getCurrentCargoDataByType } from "../../../cargo-utils";
+import { isResourceAllowedForCargoPod } from "../../../../utils/resources/isResourceAllowedForCargoPod";
+import { getFleetCargoPodInfoByType } from "../../../cargo-utils";
 import { SagePrograms } from "../../../programs";
 import { GameService } from "../../../services/GameService";
 import { getGameContext } from "../../../services/GameService/utils";
@@ -20,42 +20,41 @@ import {
 	getSagePlayerProfileAddress,
 	getStarbasePlayerAddress,
 } from "../../../utils/pdas";
-import {
-	FleetNotInStarbaseError,
-	InvalidAmountError,
-	InvalidResourceForPodKind,
-} from "../ixs";
-import { getCargoPodsByAuthority } from "./../../../cargo-utils/index";
+import { FleetNotInStarbaseError } from "../../errors";
+import { InvalidAmountError, InvalidResourceForPodKind } from "../ixs";
+import { getCargoPodsByAuthority } from "./../../../cargo-utils";
 
 export class FleetCargoPodTokenAccountNotFoundError extends Data.TaggedError(
 	"FleetCargoPodTokenAccountNotFoundError",
 ) {}
 
-export const createWithdrawCargoFromFleetIx = (
-	fleetAddress: PublicKey,
-	mint: PublicKey,
-	amount: number,
-	podKind: CargoPodKind,
-) =>
+export const createWithdrawCargoFromFleetIx = ({
+	amount,
+	fleetAddress,
+	resourceMint,
+	cargoPodKind,
+}: {
+	amount: number;
+	fleetAddress: PublicKey;
+	resourceMint: PublicKey;
+	cargoPodKind: CargoPodKind;
+}) =>
 	Effect.gen(function* () {
 		if (amount <= 0) {
 			return yield* Effect.fail(
-				new InvalidAmountError({ resourceMint: mint, amount }),
+				new InvalidAmountError({ resourceMint, amount }),
 			);
 		}
 
-		const isAllowed = Match.value(podKind).pipe(
-			Match.when("fuel_tank", () => mint.equals(resourceNameToMint.Fuel)),
-			Match.when("ammo_bank", () => mint.equals(resourceNameToMint.Ammunition)),
-			Match.when("cargo_hold", () => true),
-			Match.exhaustive,
+		const isAllowed = pipe(
+			cargoPodKind,
+			isResourceAllowedForCargoPod(resourceMint),
 		);
 
 		if (!isAllowed) {
 			return yield* Effect.fail(new InvalidResourceForPodKind());
 		}
 
-		// Fleet data
 		const fleetAccount = yield* getFleetAccount(fleetAddress);
 
 		if (!fleetAccount.state.StarbaseLoadingBay) {
@@ -64,7 +63,6 @@ export const createWithdrawCargoFromFleetIx = (
 
 		const gameService = yield* GameService;
 
-		// Player Profile
 		const playerProfilePubkey = fleetAccount.data.ownerProfile;
 
 		const sagePlayerProfilePubkey = yield* getSagePlayerProfileAddress(
@@ -75,21 +73,24 @@ export const createWithdrawCargoFromFleetIx = (
 		const profileFactionPubkey =
 			yield* getProfileFactionAddress(playerProfilePubkey);
 
-		const cargoPod = yield* getCurrentCargoDataByType({
+		const cargoPodInfo = yield* getFleetCargoPodInfoByType({
 			fleetAccount,
-			type: podKind,
+			type: cargoPodKind,
 		});
 
 		const maybeTokenAccountFrom = yield* pipe(
-			gameService.utils.getParsedTokenAccountsByOwner(cargoPod.key),
+			gameService.utils.getParsedTokenAccountsByOwner(cargoPodInfo.key),
 			Effect.flatMap(
 				Effect.findFirst((account) =>
-					Effect.succeed(account.mint.toBase58() === mint.toBase58()),
+					Effect.succeed(account.mint.toBase58() === resourceMint.toBase58()),
 				),
 			),
 		);
 
-		if (isNone(maybeTokenAccountFrom)) {
+		if (
+			isNone(maybeTokenAccountFrom) ||
+			maybeTokenAccountFrom.value.amount === 0n
+		) {
 			return yield* Effect.fail(new FleetCargoPodTokenAccountNotFoundError());
 		}
 
@@ -113,25 +114,19 @@ export const createWithdrawCargoFromFleetIx = (
 
 		const starbasePlayerCargoPodsPubkey = starbasePlayerCargoPodsAccount.key;
 
-		const tokenAccountToATA =
-			yield* gameService.utils.createAssociatedTokenAccountIdempotent(
-				mint,
-				starbasePlayerCargoPodsPubkey,
-				true,
-			);
+		const {
+			address: starbasePlayerResourceMintAta,
+			instructions: createStarbasePlayerResourceMintAtaIx,
+		} = yield* gameService.utils.createAssociatedTokenAccountIdempotent(
+			resourceMint,
+			starbasePlayerCargoPodsPubkey,
+			true,
+		);
 
-		const tokenAccountToPubkey = tokenAccountToATA.address;
-
-		const ix_0 = tokenAccountToATA.instructions;
-
-		const amountBN = BN.min(
+		const maxAmountToWithdraw = BN.min(
 			new BN(amount),
 			new BN(maybeTokenAccountFrom.value.amount.toString()),
 		);
-
-		if (amountBN.lte(new BN(0))) {
-			return [ix_0];
-		}
 
 		const programs = yield* SagePrograms;
 
@@ -146,9 +141,12 @@ export const createWithdrawCargoFromFleetIx = (
 			cargoStatsDefinitionKey,
 		);
 
-		const cargoType = yield* getCargoTypeAddress(mint, cargoStatsDefinition);
+		const cargoType = yield* getCargoTypeAddress(
+			resourceMint,
+			cargoStatsDefinition,
+		);
 
-		const ix_1 = Fleet.withdrawCargoFromFleet(
+		const withdrawCargoFromFleetIx = Fleet.withdrawCargoFromFleet(
 			programs.sage,
 			programs.cargo,
 			signer,
@@ -158,17 +156,17 @@ export const createWithdrawCargoFromFleetIx = (
 			starbasePubkey,
 			starbasePlayerPubkey,
 			fleetAddress,
-			cargoPod.key,
+			cargoPodInfo.key,
 			starbasePlayerCargoPodsPubkey,
 			cargoType,
 			cargoStatsDefinition.key,
 			tokenAccountFromPubkey,
-			tokenAccountToPubkey,
-			mint,
+			starbasePlayerResourceMintAta,
+			resourceMint,
 			gameId,
 			gameState,
-			{ keyIndex: 1, amount: amountBN },
+			{ keyIndex: 1, amount: maxAmountToWithdraw },
 		);
 
-		return [ix_0, ix_1];
+		return [createStarbasePlayerResourceMintAtaIx, withdrawCargoFromFleetIx];
 	});

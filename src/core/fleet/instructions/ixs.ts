@@ -16,7 +16,7 @@ import {
 } from "../../../constants/resources";
 import type { CargoPodKind } from "../../../types";
 import { getAssociatedTokenAddress } from "../../../utils/getAssociatedTokenAddress";
-import { getCurrentCargoDataByType } from "../../cargo-utils";
+import { getFleetCargoPodInfoByType } from "../../cargo-utils";
 import {
 	getCouncilRankXpKey,
 	getMiningXpKey,
@@ -42,55 +42,7 @@ import {
 	getStarbaseAddressbyCoordinates,
 	getStarbasePlayerAddress,
 } from "../../utils/pdas";
-
-export class CreateIdleToLoadingBayIxError extends Data.TaggedError(
-	"CreateIdleToLoadingBayIxError",
-)<{ error: unknown }> {}
-
-export const createIdleToLoadingBayIx = ({
-	fleet,
-	input,
-	starbase,
-	starbasePlayer,
-	playerProfile,
-	profileFaction,
-}: {
-	playerProfile: PublicKey;
-	profileFaction: PublicKey;
-	fleet: PublicKey;
-	starbase: PublicKey;
-	starbasePlayer: PublicKey;
-	input: LoadingBayToIdleInput;
-}) =>
-	Effect.gen(function* () {
-		const programs = yield* SagePrograms;
-
-		const [context, signer] = yield* pipe(
-			GameService,
-			Effect.flatMap((service) =>
-				Effect.all([getGameContext(), service.signer]),
-			),
-		);
-
-		return yield* Effect.try({
-			try: () =>
-				Fleet.idleToLoadingBay(
-					programs.sage,
-					signer,
-					playerProfile,
-					profileFaction,
-					fleet,
-					starbase,
-					starbasePlayer,
-					context.game.key,
-					context.game.data.gameState,
-					input,
-				),
-			catch: (error) => new CreateIdleToLoadingBayIxError({ error }),
-		});
-	});
-
-export class FleetNotIdleError extends Data.TaggedError("FleetNotIdleError") {}
+import { FleetNotIdleError, FleetNotInStarbaseError } from "../errors";
 
 export class NoEnoughRepairKitsError extends Data.TaggedError(
 	"NoEnoughRepairKitsError",
@@ -217,50 +169,6 @@ export class NoEnoughRepairKitsError extends Data.TaggedError(
 
 //     return ix_0 ? [ix_0, ix_1] : [ix_1];
 //   });
-
-export const createDockToStarbaseIx = (fleetPubkey: PublicKey) =>
-	Effect.gen(function* () {
-		const fleetAccount = yield* getFleetAccount(fleetPubkey);
-
-		if (!fleetAccount.state.Idle) {
-			return yield* Effect.fail(new FleetNotIdleError());
-		}
-
-		const playerProfileAddress = yield* getSagePlayerProfileAddress(
-			fleetAccount.data.gameId,
-			fleetAccount.data.ownerProfile,
-		);
-
-		const playerFactionAddress = yield* getProfileFactionAddress(
-			fleetAccount.data.ownerProfile,
-		);
-
-		const starbaseAddress = yield* getStarbaseAddressbyCoordinates(
-			fleetAccount.data.gameId,
-			fleetAccount.state.Idle.sector as [BN, BN],
-		);
-
-		const starbaseAccount = yield* getStarbaseAccount(starbaseAddress);
-
-		const starbasePlayerAddress = yield* getStarbasePlayerAddress(
-			starbaseAccount.key,
-			playerProfileAddress,
-			starbaseAccount.data.seqId,
-		);
-
-		return yield* createIdleToLoadingBayIx({
-			profileFaction: playerFactionAddress,
-			fleet: fleetAccount.key,
-			input: 0 as LoadingBayToIdleInput,
-			playerProfile: fleetAccount.data.ownerProfile,
-			starbase: starbaseAccount.key,
-			starbasePlayer: starbasePlayerAddress,
-		});
-	});
-
-export class FleetNotInStarbaseError extends Data.TaggedError(
-	"FleetNotInStarbaseError",
-) {}
 
 export const createUndockFromStarbaseIx = (fleetPubkey: PublicKey) =>
 	Effect.gen(function* () {
@@ -437,7 +345,7 @@ export const createStartMiningIx = (
 
 		const input = { keyIndex: 0 } as StartMiningAsteroidInput;
 
-		const fuelTank = yield* getCurrentCargoDataByType({
+		const fuelTank = yield* getFleetCargoPodInfoByType({
 			type: "fuel_tank",
 			fleetAccount,
 		});

@@ -1,14 +1,14 @@
 import type { PublicKey } from "@solana/web3.js";
 import { Fleet } from "@staratlas/sage";
 import BN from "bn.js";
-import { Effect, Match, pipe } from "effect";
+import { Effect, pipe } from "effect";
 import { isNone } from "effect/Option";
-import { resourceNameToMint } from "../../../../constants/resources";
 import type { CargoPodKind } from "../../../../types";
 import { getAssociatedTokenAddress } from "../../../../utils/getAssociatedTokenAddress";
+import { isResourceAllowedForCargoPod } from "../../../../utils/resources/isResourceAllowedForCargoPod";
 import {
 	getCargoPodsByAuthority,
-	getCurrentCargoDataByType,
+	getFleetCargoPodInfoByType,
 } from "../../../cargo-utils";
 import { SagePrograms } from "../../../programs";
 import { GameService } from "../../../services/GameService";
@@ -25,9 +25,9 @@ import {
 	getSagePlayerProfileAddress,
 	getStarbasePlayerAddress,
 } from "../../../utils/pdas";
+import { FleetNotInStarbaseError } from "../../errors";
 import {
 	FleetCargoPodFullError,
-	FleetNotInStarbaseError,
 	GetTokenBalanceError,
 	InvalidAmountError,
 	InvalidResourceForPodKind,
@@ -53,15 +53,9 @@ export const createDepositCargoToFleetIx = ({
 			);
 		}
 
-		const isAllowed = Match.value(cargoPodKind).pipe(
-			Match.when("fuel_tank", () =>
-				resourceMint.equals(resourceNameToMint.Fuel),
-			),
-			Match.when("ammo_bank", () =>
-				resourceMint.equals(resourceNameToMint.Ammunition),
-			),
-			Match.when("cargo_hold", () => true),
-			Match.exhaustive,
+		const isAllowed = pipe(
+			cargoPodKind,
+			isResourceAllowedForCargoPod(resourceMint),
 		);
 
 		if (!isAllowed) {
@@ -74,12 +68,11 @@ export const createDepositCargoToFleetIx = ({
 			return yield* Effect.fail(new FleetNotInStarbaseError());
 		}
 
-		const cargoPod = yield* getCurrentCargoDataByType({
+		const cargoPodInfo = yield* getFleetCargoPodInfoByType({
 			fleetAccount,
 			type: cargoPodKind,
 		});
 
-		// Player Profile
 		const playerProfilePubkey = fleetAccount.data.ownerProfile;
 
 		const sagePlayerProfilePubkey = yield* getSagePlayerProfileAddress(
@@ -132,7 +125,7 @@ export const createDepositCargoToFleetIx = ({
 		const tokenAccountToATA =
 			yield* gameService.utils.createAssociatedTokenAccountIdempotent(
 				resourceMint,
-				cargoPod.key,
+				cargoPodInfo.key,
 				true,
 			);
 
@@ -144,9 +137,9 @@ export const createDepositCargoToFleetIx = ({
 
 		const amountInCargoUnit = new BN(amount).mul(resourceSpaceInCargoPerUnit);
 
-		const freeSpaceInCargoUnit = cargoPod.loadedAmount.gt(new BN(0))
-			? cargoPod.maxCapacity.sub(cargoPod.loadedAmount)
-			: cargoPod.maxCapacity;
+		const freeSpaceInCargoUnit = cargoPodInfo.loadedAmount.gt(new BN(0))
+			? cargoPodInfo.maxCapacity.sub(cargoPodInfo.loadedAmount)
+			: cargoPodInfo.maxCapacity;
 
 		const amountToDepositInCargoUnit = BN.min(
 			amountInCargoUnit,
@@ -217,7 +210,7 @@ export const createDepositCargoToFleetIx = ({
 			starbasePlayerPubkey,
 			fleetAddress,
 			starbasePlayerCargoPodsPubkey,
-			cargoPod.key,
+			cargoPodInfo.key,
 			cargoType,
 			cargoStatsDefinition.key,
 			tokenAccountFromPubkey,

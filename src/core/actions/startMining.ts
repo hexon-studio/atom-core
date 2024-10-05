@@ -1,7 +1,8 @@
 import { PublicKey } from "@solana/web3.js";
 import { Effect } from "effect";
 import type { ResourceName } from "../../constants/resources";
-import { FleetNotIdleError, createStartMiningIx } from "../fleet/instructions";
+import { FleetNotIdleError } from "../fleet/errors";
+import { createStartMiningIx } from "../fleet/instructions";
 import { GameService } from "../services/GameService";
 import { getFleetAccount } from "../utils/accounts";
 import { getFleetAddressByName } from "../utils/pdas";

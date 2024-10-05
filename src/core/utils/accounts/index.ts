@@ -4,6 +4,7 @@ import { CargoPod, CargoStatsDefinition, CargoType } from "@staratlas/cargo";
 import {
 	type Account,
 	type AccountStatic,
+	readFromRPCNullable,
 	readFromRPCOrError,
 } from "@staratlas/data-source";
 import { PlayerProfile } from "@staratlas/player-profile";
@@ -16,6 +17,7 @@ import {
 	Resource,
 	Sector,
 	Starbase,
+	StarbasePlayer,
 } from "@staratlas/sage";
 import { Data, Effect } from "effect";
 import { SagePrograms } from "../../programs";
@@ -38,6 +40,28 @@ export const readFromSage = <A extends Account, IDL extends Idl>(
 	Effect.tryPromise({
 		try: () =>
 			readFromRPCOrError(
+				program.provider.connection,
+				program,
+				resourceKey,
+				resourceType,
+				commitment,
+			),
+		catch: (error) =>
+			new ReadFromRPCError({
+				error,
+				accountName: resourceType.ACCOUNT_NAME,
+			}),
+	});
+
+export const readFromSageNullable = <A extends Account, IDL extends Idl>(
+	program: Program<IDL>,
+	resourceKey: PublicKey,
+	resourceType: AccountStatic<A, IDL>,
+	commitment: TransactionConfirmationStatus = "confirmed",
+) =>
+	Effect.tryPromise({
+		try: () =>
+			readFromRPCNullable(
 				program.provider.connection,
 				program,
 				resourceKey,
@@ -117,6 +141,13 @@ export const getStarbaseAccount = (starbasePubkey: PublicKey) =>
 	SagePrograms.pipe(
 		Effect.flatMap((programs) =>
 			readFromSage(programs.sage, starbasePubkey, Starbase),
+		),
+	);
+
+export const getStarbasePlayerAccount = (starbasePlayerPubkey: PublicKey) =>
+	SagePrograms.pipe(
+		Effect.flatMap((programs) =>
+			readFromSageNullable(programs.sage, starbasePlayerPubkey, StarbasePlayer),
 		),
 	);
 

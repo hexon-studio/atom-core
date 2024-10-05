@@ -1,8 +1,10 @@
 import type { PublicKey } from "@solana/web3.js";
 import { Console, Data, Effect } from "effect";
 import type { CargoPodKind } from "../../types";
+import { isPublicKey } from "../../utils/public-key";
 import { createDepositCargoToFleetIx } from "../fleet/instructions";
 import { GameService } from "../services/GameService";
+import { getFleetAddressByName } from "../utils/pdas";
 
 export class BuildOptinalTxError extends Data.TaggedError(
 	"BuildOptinalTxError",
@@ -14,17 +16,23 @@ export class BuildOptinalTxError extends Data.TaggedError(
 
 export const loadCargo = ({
 	amount,
-	fleetAddress,
+	fleetNameOrAddress,
 	resourceMint,
 	cargoPodKind,
 }: {
 	amount: number;
-	fleetAddress: PublicKey;
+	fleetNameOrAddress: string | PublicKey;
 	resourceMint: PublicKey;
 	cargoPodKind: CargoPodKind;
 }) =>
 	Effect.gen(function* () {
-		yield* Console.log(`Loading cargo to fleet ${fleetAddress}`);
+		const fleetAddress = yield* isPublicKey(fleetNameOrAddress)
+			? Effect.succeed(fleetNameOrAddress)
+			: getFleetAddressByName(fleetNameOrAddress);
+
+		yield* Console.log(
+			`Loading cargo to fleet ${fleetNameOrAddress.toString()}`,
+		);
 
 		const ixs = yield* createDepositCargoToFleetIx({
 			amount,
