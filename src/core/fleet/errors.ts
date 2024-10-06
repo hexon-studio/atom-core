@@ -20,8 +20,8 @@ export class FleetNotEnoughFuelError extends Data.TaggedError(
 	"FuelNotEnoughError",
 ) {}
 
-export class FleetNotMintingError extends Data.TaggedError(
-	"FleetNotMintingError",
+export class FleetNotMiningError extends Data.TaggedError(
+	"FleetNotMiningError",
 ) {}
 
 export class InvalidFleetStateError extends Data.TaggedError(

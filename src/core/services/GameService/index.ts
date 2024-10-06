@@ -19,7 +19,7 @@ import {
 import {
 	type BuildAndSignTransactionWithAtlasPrime,
 	buildAndSignTransactionWithAtlasPrime,
-} from "./utils/createAtlasPrimeTransactionBuilder";
+} from "./utils/buildAndSignTransactionWithAtlasPrime";
 import {
 	type GetParsedTokenAccountsByOwner,
 	getParsedTokenAccountsByOwner,

@@ -1,9 +1,5 @@
 import type { PublicKey } from "@solana/web3.js";
-import {
-	Fleet,
-	type ShipStats,
-	type StopMiningAsteroidInput,
-} from "@staratlas/sage";
+import { Fleet, type ShipStats } from "@staratlas/sage";
 import type BN from "bn.js";
 import { Data, Effect } from "effect";
 import {
@@ -11,28 +7,8 @@ import {
 	resourceMintToName,
 } from "../../../constants/resources";
 import type { CargoPodKind } from "../../../types";
-import { getAssociatedTokenAddress } from "../../../utils/getAssociatedTokenAddress";
-import {
-	getCouncilRankXpKey,
-	getMiningXpKey,
-	getPilotXpKey,
-} from "../../points-utils/accounts";
-import { SagePrograms } from "../../programs";
-import { GameService } from "../../services/GameService";
-import { getGameContext } from "../../services/GameService/utils";
-import {
-	getCargoStatsDefinitionAccount,
-	getFleetAccount,
-	getMineItemAccount,
-	getPlanetAccount,
-	getResourceAccount,
-} from "../../utils/accounts";
-import {
-	getCargoTypeAddress,
-	getProfileFactionAddress,
-	getStarbaseAddressbyCoordinates,
-} from "../../utils/pdas";
-import { FleetNotIdleError, FleetNotMintingError } from "../errors";
+import { getFleetAccount } from "../../utils/accounts";
+import { FleetNotIdleError } from "../errors";
 
 export class NoEnoughRepairKitsError extends Data.TaggedError(
 	"NoEnoughRepairKitsError",
@@ -224,190 +200,190 @@ export class NoEnoughRepairKitsError extends Data.TaggedError(
 // 		};
 // 	});
 
-export const createStopMiningIx = (fleetPubkey: PublicKey) =>
-	Effect.gen(function* () {
-		const fleetAccount = yield* getFleetAccount(fleetPubkey);
+// export const createStopMiningIx = (fleetPubkey: PublicKey) =>
+// 	Effect.gen(function* () {
+// 		const fleetAccount = yield* getFleetAccount(fleetPubkey);
 
-		// TODO: ensure fleet state is "MineAsteroid" - is there a better way to do this?
-		if (!fleetAccount.state.MineAsteroid) {
-			return yield* Effect.fail(new FleetNotMintingError());
-		}
+// 		// TODO: ensure fleet state is "MineAsteroid" - is there a better way to do this?
+// 		if (!fleetAccount.state.MineAsteroid) {
+// 			return yield* Effect.fail(new FleetNotMintingError());
+// 		}
 
-		const gameService = yield* GameService;
+// 		const gameService = yield* GameService;
 
-		const context = yield* getGameContext();
+// 		const context = yield* getGameContext();
 
-		const gameFoodMint = context.game.data.mints.food;
-		const gameAmmoMint = context.game.data.mints.ammo;
-		const gameFuelMint = context.game.data.mints.fuel;
+// 		const gameFoodMint = context.game.data.mints.food;
+// 		const gameAmmoMint = context.game.data.mints.ammo;
+// 		const gameFuelMint = context.game.data.mints.fuel;
 
-		const resourceKey = fleetAccount.state.MineAsteroid.resource;
+// 		const resourceKey = fleetAccount.state.MineAsteroid.resource;
 
-		const resourceAccount = yield* getResourceAccount(resourceKey);
+// 		const resourceAccount = yield* getResourceAccount(resourceKey);
 
-		const mineItemKey = resourceAccount.data.mineItem; // TODO: check if this is the only way to get the 'mineItemKey'
-		const mineItemAccount = yield* getMineItemAccount(mineItemKey);
-		const mint = mineItemAccount.data.mint; // TODO: check if this is the only way get the 'mint'
+// 		const mineItemKey = resourceAccount.data.mineItem; // TODO: check if this is the only way to get the 'mineItemKey'
+// 		const mineItemAccount = yield* getMineItemAccount(mineItemKey);
+// 		const mint = mineItemAccount.data.mint; // TODO: check if this is the only way get the 'mint'
 
-		const planetKey = fleetAccount.state.MineAsteroid.asteroid;
-		const planetAccount = yield* getPlanetAccount(planetKey);
+// 		const planetKey = fleetAccount.state.MineAsteroid.asteroid;
+// 		const planetAccount = yield* getPlanetAccount(planetKey);
 
-		const coordinates = planetAccount.data.sector as [BN, BN]; // TODO: check if this is the only way get the 'coordinates'
-		const starbaseKey = yield* getStarbaseAddressbyCoordinates(
-			context.game.key,
-			coordinates,
-		);
+// 		const coordinates = planetAccount.data.sector as [BN, BN]; // TODO: check if this is the only way get the 'coordinates'
+// 		const starbaseKey = yield* getStarbaseAddressbyCoordinates(
+// 			context.game.key,
+// 			coordinates,
+// 		);
 
-		const cargoHold = fleetAccount.data.cargoHold;
-		const fleetAmmoBank = fleetAccount.data.ammoBank;
-		const fleetFuelTank = fleetAccount.data.fuelTank;
+// 		const cargoHold = fleetAccount.data.cargoHold;
+// 		const fleetAmmoBank = fleetAccount.data.ammoBank;
+// 		const fleetFuelTank = fleetAccount.data.fuelTank;
 
-		const resourceTokenFrom = yield* getAssociatedTokenAddress(
-			mint,
-			mineItemKey,
-			true,
-		);
+// 		const resourceTokenFrom = yield* getAssociatedTokenAddress(
+// 			mint,
+// 			mineItemKey,
+// 			true,
+// 		);
 
-		const ataResourceTokenTo =
-			yield* gameService.utils.createAssociatedTokenAccountIdempotent(
-				mint,
-				cargoHold,
-				true,
-			);
+// 		const ataResourceTokenTo =
+// 			yield* gameService.utils.createAssociatedTokenAccountIdempotent(
+// 				mint,
+// 				cargoHold,
+// 				true,
+// 			);
 
-		const resourceTokenTo = ataResourceTokenTo.address;
+// 		const resourceTokenTo = ataResourceTokenTo.address;
 
-		const ix_0 = ataResourceTokenTo.instructions;
+// 		const ix_0 = ataResourceTokenTo.instructions;
 
-		const fleetFoodToken = yield* getAssociatedTokenAddress(
-			gameFoodMint,
-			cargoHold,
-			true,
-		);
-		const fleetAmmoToken = yield* getAssociatedTokenAddress(
-			gameAmmoMint,
-			fleetAmmoBank,
-			true,
-		);
-		const fleetFuelToken = yield* getAssociatedTokenAddress(
-			gameFuelMint,
-			fleetFuelTank,
-			true,
-		);
+// 		const fleetFoodToken = yield* getAssociatedTokenAddress(
+// 			gameFoodMint,
+// 			cargoHold,
+// 			true,
+// 		);
+// 		const fleetAmmoToken = yield* getAssociatedTokenAddress(
+// 			gameAmmoMint,
+// 			fleetAmmoBank,
+// 			true,
+// 		);
+// 		const fleetFuelToken = yield* getAssociatedTokenAddress(
+// 			gameFuelMint,
+// 			fleetFuelTank,
+// 			true,
+// 		);
 
-		const programs = yield* SagePrograms;
+// 		const programs = yield* SagePrograms;
 
-		const playerProfile = fleetAccount.data.ownerProfile;
+// 		const playerProfile = fleetAccount.data.ownerProfile;
 
-		const profileFaction = yield* getProfileFactionAddress(playerProfile);
+// 		const profileFaction = yield* getProfileFactionAddress(playerProfile);
 
-		const fleetKey = fleetAccount.key;
-		const ammoBank = fleetAccount.data.ammoBank;
+// 		const fleetKey = fleetAccount.key;
+// 		const ammoBank = fleetAccount.data.ammoBank;
 
-		const cargoStatsDefinitionKey = context.game.data.cargo.statsDefinition;
+// 		const cargoStatsDefinitionKey = context.game.data.cargo.statsDefinition;
 
-		const cargoStatsDefinition = yield* getCargoStatsDefinitionAccount(
-			cargoStatsDefinitionKey,
-		);
+// 		const cargoStatsDefinition = yield* getCargoStatsDefinitionAccount(
+// 			cargoStatsDefinitionKey,
+// 		);
 
-		const foodCargoType = yield* getCargoTypeAddress(
-			gameFoodMint,
-			cargoStatsDefinition,
-		);
-		const ammoCargoType = yield* getCargoTypeAddress(
-			gameAmmoMint,
-			cargoStatsDefinition,
-		);
-		const resourceCargoType = yield* getCargoTypeAddress(
-			mint,
-			cargoStatsDefinition,
-		);
+// 		const foodCargoType = yield* getCargoTypeAddress(
+// 			gameFoodMint,
+// 			cargoStatsDefinition,
+// 		);
+// 		const ammoCargoType = yield* getCargoTypeAddress(
+// 			gameAmmoMint,
+// 			cargoStatsDefinition,
+// 		);
+// 		const resourceCargoType = yield* getCargoTypeAddress(
+// 			mint,
+// 			cargoStatsDefinition,
+// 		);
 
-		const gameState = context.game.data.gameState;
-		const gameId = context.game.key;
-		const foodTokenFrom = fleetFoodToken;
-		const ammoTokenFrom = fleetAmmoToken;
-		const foodMint = gameFoodMint;
-		const ammoMint = gameAmmoMint;
+// 		const gameState = context.game.data.gameState;
+// 		const gameId = context.game.key;
+// 		const foodTokenFrom = fleetFoodToken;
+// 		const ammoTokenFrom = fleetAmmoToken;
+// 		const foodMint = gameFoodMint;
+// 		const ammoMint = gameAmmoMint;
 
-		const ix_1 = Fleet.asteroidMiningHandler(
-			programs.sage,
-			programs.cargo,
-			fleetKey,
-			starbaseKey,
-			mineItemKey,
-			resourceKey,
-			planetKey,
-			cargoHold,
-			ammoBank,
-			foodCargoType,
-			ammoCargoType,
-			resourceCargoType,
-			cargoStatsDefinition.key,
-			gameState,
-			gameId,
-			foodTokenFrom,
-			ammoTokenFrom,
-			resourceTokenFrom,
-			resourceTokenTo,
-			foodMint,
-			ammoMint,
-		);
+// 		const ix_1 = Fleet.asteroidMiningHandler(
+// 			programs.sage,
+// 			programs.cargo,
+// 			fleetKey,
+// 			starbaseKey,
+// 			mineItemKey,
+// 			resourceKey,
+// 			planetKey,
+// 			cargoHold,
+// 			ammoBank,
+// 			foodCargoType,
+// 			ammoCargoType,
+// 			resourceCargoType,
+// 			cargoStatsDefinition.key,
+// 			gameState,
+// 			gameId,
+// 			foodTokenFrom,
+// 			ammoTokenFrom,
+// 			resourceTokenFrom,
+// 			resourceTokenTo,
+// 			foodMint,
+// 			ammoMint,
+// 		);
 
-		const signer = yield* gameService.signer;
-		const fuelTank = fleetFuelTank;
+// 		const signer = yield* gameService.signer;
+// 		const fuelTank = fleetFuelTank;
 
-		const fuelCargoType = yield* getCargoTypeAddress(
-			gameFuelMint,
-			cargoStatsDefinition,
-		);
+// 		const fuelCargoType = yield* getCargoTypeAddress(
+// 			gameFuelMint,
+// 			cargoStatsDefinition,
+// 		);
 
-		const fuelTokenFrom = fleetFuelToken;
-		const fuelMint = gameFuelMint;
-		const input = { keyIndex: 0 } as StopMiningAsteroidInput;
+// 		const fuelTokenFrom = fleetFuelToken;
+// 		const fuelMint = gameFuelMint;
+// 		const input = { keyIndex: 0 } as StopMiningAsteroidInput;
 
-		const miningXpKey = yield* getMiningXpKey(playerProfile);
-		const pilotXpKey = yield* getPilotXpKey(playerProfile);
-		const councilRankXpKey = yield* getCouncilRankXpKey(playerProfile);
+// 		const miningXpKey = yield* getMiningXpKey(playerProfile);
+// 		const pilotXpKey = yield* getPilotXpKey(playerProfile);
+// 		const councilRankXpKey = yield* getCouncilRankXpKey(playerProfile);
 
-		const ix_2 = Fleet.stopMiningAsteroid(
-			programs.sage,
-			programs.cargo,
-			programs.points,
-			signer,
-			playerProfile,
-			profileFaction,
-			fleetKey,
-			mineItemKey,
-			resourceKey,
-			planetKey,
-			fuelTank,
-			fuelCargoType,
-			cargoStatsDefinition.key,
-			miningXpKey,
-			//@ts-ignore
-			context.game.data.points.miningXpCategory.category,
-			//@ts-ignore
-			context.game.data.points.miningXpCategory.modifier,
-			pilotXpKey,
-			//@ts-ignore
-			context.game.data.points.pilotXpCategory.category,
-			//@ts-ignore
-			context.game.data.points.pilotXpCategory.modifier,
-			councilRankXpKey,
-			//@ts-ignore
-			context.game.data.points.councilRankXpCategory.category,
-			//@ts-ignore
-			context.game.data.points.councilRankXpCategory.modifier,
-			gameState,
-			gameId,
-			fuelTokenFrom,
-			fuelMint,
-			input,
-		);
+// 		const ix_2 = Fleet.stopMiningAsteroid(
+// 			programs.sage,
+// 			programs.cargo,
+// 			programs.points,
+// 			signer,
+// 			playerProfile,
+// 			profileFaction,
+// 			fleetKey,
+// 			mineItemKey,
+// 			resourceKey,
+// 			planetKey,
+// 			fuelTank,
+// 			fuelCargoType,
+// 			cargoStatsDefinition.key,
+// 			miningXpKey,
+// 			//@ts-ignore
+// 			context.game.data.points.miningXpCategory.category,
+// 			//@ts-ignore
+// 			context.game.data.points.miningXpCategory.modifier,
+// 			pilotXpKey,
+// 			//@ts-ignore
+// 			context.game.data.points.pilotXpCategory.category,
+// 			//@ts-ignore
+// 			context.game.data.points.pilotXpCategory.modifier,
+// 			councilRankXpKey,
+// 			//@ts-ignore
+// 			context.game.data.points.councilRankXpCategory.category,
+// 			//@ts-ignore
+// 			context.game.data.points.councilRankXpCategory.modifier,
+// 			gameState,
+// 			gameId,
+// 			fuelTokenFrom,
+// 			fuelMint,
+// 			input,
+// 		);
 
-		return [ix_0, ix_1, ix_2];
-	});
+// 		return [ix_0, ix_1, ix_2];
+// 	});
 
 export class InvalidAmountError extends Data.TaggedError("InvalidAmountError")<{
 	resourceMint?: PublicKey;

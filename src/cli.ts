@@ -10,6 +10,7 @@ import { runUnloadCargo } from "./commands/unloadCargo";
 import { cargoPodKindDecoder } from "./types";
 import { parseSecretKey } from "./utils/keypair";
 import { isPublicKey, parsePublicKey } from "./utils/public-key";
+import { runStopMining } from "./commands/stopMining";
 
 const main = async () => {
 	const program = new Command("atom")
@@ -183,6 +184,31 @@ const main = async () => {
 			}>();
 
 			return runStartMining({
+				...globalOpts,
+				resourceMint,
+				fleetNameOrAddress: isPublicKey(fleetNameOrAddress)
+					? new PublicKey(fleetNameOrAddress)
+					: fleetNameOrAddress,
+			});
+		});
+
+		program
+		.command("stop-mining")
+		.argument("<fleetNameOrAddress>", "The fleet to stop mining")
+		.argument(
+			"<resourceMint>",
+			"The mint of the resource to mine",
+			parsePublicKey,
+		)
+		.action(async (fleetNameOrAddress: string, resourceMint: PublicKey) => {
+			const globalOpts = program.opts<{
+				owner: PublicKey;
+				playerProfile: PublicKey;
+				keypair: Keypair;
+				rpcUrl: string;
+			}>();
+
+			return runStopMining({
 				...globalOpts,
 				resourceMint,
 				fleetNameOrAddress: isPublicKey(fleetNameOrAddress)

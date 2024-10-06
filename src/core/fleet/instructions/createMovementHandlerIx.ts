@@ -18,7 +18,7 @@ export const createMovementHandlerIx = (fleetAccount: Fleet) =>
 
 		const ixs = [];
 
-		const { address: fuelTankAta, instructions } =
+		const { address: fuelFuelTankAta, instructions } =
 			yield* gameService.utils.createAssociatedTokenAccountIdempotent(
 				resourceNameToMint.Fuel,
 				fleetAccount.data.fuelTank,
@@ -36,7 +36,7 @@ export const createMovementHandlerIx = (fleetAccount: Fleet) =>
 		);
 
 		const maybeMoveHandlerIx = Match.value(fleetAccount.state).pipe(
-			Match.when({ MoveWarp: {} }, () =>
+			Match.when({ MoveWarp: Match.defined }, () =>
 				Fleet.moveWarpHandler(
 					programs.sage,
 					programs.points,
@@ -55,7 +55,7 @@ export const createMovementHandlerIx = (fleetAccount: Fleet) =>
 					context.game.key,
 				),
 			),
-			Match.when({ MoveSubwarp: {} }, () =>
+			Match.when({ MoveSubwarp: Match.defined }, () =>
 				Fleet.movementSubwarpHandler(
 					programs.sage,
 					programs.cargo,
@@ -65,7 +65,7 @@ export const createMovementHandlerIx = (fleetAccount: Fleet) =>
 					fleetAccount.data.fuelTank,
 					cargoTypeAddress,
 					context.cargoStatsDefinition.key,
-					fuelTankAta,
+					fuelFuelTankAta,
 					resourceNameToMint.Fuel,
 					pilotXpKey,
 					// @ts-ignore

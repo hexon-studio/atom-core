@@ -5,7 +5,7 @@ import type {
 	TransactionReturn,
 } from "@staratlas/data-source";
 import { ProfileVault } from "@staratlas/profile-vault";
-import { Data, Effect } from "effect";
+import { Array as EffectArray, Data, Effect } from "effect";
 import { type GameNotInitializedError, getGameContext } from "..";
 import { GameService } from "../..";
 import { tokenMints } from "../../../../../constants/tokens";
@@ -23,6 +23,7 @@ import {
 	type CreateProviderError,
 	SolanaService,
 } from "../../../SolanaService";
+import type { Result } from "neverthrow";
 
 export class BuildAndSignTransactionWithAtlasPrimeError extends Data.TaggedError(
 	"BuildAndSignTransactionWithAtlasPrimeError",
@@ -32,8 +33,8 @@ export class BuildAndSignTransactionWithAtlasPrimeError extends Data.TaggedError
 	}
 }
 
-export class BuildOptinalTxError extends Data.TaggedError(
-	"BuildOptinalTxError",
+export class BuildOptimalTxError extends Data.TaggedError(
+	"BuildOptimalTxError",
 )<{
 	error: string;
 }> {
@@ -47,7 +48,7 @@ export const buildAndSignTransactionWithAtlasPrime = (
 ): Effect.Effect<
 	TransactionReturn[],
 	| BuildAndSignTransactionWithAtlasPrimeError
-	| BuildOptinalTxError
+	| BuildOptimalTxError
 	| FetchDummyKeysError
 	| CreateKeypairError
 	| ReadFromRPCError
@@ -69,7 +70,7 @@ export const buildAndSignTransactionWithAtlasPrime = (
 			getPlayerProfileAccout(context.playerProfile).pipe(
 				Effect.andThen((playerProfile) =>
 					Effect.tryPromise({
-						try: () => {
+						try: async () => {
 							const [vaultAuthority] = ProfileVault.findVaultSigner(
 								programs.profileVaultProgram,
 								context.playerProfile,
@@ -102,7 +103,16 @@ export const buildAndSignTransactionWithAtlasPrime = (
 
 							builder.add(instructions);
 
-							return builder.buildDynamic();
+							const txs: Result<TransactionReturn, string>[] = [];
+
+							for (const _ of builder.instructions) {
+								const next = await builder.buildNextOptimalTransaction();
+								const nextLast = await builder.rebuildLast(true);
+								console.log(next);
+								txs.push(nextLast);
+							}
+
+							return txs;
 						},
 						catch: (error) =>
 							new BuildAndSignTransactionWithAtlasPrimeError({
@@ -110,14 +120,18 @@ export const buildAndSignTransactionWithAtlasPrime = (
 							}),
 					}),
 				),
-				Effect.flatMap((result) =>
-					result.isOk()
-						? Effect.succeed(result.value)
-						: Effect.fail(
-								new BuildOptinalTxError({
-									error: result.error,
-								}),
-							),
+				Effect.flatMap((txs) =>
+					Effect.all(
+						EffectArray.map(txs, (result) =>
+							result.isOk()
+								? Effect.succeed(result.value)
+								: Effect.fail(
+										new BuildOptimalTxError({
+											error: result.error,
+										}),
+									),
+						),
+					),
 				),
 			),
 		),
