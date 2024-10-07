@@ -1,14 +1,14 @@
+import type { PublicKey } from "@solana/web3.js";
 import { Fleet } from "@staratlas/sage";
+import type BN from "bn.js";
 import { Effect } from "effect";
+import { resourceNameToMint } from "../../../constants/resources";
 import { SagePrograms } from "../../programs";
 import { GameService } from "../../services/GameService";
 import { getGameContext } from "../../services/GameService/utils";
 import { getFleetAccount } from "../../utils/accounts";
 import { getProfileFactionAddress } from "../../utils/pdas";
 import { FleetNotIdleError } from "../errors";
-import type BN from "bn.js";
-import type { PublicKey } from "@solana/web3.js";
-import { resourceNameToMint } from "../../../constants/resources";
 
 type Param = {
 	fleetAddress: PublicKey;

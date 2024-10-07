@@ -1,9 +1,9 @@
 import type { PublicKey } from "@solana/web3.js";
 import { Cause, Console, Effect, Exit, Option } from "effect";
+import { stopMining } from "../core/actions/stopMining";
 import { GameService } from "../core/services/GameService";
 import type { RequiredParam } from "../types";
 import { createMainLiveService } from "../utils/createLiveService";
-import { stopMining } from "../core/actions/stopMining";
 
 type Param = RequiredParam & {
 	fleetNameOrAddress: string | PublicKey;

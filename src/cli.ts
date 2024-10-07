@@ -5,12 +5,12 @@ import { z } from "zod";
 import { runDock } from "./commands/dock";
 import { runLoadCargo } from "./commands/loadCargo";
 import { runStartMining } from "./commands/startMining";
+import { runStopMining } from "./commands/stopMining";
 import { runUndock } from "./commands/undock";
 import { runUnloadCargo } from "./commands/unloadCargo";
 import { cargoPodKindDecoder } from "./types";
 import { parseSecretKey } from "./utils/keypair";
 import { isPublicKey, parsePublicKey } from "./utils/public-key";
-import { runStopMining } from "./commands/stopMining";
 
 const main = async () => {
 	const program = new Command("atom")
@@ -192,7 +192,7 @@ const main = async () => {
 			});
 		});
 
-		program
+	program
 		.command("stop-mining")
 		.argument("<fleetNameOrAddress>", "The fleet to stop mining")
 		.argument(

@@ -126,9 +126,7 @@ export const createAsteroidMiningHandlerIx = ({
 			Match.orElse(() => null),
 		);
 
-		if (maybeAsteroidMiningHandlerIx) {
-			ixs.push(maybeAsteroidMiningHandlerIx);
-		}
-
-		return maybeAsteroidMiningHandlerIx ? ixs : [];
+		return maybeAsteroidMiningHandlerIx
+			? [...ixs, maybeAsteroidMiningHandlerIx]
+			: [];
 	});
