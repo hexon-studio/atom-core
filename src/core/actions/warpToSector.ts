@@ -1,9 +1,19 @@
 import type { PublicKey } from "@solana/web3.js";
+import type { InstructionReturn } from "@staratlas/data-source";
 import BN from "bn.js";
-import { Effect } from "effect";
+import { Effect, Match, pipe } from "effect";
 import { isPublicKey } from "../../utils/public-key";
-import { createWarpToCoordinateIx } from "../fleet/instructions";
+import {
+	createStopMiningIx,
+	createUndockFromStarbaseIx,
+	createWarpToCoordinateIx,
+} from "../fleet/instructions";
 import { GameService } from "../services/GameService";
+import {
+	getFleetAccount,
+	getMineItemAccount,
+	getResourceAccount,
+} from "../utils/accounts";
 import { getFleetAddressByName } from "../utils/pdas";
 
 export const warpToSector = ({
@@ -19,11 +29,41 @@ export const warpToSector = ({
 			: getFleetAddressByName(fleetNameOrAddress);
 
 		console.log("Start warp...");
+		const fleetAccount = yield* getFleetAccount(fleetAddress);
 
-		const ixs = yield* createWarpToCoordinateIx({
-			fleetAddress,
+		const ixs: InstructionReturn[] = [];
+
+		const preIxs = yield* Match.value(fleetAccount.state).pipe(
+			Match.when(
+				{ MineAsteroid: Match.defined },
+				({ MineAsteroid: { resource } }) =>
+					pipe(
+						getResourceAccount(resource),
+						Effect.flatMap((resource) =>
+							getMineItemAccount(resource.data.mineItem),
+						),
+						Effect.flatMap((mineItem) => {
+							return createStopMiningIx({
+								resourceMint: mineItem.data.mint,
+								fleetAccount,
+							});
+						}),
+					),
+			),
+			Match.when({ StarbaseLoadingBay: Match.defined }, () =>
+				createUndockFromStarbaseIx(fleetAccount).pipe(Effect.map((ix) => [ix])),
+			),
+			Match.orElse(() => Effect.succeed([] as InstructionReturn[])),
+		);
+
+		ixs.push(...preIxs);
+
+		const warpIxs = yield* createWarpToCoordinateIx({
+			fleetAccount,
 			targetSector: [new BN(targetSectorX), new BN(targetSectorY)],
 		});
+
+		ixs.push(...warpIxs);
 
 		const gameService = yield* GameService;
 

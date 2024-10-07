@@ -1,4 +1,4 @@
-import { Keypair, type PublicKey } from "@solana/web3.js";
+import { Keypair } from "@solana/web3.js";
 import type { InstructionReturn } from "@staratlas/data-source";
 import { Fleet, StarbasePlayer } from "@staratlas/sage";
 import { Effect, Option } from "effect";
@@ -8,7 +8,6 @@ import { SagePrograms } from "../../programs";
 import { GameService } from "../../services/GameService";
 import { getGameContext } from "../../services/GameService/utils";
 import {
-	getFleetAccount,
 	getStarbaseAccount,
 	getStarbasePlayerAccount,
 } from "../../utils/accounts";
@@ -22,10 +21,8 @@ import { InvalidFleetStateError } from "../errors";
 import { getCurrentFleetSectorCoordinates } from "../utils/getCurrentFleetSectorCoordinates";
 import { createMovementHandlerIx } from "./createMovementHandlerIx";
 
-export const createDockToStarbaseIx = (fleetAddress: PublicKey) =>
+export const createDockToStarbaseIx = (fleetAccount: Fleet) =>
 	Effect.gen(function* () {
-		const fleetAccount = yield* getFleetAccount(fleetAddress);
-
 		if (fleetAccount.state.StarbaseLoadingBay) {
 			return yield* Effect.fail(
 				new InvalidFleetStateError({
@@ -137,7 +134,7 @@ export const createDockToStarbaseIx = (fleetAddress: PublicKey) =>
 			signer,
 			fleetAccount.data.ownerProfile,
 			playerFactionAddress,
-			fleetAddress,
+			fleetAccount.key,
 			starbaseAddress,
 			starbasePlayerAddress,
 			context.game.key,

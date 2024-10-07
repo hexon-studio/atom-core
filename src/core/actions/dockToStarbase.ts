@@ -3,6 +3,7 @@ import { Effect } from "effect";
 import { isPublicKey } from "../../utils/public-key";
 import { createDockToStarbaseIx } from "../fleet/instructions";
 import { GameService } from "../services/GameService";
+import { getFleetAccount } from "../utils/accounts";
 import { getFleetAddressByName } from "../utils/pdas";
 
 export const dockToStarbase = ({
@@ -15,7 +16,9 @@ export const dockToStarbase = ({
 
 		console.log(`Docking fleet ${fleetAddress} to starbase...`);
 
-		const ixs = yield* createDockToStarbaseIx(fleetAddress);
+		const fleetAccount = yield* getFleetAccount(fleetAddress);
+
+		const ixs = yield* createDockToStarbaseIx(fleetAccount);
 
 		const gameService = yield* GameService;
 

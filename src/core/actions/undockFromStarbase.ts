@@ -3,6 +3,7 @@ import { Effect } from "effect";
 import { isPublicKey } from "../../utils/public-key";
 import { createUndockFromStarbaseIx } from "../fleet/instructions";
 import { GameService } from "../services/GameService";
+import { getFleetAccount } from "../utils/accounts";
 import { getFleetAddressByName } from "../utils/pdas";
 
 export const undockFromStarbase = ({
@@ -13,16 +14,11 @@ export const undockFromStarbase = ({
 			? Effect.succeed(fleetNameOrAddress)
 			: getFleetAddressByName(fleetNameOrAddress);
 
-		// const fleetAccount = yield* getFleetAccount(fleetPubkey);
-
-		// if (fleetAccount.state.Idle) {
-		// 	console.log("Already idle.");
-		// 	return;
-		// }
+		const fleetAccount = yield* getFleetAccount(fleetAddress);
 
 		console.log("Undocking from starbase...");
 
-		const ix = yield* createUndockFromStarbaseIx(fleetAddress);
+		const ix = yield* createUndockFromStarbaseIx(fleetAccount);
 
 		const gameService = yield* GameService;
 

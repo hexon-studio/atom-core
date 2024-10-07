@@ -11,7 +11,6 @@ import { GameService } from "../../../services/GameService";
 import { getGameContext } from "../../../services/GameService/utils";
 import {
 	getCargoStatsDefinitionAccount,
-	getFleetAccount,
 	getStarbaseAccount,
 } from "../../../utils/accounts";
 import {
@@ -34,12 +33,12 @@ export class FleetCargoPodTokenAccountNotFoundError extends Data.TaggedError(
 
 export const createWithdrawCargoFromFleetIx = ({
 	amount,
-	fleetAddress,
+	fleetAccount,
 	resourceMint,
 	cargoPodKind,
 }: {
 	amount: number;
-	fleetAddress: PublicKey;
+	fleetAccount: Fleet;
 	resourceMint: PublicKey;
 	cargoPodKind: CargoPodKind;
 }) =>
@@ -58,8 +57,6 @@ export const createWithdrawCargoFromFleetIx = ({
 		if (!isAllowed) {
 			return yield* Effect.fail(new InvalidResourceForPodKind());
 		}
-
-		const fleetAccount = yield* getFleetAccount(fleetAddress);
 
 		if (!fleetAccount.state.StarbaseLoadingBay) {
 			const fleetStateName = getCurrentFleetStateName(fleetAccount.state);
@@ -166,7 +163,7 @@ export const createWithdrawCargoFromFleetIx = ({
 			profileFactionPubkey,
 			starbasePubkey,
 			starbasePlayerPubkey,
-			fleetAddress,
+			fleetAccount.key,
 			cargoPodInfo.key,
 			starbasePlayerCargoPodsPubkey,
 			cargoType,

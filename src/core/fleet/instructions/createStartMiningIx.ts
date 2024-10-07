@@ -9,7 +9,6 @@ import { SagePrograms } from "../../programs";
 import { GameService } from "../../services/GameService";
 import { getGameContext } from "../../services/GameService/utils";
 import {
-	getFleetAccount,
 	getStarbaseAccount,
 	getStarbasePlayerAccount,
 } from "../../utils/accounts";
@@ -23,33 +22,22 @@ import {
 } from "../../utils/pdas";
 import {
 	FleetNotEnoughFuelError,
-	FleetNotIdleError,
 	PlanetNotFoundInSectorError,
 } from "../errors";
 import { getCurrentFleetSectorCoordinates } from "../utils/getCurrentFleetSectorCoordinates";
 import { createMovementHandlerIx } from "./createMovementHandlerIx";
 
 export const createStartMiningIx = ({
-	fleetAddress,
+	fleetAccount,
 	resourceMint,
 }: {
-	fleetAddress: PublicKey;
+	fleetAccount: Fleet;
 	resourceMint: PublicKey;
 }) =>
 	Effect.gen(function* () {
 		const gameService = yield* GameService;
 
 		const signer = yield* gameService.signer;
-
-		const fleetAccount = yield* getFleetAccount(fleetAddress);
-
-		// TODO: ensure fleet state is "Idle" - is there a better way to do this?
-		if (
-			fleetAccount.state.MineAsteroid ||
-			fleetAccount.state.StarbaseLoadingBay
-		) {
-			return yield* Effect.fail(new FleetNotIdleError());
-		}
 
 		const programs = yield* SagePrograms;
 

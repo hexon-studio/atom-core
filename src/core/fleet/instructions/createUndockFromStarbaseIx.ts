@@ -1,10 +1,9 @@
-import type { PublicKey } from "@solana/web3.js";
 import { Fleet } from "@staratlas/sage";
 import { Effect } from "effect";
 import { SagePrograms } from "../../programs";
 import { GameService } from "../../services/GameService";
 import { getGameContext } from "../../services/GameService/utils";
-import { getFleetAccount, getStarbaseAccount } from "../../utils/accounts";
+import { getStarbaseAccount } from "../../utils/accounts";
 import {
 	getProfileFactionAddress,
 	getSagePlayerProfileAddress,
@@ -12,10 +11,8 @@ import {
 } from "../../utils/pdas";
 import { FleetNotInStarbaseError } from "../errors";
 
-export const createUndockFromStarbaseIx = (fleetPubkey: PublicKey) =>
+export const createUndockFromStarbaseIx = (fleetAccount: Fleet) =>
 	Effect.gen(function* () {
-		const fleetAccount = yield* getFleetAccount(fleetPubkey);
-
 		if (!fleetAccount.state.StarbaseLoadingBay) {
 			return yield* Effect.fail(new FleetNotInStarbaseError());
 		}

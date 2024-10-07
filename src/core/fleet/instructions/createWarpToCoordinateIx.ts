@@ -1,4 +1,3 @@
-import type { PublicKey } from "@solana/web3.js";
 import { Fleet } from "@staratlas/sage";
 import type BN from "bn.js";
 import { Effect } from "effect";
@@ -7,7 +6,6 @@ import { getAssociatedTokenAddress } from "../../../utils/getAssociatedTokenAddr
 import { SagePrograms } from "../../programs";
 import { GameService } from "../../services/GameService";
 import { getGameContext } from "../../services/GameService/utils";
-import { getFleetAccount } from "../../utils/accounts";
 import {
 	getCargoTypeAddress,
 	getProfileFactionAddress,
@@ -17,17 +15,15 @@ import { getCurrentFleetSectorCoordinates } from "../utils/getCurrentFleetSector
 import { createMovementHandlerIx } from "./createMovementHandlerIx";
 
 type Param = {
-	fleetAddress: PublicKey;
+	fleetAccount: Fleet;
 	targetSector: [BN, BN];
 };
 
 export const createWarpToCoordinateIx = ({
-	fleetAddress,
+	fleetAccount,
 	targetSector: [targetSectorX, targetSectorY],
 }: Param) =>
 	Effect.gen(function* () {
-		const fleetAccount = yield* getFleetAccount(fleetAddress);
-
 		if (
 			fleetAccount.state.MineAsteroid ||
 			fleetAccount.state.StarbaseLoadingBay

@@ -3,6 +3,7 @@ import { Effect } from "effect";
 import { isPublicKey } from "../../utils/public-key";
 import { createStopMiningIx } from "../fleet/instructions";
 import { GameService } from "../services/GameService";
+import { getFleetAccount } from "../utils/accounts";
 import { getFleetAddressByName } from "../utils/pdas";
 export const stopMining = ({
 	fleetNameOrAddress,
@@ -18,8 +19,10 @@ export const stopMining = ({
 
 		console.log(`Stop mining ${resourceMint}...`);
 
+		const fleetAccount = yield* getFleetAccount(fleetAddress);
+
 		const ixs = yield* createStopMiningIx({
-			fleetAddress,
+			fleetAccount,
 			resourceMint,
 		});
 

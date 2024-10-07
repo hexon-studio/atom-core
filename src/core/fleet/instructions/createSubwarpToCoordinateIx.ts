@@ -1,28 +1,24 @@
-import type { PublicKey } from "@solana/web3.js";
 import { Fleet } from "@staratlas/sage";
 import type BN from "bn.js";
 import { Effect } from "effect";
 import { SagePrograms } from "../../programs";
 import { GameService } from "../../services/GameService";
 import { getGameContext } from "../../services/GameService/utils";
-import { getFleetAccount } from "../../utils/accounts";
 import { getProfileFactionAddress } from "../../utils/pdas";
 import { FleetNotIdleError } from "../errors";
 import { getCurrentFleetSectorCoordinates } from "../utils/getCurrentFleetSectorCoordinates";
 import { createMovementHandlerIx } from "./createMovementHandlerIx";
 
 type Param = {
-	fleetAddress: PublicKey;
+	fleetAccount: Fleet;
 	targetSector: [BN, BN];
 };
 
 export const createSubwarpToCoordinateIx = ({
-	fleetAddress,
+	fleetAccount,
 	targetSector: [targetSectorX, targetSectorY],
 }: Param) =>
 	Effect.gen(function* () {
-		const fleetAccount = yield* getFleetAccount(fleetAddress);
-
 		if (
 			fleetAccount.state.MineAsteroid ||
 			fleetAccount.state.StarbaseLoadingBay

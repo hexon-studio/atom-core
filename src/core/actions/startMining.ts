@@ -1,8 +1,13 @@
 import type { PublicKey } from "@solana/web3.js";
-import { Effect } from "effect";
+import type { InstructionReturn } from "@staratlas/data-source";
+import { Effect, Match } from "effect";
 import { isPublicKey } from "../../utils/public-key";
-import { createStartMiningIx } from "../fleet/instructions";
+import {
+	createStartMiningIx,
+	createUndockFromStarbaseIx,
+} from "../fleet/instructions";
 import { GameService } from "../services/GameService";
+import { getFleetAccount } from "../utils/accounts";
 import { getFleetAddressByName } from "../utils/pdas";
 
 export const startMining = ({
@@ -19,10 +24,33 @@ export const startMining = ({
 
 		console.log(`Start mining ${resourceMint}...`);
 
-		const ixs = yield* createStartMiningIx({
-			fleetAddress,
+		const fleetAccount = yield* getFleetAccount(fleetAddress);
+
+		const ixs: InstructionReturn[] = [];
+
+		const preIxs = yield* Match.value(fleetAccount.state).pipe(
+			Match.when(
+				{ MineAsteroid: Match.defined },
+				({ MineAsteroid: { asteroid } }) => {
+					console.log(`Fleet is already mining on asteroid (${asteroid})`);
+
+					return Effect.succeed([]);
+				},
+			),
+			Match.when({ StarbaseLoadingBay: Match.defined }, () =>
+				createUndockFromStarbaseIx(fleetAccount).pipe(Effect.map((ix) => [ix])),
+			),
+			Match.orElse(() => Effect.succeed([])),
+		);
+
+		ixs.push(...preIxs);
+
+		const miningIxs = yield* createStartMiningIx({
+			fleetAccount,
 			resourceMint,
 		});
+
+		ixs.push(...miningIxs);
 
 		const gameService = yield* GameService;
 

@@ -15,7 +15,6 @@ import { SagePrograms } from "../../programs";
 import { GameService } from "../../services/GameService";
 import { getGameContext } from "../../services/GameService/utils";
 import {
-	getFleetAccount,
 	getStarbaseAccount,
 	getStarbasePlayerAccount,
 } from "../../utils/accounts";
@@ -36,18 +35,16 @@ import { getCurrentFleetSectorCoordinates } from "../utils/getCurrentFleetSector
 import { createAsteroidMiningHandlerIx } from "./createAsteroidMiningHandlerIx";
 
 export const createStopMiningIx = ({
-	fleetAddress,
+	fleetAccount,
 	resourceMint,
 }: {
-	fleetAddress: PublicKey;
+	fleetAccount: Fleet;
 	resourceMint: PublicKey;
 }) =>
 	Effect.gen(function* () {
 		const gameService = yield* GameService;
 
 		const signer = yield* gameService.signer;
-
-		const fleetAccount = yield* getFleetAccount(fleetAddress);
 
 		if (!fleetAccount.state.MineAsteroid) {
 			return yield* Effect.fail(new FleetNotMiningError());
