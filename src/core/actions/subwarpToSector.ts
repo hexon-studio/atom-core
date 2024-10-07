@@ -43,12 +43,12 @@ export const subwarpToSector = ({
 						Effect.flatMap((resource) =>
 							getMineItemAccount(resource.data.mineItem),
 						),
-						Effect.flatMap((mineItem) => {
-							return createStopMiningIx({
+						Effect.flatMap((mineItem) =>
+							createStopMiningIx({
 								resourceMint: mineItem.data.mint,
 								fleetAccount,
-							});
-						}),
+							}),
+						),
 					),
 			),
 			Match.when({ StarbaseLoadingBay: Match.defined }, () =>
