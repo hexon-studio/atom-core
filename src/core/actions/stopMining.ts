@@ -21,6 +21,10 @@ export const stopMining = ({
 
 		const fleetAccount = yield* getFleetAccount(fleetAddress);
 
+		if (!fleetAccount.state.MineAsteroid) {
+			return [];
+		}
+
 		const ixs = yield* createStopMiningIx({
 			fleetAccount,
 			resourceMint,

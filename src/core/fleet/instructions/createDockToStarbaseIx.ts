@@ -32,15 +32,6 @@ export const createDockToStarbaseIx = (fleetAccount: Fleet) =>
 			);
 		}
 
-		if (fleetAccount.state.MineAsteroid) {
-			return yield* Effect.fail(
-				new InvalidFleetStateError({
-					state: "MineAsteroid",
-					reason: "Fleet is currently mining on an asteroid",
-				}),
-			);
-		}
-
 		const gameService = yield* GameService;
 		const signer = yield* gameService.signer;
 

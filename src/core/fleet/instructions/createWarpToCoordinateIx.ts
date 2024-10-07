@@ -10,7 +10,6 @@ import {
 	getCargoTypeAddress,
 	getProfileFactionAddress,
 } from "../../utils/pdas";
-import { FleetNotIdleError } from "../errors";
 import { getCurrentFleetSectorCoordinates } from "../utils/getCurrentFleetSectorCoordinates";
 import { createMovementHandlerIx } from "./createMovementHandlerIx";
 
@@ -24,13 +23,6 @@ export const createWarpToCoordinateIx = ({
 	targetSector: [targetSectorX, targetSectorY],
 }: Param) =>
 	Effect.gen(function* () {
-		if (
-			fleetAccount.state.MineAsteroid ||
-			fleetAccount.state.StarbaseLoadingBay
-		) {
-			return yield* Effect.fail(new FleetNotIdleError());
-		}
-
 		const [actualFleetSectorX, actualFleetSectorY] =
 			yield* getCurrentFleetSectorCoordinates(fleetAccount.state);
 

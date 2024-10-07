@@ -23,18 +23,18 @@ import {
 	getCargoTypeAddress,
 	getProfileFactionAddress,
 	getSagePlayerProfileAddress,
+	getStarbaseAddressbyCoordinates,
 	getStarbasePlayerAddress,
 } from "../../../utils/pdas";
 import {
 	FleetCargoPodFullError,
 	GetTokenBalanceError,
 	InvalidAmountError,
-	InvalidFleetStateError,
 	InvalidResourceForPodKind,
 	StarbaseCargoPodEmptyError,
 	StarbaseCargoPodTokenAccountNotFoundError,
 } from "../../errors";
-import { getCurrentFleetStateName } from "../../utils/getCurrentFleetStateName";
+import { getCurrentFleetSectorCoordinates } from "../../utils/getCurrentFleetSectorCoordinates";
 
 export const createDepositCargoToFleetIx = ({
 	amount,
@@ -63,18 +63,10 @@ export const createDepositCargoToFleetIx = ({
 			return yield* Effect.fail(new InvalidResourceForPodKind());
 		}
 
+		const gameService = yield* GameService;
+		const context = yield* getGameContext();
+
 		const fleetAccount = yield* getFleetAccount(fleetAddress);
-
-		if (!fleetAccount.state.StarbaseLoadingBay) {
-			const fleetStateName = getCurrentFleetStateName(fleetAccount.state);
-
-			return yield* Effect.fail(
-				new InvalidFleetStateError({
-					state: fleetStateName,
-					reason: "Fleet is not in starbase",
-				}),
-			);
-		}
 
 		const cargoPodInfo = yield* getFleetCargoPodInfoByType({
 			fleetAccount,
@@ -92,7 +84,13 @@ export const createDepositCargoToFleetIx = ({
 			yield* getProfileFactionAddress(playerProfilePubkey);
 
 		// Starbase where the fleet is located
-		const starbasePubkey = fleetAccount.state.StarbaseLoadingBay.starbase;
+		const fleetCoords = yield* getCurrentFleetSectorCoordinates(
+			fleetAccount.state,
+		);
+		const starbasePubkey = yield* getStarbaseAddressbyCoordinates(
+			context.game.key,
+			fleetCoords,
+		);
 		const starbaseAccount = yield* getStarbaseAccount(starbasePubkey);
 
 		// PDA Starbase - Player
@@ -108,8 +106,6 @@ export const createDepositCargoToFleetIx = ({
 			yield* getCargoPodsByAuthority(starbasePlayerPubkey);
 
 		const starbasePlayerCargoPodsPubkey = starbasePlayerCargoPodsAccount.key;
-
-		const gameService = yield* GameService;
 
 		const maybeTokenAccountFrom = yield* pipe(
 			gameService.utils.getParsedTokenAccountsByOwner(
@@ -192,8 +188,6 @@ export const createDepositCargoToFleetIx = ({
 
 		const programs = yield* SagePrograms;
 		const signer = yield* gameService.signer;
-
-		const context = yield* getGameContext();
 
 		const gameId = context.game.key;
 		const gameState = context.game.data.gameState;

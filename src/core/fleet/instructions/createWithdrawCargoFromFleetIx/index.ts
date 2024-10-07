@@ -17,15 +17,12 @@ import {
 	getCargoTypeAddress,
 	getProfileFactionAddress,
 	getSagePlayerProfileAddress,
+	getStarbaseAddressbyCoordinates,
 	getStarbasePlayerAddress,
 } from "../../../utils/pdas";
-import {
-	InvalidAmountError,
-	InvalidFleetStateError,
-	InvalidResourceForPodKind,
-} from "../../errors";
-import { getCurrentFleetStateName } from "../../utils/getCurrentFleetStateName";
+import { InvalidAmountError, InvalidResourceForPodKind } from "../../errors";
 import { getCargoPodsByAuthority } from "./../../../cargo-utils";
+import { getCurrentFleetSectorCoordinates } from "../../utils/getCurrentFleetSectorCoordinates";
 
 export class FleetCargoPodTokenAccountNotFoundError extends Data.TaggedError(
 	"FleetCargoPodTokenAccountNotFoundError",
@@ -58,18 +55,8 @@ export const createWithdrawCargoFromFleetIx = ({
 			return yield* Effect.fail(new InvalidResourceForPodKind());
 		}
 
-		if (!fleetAccount.state.StarbaseLoadingBay) {
-			const fleetStateName = getCurrentFleetStateName(fleetAccount.state);
-
-			return yield* Effect.fail(
-				new InvalidFleetStateError({
-					state: fleetStateName,
-					reason: "Fleet is not in a starbase",
-				}),
-			);
-		}
-
 		const gameService = yield* GameService;
+		const context = yield* getGameContext();
 
 		const playerProfilePubkey = fleetAccount.data.ownerProfile;
 
@@ -105,7 +92,13 @@ export const createWithdrawCargoFromFleetIx = ({
 		const tokenAccountFromPubkey = maybeTokenAccountFrom.value.address;
 
 		// Starbase where the fleet is located
-		const starbasePubkey = fleetAccount.state.StarbaseLoadingBay.starbase;
+		const fleetCoords = yield* getCurrentFleetSectorCoordinates(
+			fleetAccount.state,
+		);
+		const starbasePubkey = yield* getStarbaseAddressbyCoordinates(
+			context.game.key,
+			fleetCoords,
+		);
 		const starbaseAccount = yield* getStarbaseAccount(starbasePubkey);
 
 		// PDA Starbase - Player
@@ -138,7 +131,6 @@ export const createWithdrawCargoFromFleetIx = ({
 
 		const programs = yield* SagePrograms;
 
-		const context = yield* getGameContext();
 		const signer = yield* gameService.signer;
 		const gameId = context.game.key;
 		const gameState = context.game.data.gameState;

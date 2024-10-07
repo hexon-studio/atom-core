@@ -28,7 +28,6 @@ import {
 } from "../../utils/pdas";
 import {
 	FleetNotEnoughFuelError,
-	FleetNotMiningError,
 	PlanetNotFoundInSectorError,
 } from "../errors";
 import { getCurrentFleetSectorCoordinates } from "../utils/getCurrentFleetSectorCoordinates";
@@ -45,10 +44,6 @@ export const createStopMiningIx = ({
 		const gameService = yield* GameService;
 
 		const signer = yield* gameService.signer;
-
-		if (!fleetAccount.state.MineAsteroid) {
-			return yield* Effect.fail(new FleetNotMiningError());
-		}
 
 		const programs = yield* SagePrograms;
 
