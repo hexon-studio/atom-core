@@ -1,10 +1,16 @@
 import type { PublicKey } from "@solana/web3.js";
+import type { InstructionReturn } from "@staratlas/data-source";
 import { Fleet, PlanetType, StarbasePlayer } from "@staratlas/sage";
 import type BN from "bn.js";
 import { Effect } from "effect";
 import { isNone } from "effect/Option";
 import { resourceNameToMint } from "../../../constants/resources";
 import { getFleetCargoPodInfoByType } from "../../cargo-utils";
+import {
+	getCouncilRankXpKey,
+	getMiningXpKey,
+	getPilotXpKey,
+} from "../../points-utils/accounts";
 import { SagePrograms } from "../../programs";
 import { GameService } from "../../services/GameService";
 import { getGameContext } from "../../services/GameService/utils";
@@ -27,11 +33,7 @@ import {
 	PlanetNotFoundInSectorError,
 } from "../errors";
 import { getCurrentFleetSectorCoordinates } from "../utils/getCurrentFleetSectorCoordinates";
-import {
-	getCouncilRankXpKey,
-	getMiningXpKey,
-	getPilotXpKey,
-} from "../../points-utils/accounts";
+import { createAsteroidMiningHandlerIx } from "./createAsteroidMiningHandlerIx";
 
 export const createStopMiningIx = ({
 	fleetAddress,
@@ -111,7 +113,7 @@ export const createStopMiningIx = ({
 			starbasePlayerAddress,
 		).pipe(Effect.option);
 
-		const ixs = [];
+		const ixs: InstructionReturn[] = [];
 
 		if (isNone(starbasePlayerAccount)) {
 			const ix_0 = StarbasePlayer.registerStarbasePlayer(
@@ -126,13 +128,6 @@ export const createStopMiningIx = ({
 
 			ixs.push(ix_0);
 		}
-
-		// const maybeAsteroidMiningHandlerIx = yield* createAsteroidMiningHandler({
-		// 	fleetAccount,
-		// 	resourceMint,
-		// });
-
-		// ixs.push(...maybeAsteroidMiningHandlerIx);
 
 		const mineItemKey = yield* getMineItemAddress(
 			fleetAccount.data.gameId,
@@ -155,6 +150,14 @@ export const createStopMiningIx = ({
 		if (!fuelInTankData) {
 			return yield* Effect.fail(new FleetNotEnoughFuelError());
 		}
+
+		const miningHandlerIxs = yield* createAsteroidMiningHandlerIx({
+			fleetAccount,
+			resourceMint,
+			planetAddress,
+		});
+
+		ixs.push(...miningHandlerIxs);
 
 		const miningXpKey = yield* getMiningXpKey(context.playerProfile);
 		const pilotXpKey = yield* getPilotXpKey(context.playerProfile);

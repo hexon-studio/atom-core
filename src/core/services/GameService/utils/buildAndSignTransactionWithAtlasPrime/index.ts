@@ -1,18 +1,17 @@
 import { getAssociatedTokenAddressSync } from "@solana/spl-token";
+import { PublicKey } from "@solana/web3.js";
 import { AtlasPrimeTransactionBuilder } from "@staratlas/atlas-prime";
 import type {
 	InstructionReturn,
 	TransactionReturn,
 } from "@staratlas/data-source";
 import { ProfileVault } from "@staratlas/profile-vault";
-import { Array as EffectArray, Data, Effect } from "effect";
+import { Data, Effect, Array as EffectArray } from "effect";
+import type { Result } from "neverthrow";
 import { type GameNotInitializedError, getGameContext } from "..";
 import { GameService } from "../..";
 import { tokenMints } from "../../../../../constants/tokens";
-import {
-	type FetchDummyKeysError,
-	fetchDummyKeys,
-} from "../../../../atlas-core-utils/dummy-keys";
+import type { FetchDummyKeysError } from "../../../../atlas-core-utils/dummy-keys";
 import { SagePrograms } from "../../../../programs";
 import {
 	type ReadFromRPCError,
@@ -23,7 +22,6 @@ import {
 	type CreateProviderError,
 	SolanaService,
 } from "../../../SolanaService";
-import type { Result } from "neverthrow";
 
 export class BuildAndSignTransactionWithAtlasPrimeError extends Data.TaggedError(
 	"BuildAndSignTransactionWithAtlasPrimeError",
@@ -36,10 +34,12 @@ export class BuildAndSignTransactionWithAtlasPrimeError extends Data.TaggedError
 export class BuildOptimalTxError extends Data.TaggedError(
 	"BuildOptimalTxError",
 )<{
-	error: string;
+	error: unknown;
 }> {
 	override get message() {
-		return this.error;
+		return this.error instanceof Error
+			? this.error.message
+			: String(this.error);
 	}
 }
 
@@ -63,10 +63,9 @@ export const buildAndSignTransactionWithAtlasPrime = (
 				solanaService.anchorProvider,
 				gameService.signer,
 				getGameContext(),
-				fetchDummyKeys(),
 			]),
 		),
-		Effect.flatMap(([programs, provider, signer, context, dummyKeys]) =>
+		Effect.flatMap(([programs, provider, signer, context]) =>
 			getPlayerProfileAccout(context.playerProfile).pipe(
 				Effect.andThen((playerProfile) =>
 					Effect.tryPromise({
@@ -77,11 +76,19 @@ export const buildAndSignTransactionWithAtlasPrime = (
 								context.owner,
 							);
 
-							const builder = new AtlasPrimeTransactionBuilder({
+							const lookupTable =
+								await provider.connection.getAddressLookupTable(
+									// TODO: remove hardcode
+									new PublicKey("5NrYTRkLRsSSJGgfX2vNRbSXiEFi9yUHV5n7bs7VM9P2"),
+								);
+
+							const builder = await AtlasPrimeTransactionBuilder.new({
 								afpUrl: "https://prime.staratlas.com/",
 								connection: provider.connection,
 								commitment: "confirmed",
-								dummyKeys,
+								lookupTables: lookupTable.value
+									? [lookupTable.value]
+									: undefined,
 								postArgs: {
 									vault: {
 										funderVaultAuthority: vaultAuthority,
@@ -105,11 +112,8 @@ export const buildAndSignTransactionWithAtlasPrime = (
 
 							const txs: Result<TransactionReturn, string>[] = [];
 
-							for (const _ of builder.instructions) {
-								const next = await builder.buildNextOptimalTransaction();
-								const nextLast = await builder.rebuildLast(true);
-								console.log(next);
-								txs.push(nextLast);
+							for await (const tx of builder.optimalTransactions()) {
+								txs.push(tx);
 							}
 
 							return txs;
@@ -125,11 +129,7 @@ export const buildAndSignTransactionWithAtlasPrime = (
 						EffectArray.map(txs, (result) =>
 							result.isOk()
 								? Effect.succeed(result.value)
-								: Effect.fail(
-										new BuildOptimalTxError({
-											error: result.error,
-										}),
-									),
+								: Effect.fail(new BuildOptimalTxError({ error: result.error })),
 						),
 					),
 				),

@@ -6,6 +6,7 @@ settings:
 
 overrides:
   '@staratlas/player-profile': ^0.11.0
+  neverthrow: 6.2.2
 
 importers:
 
@@ -1741,10 +1742,6 @@ packages:
   neverthrow@6.2.2:
     resolution: {integrity: sha512-POR1FACqdK9jH0S2kRPzaZEvzT11wsOxLW520PQV/+vKi9dQe+hXq19EiOvYx7lSRaF5VB9lYGsPInynrnN05w==}
 
-  neverthrow@7.2.0:
-    resolution: {integrity: sha512-iGBUfFB7yPczHHtA8dksKTJ9E8TESNTAx1UQWW6TzMF280vo9jdPYpLUXrMN1BCkPdHFdNG3fxOt2CUad8KhAw==}
-    engines: {node: '>=18'}
-
   no-case@3.0.4:
     resolution: {integrity: sha512-fgAN3jGAh+RoxUGZHTSOLJIqUc2wmoBwGR4tbpNAKmmovFoWq0OdRkb0VkldReO2a2iBT/OEulG9XSUc10r3zg==}
 
@@ -3273,7 +3270,7 @@ snapshots:
       bs58: 6.0.0
       camelcase: 8.0.0
       lodash: 4.17.21
-      neverthrow: 7.2.0
+      neverthrow: 6.2.2
     transitivePeerDependencies:
       - bufferutil
       - encoding
@@ -4306,8 +4303,6 @@ snapshots:
   nanoid@3.3.7: {}
 
   neverthrow@6.2.2: {}
-
-  neverthrow@7.2.0: {}
 
   no-case@3.0.4:
     dependencies:

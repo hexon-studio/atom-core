@@ -1,6 +1,9 @@
-import { Fleet, PlanetType } from "@staratlas/sage";
+import type { PublicKey } from "@solana/web3.js";
+import type { InstructionReturn } from "@staratlas/data-source";
+import { Fleet } from "@staratlas/sage";
 import { Effect, Match } from "effect";
 import { resourceNameToMint } from "../../../constants/resources";
+import { getAssociatedTokenAddress } from "../../../utils/getAssociatedTokenAddress";
 import { SagePrograms } from "../../programs";
 import { GameService } from "../../services/GameService";
 import { getGameContext } from "../../services/GameService/utils";
@@ -10,44 +13,52 @@ import {
 	getResourceAddress,
 	getStarbaseAddressbyCoordinates,
 } from "../../utils/pdas";
-import type { PublicKey } from "@solana/web3.js";
 import { getCurrentFleetSectorCoordinates } from "../utils/getCurrentFleetSectorCoordinates";
-import type BN from "bn.js";
-import { isNone } from "effect/Option";
-import { PlanetNotFoundInSectorError } from "../errors";
-import { getAssociatedTokenAddress } from "../../../utils/getAssociatedTokenAddress";
 
 type Param = {
 	fleetAccount: Fleet;
 	resourceMint: PublicKey;
+	planetAddress: PublicKey;
 };
 
-export const createAsteroidMiningHandler = ({
+export const createAsteroidMiningHandlerIx = ({
 	fleetAccount,
 	resourceMint,
+	planetAddress,
 }: Param) =>
 	Effect.gen(function* () {
-		const gameService = yield* GameService;
 		const programs = yield* SagePrograms;
+		const gameService = yield* GameService;
 		const context = yield* getGameContext();
 
-		const foodCargoHoldAta = yield* getAssociatedTokenAddress(
-			resourceNameToMint.Food,
-			fleetAccount.data.cargoHold,
-			true,
-		);
+		const ixs: InstructionReturn[] = [];
 
-		const ammoAmmoBankAta = yield* getAssociatedTokenAddress(
-			resourceNameToMint.Ammunition,
-			fleetAccount.data.ammoBank,
-			true,
-		);
+		const { address: foodCargoHoldAta, instructions: foodIxs } =
+			yield* gameService.utils.createAssociatedTokenAccountIdempotent(
+				resourceNameToMint.Food,
+				fleetAccount.data.cargoHold,
+				true,
+			);
 
-		const resourceCargoHoldAta = yield* getAssociatedTokenAddress(
-			resourceMint,
-			fleetAccount.data.cargoHold,
-			true,
-		);
+		ixs.push(foodIxs);
+
+		const { address: ammoAmmoBankAta, instructions: ammoIxs } =
+			yield* gameService.utils.createAssociatedTokenAccountIdempotent(
+				resourceNameToMint.Ammunition,
+				fleetAccount.data.ammoBank,
+				true,
+			);
+
+		ixs.push(ammoIxs);
+
+		const { address: resourceCargoHoldAta, instructions: resourceIxs } =
+			yield* gameService.utils.createAssociatedTokenAccountIdempotent(
+				resourceMint,
+				fleetAccount.data.cargoHold,
+				true,
+			);
+
+		ixs.push(resourceIxs);
 
 		const foodCargoTypeAddress = yield* getCargoTypeAddress(
 			resourceNameToMint.Food,
@@ -67,29 +78,6 @@ export const createAsteroidMiningHandler = ({
 		const fleetCoordinates = yield* getCurrentFleetSectorCoordinates(
 			fleetAccount.state,
 		);
-
-		const maybePlanet = yield* gameService.methods.findPlanets().pipe(
-			Effect.flatMap(
-				Effect.findFirst((planet) => {
-					const [fleetX, fleetY] = fleetCoordinates;
-					const [planetX, planetY] = planet.data.sector as [BN, BN];
-
-					return Effect.succeed(
-						planet.data.planetType === PlanetType.AsteroidBelt &&
-							fleetX.eq(planetX) &&
-							fleetY.eq(planetY),
-					);
-				}),
-			),
-		);
-
-		if (isNone(maybePlanet)) {
-			return yield* Effect.fail(
-				new PlanetNotFoundInSectorError({ sector: fleetCoordinates }),
-			);
-		}
-
-		const planetAddress = maybePlanet.value.key;
 
 		const starbaseAddress = yield* getStarbaseAddressbyCoordinates(
 			fleetAccount.data.gameId,
@@ -138,5 +126,9 @@ export const createAsteroidMiningHandler = ({
 			Match.orElse(() => null),
 		);
 
-		return maybeAsteroidMiningHandlerIx ? [maybeAsteroidMiningHandlerIx] : [];
+		if (maybeAsteroidMiningHandlerIx) {
+			ixs.push(maybeAsteroidMiningHandlerIx);
+		}
+
+		return maybeAsteroidMiningHandlerIx ? ixs : [];
 	});
