@@ -16,8 +16,11 @@ import { findAllPlanets } from "../../../services/GameService/methods/findPlanet
 import { initGame } from "../../../services/GameService/methods/initGame";
 import { SolanaService } from "../../../services/SolanaService";
 import { getFleetAccount } from "../../../utils/accounts";
-import { FleetNotInStarbaseError } from "../../errors";
-import { InvalidAmountError, InvalidResourceForPodKind } from "../ixs";
+import {
+	FleetNotInStarbaseError,
+	InvalidAmountError,
+	InvalidResourceForPodKind,
+} from "../../errors";
 
 vi.mock("../../accounts");
 

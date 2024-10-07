@@ -6,8 +6,10 @@ import { runDock } from "./commands/dock";
 import { runLoadCargo } from "./commands/loadCargo";
 import { runStartMining } from "./commands/startMining";
 import { runStopMining } from "./commands/stopMining";
+import { runSubwarp } from "./commands/subwarp";
 import { runUndock } from "./commands/undock";
 import { runUnloadCargo } from "./commands/unloadCargo";
+import { runWarp } from "./commands/warp";
 import { cargoPodKindDecoder } from "./types";
 import { parseSecretKey } from "./utils/keypair";
 import { isPublicKey, parsePublicKey } from "./utils/public-key";
@@ -211,6 +213,48 @@ const main = async () => {
 			return runStopMining({
 				...globalOpts,
 				resourceMint,
+				fleetNameOrAddress: isPublicKey(fleetNameOrAddress)
+					? new PublicKey(fleetNameOrAddress)
+					: fleetNameOrAddress,
+			});
+		});
+
+	program
+		.command("warp")
+		.argument("<fleetNameOrAddress>", "The fleet to stop mining")
+		.argument("<targetSector...>", "Rhe coordinates of the target sector")
+		.action(async (fleetNameOrAddress: string, targetSector: string[]) => {
+			const globalOpts = program.opts<{
+				owner: PublicKey;
+				playerProfile: PublicKey;
+				keypair: Keypair;
+				rpcUrl: string;
+			}>();
+
+			return runWarp({
+				...globalOpts,
+				targetSector: targetSector.map(Number) as [number, number],
+				fleetNameOrAddress: isPublicKey(fleetNameOrAddress)
+					? new PublicKey(fleetNameOrAddress)
+					: fleetNameOrAddress,
+			});
+		});
+
+	program
+		.command("subwarp")
+		.argument("<fleetNameOrAddress>", "The fleet to stop mining")
+		.argument("<targetSector...>", "Rhe coordinates of the target sector")
+		.action(async (fleetNameOrAddress: string, targetSector: string[]) => {
+			const globalOpts = program.opts<{
+				owner: PublicKey;
+				playerProfile: PublicKey;
+				keypair: Keypair;
+				rpcUrl: string;
+			}>();
+
+			return runSubwarp({
+				...globalOpts,
+				targetSector: targetSector.map(Number) as [number, number],
 				fleetNameOrAddress: isPublicKey(fleetNameOrAddress)
 					? new PublicKey(fleetNameOrAddress)
 					: fleetNameOrAddress,

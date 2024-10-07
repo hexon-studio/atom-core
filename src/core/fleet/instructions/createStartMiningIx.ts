@@ -44,7 +44,10 @@ export const createStartMiningIx = ({
 		const fleetAccount = yield* getFleetAccount(fleetAddress);
 
 		// TODO: ensure fleet state is "Idle" - is there a better way to do this?
-		if (!fleetAccount.state.Idle) {
+		if (
+			fleetAccount.state.MineAsteroid ||
+			fleetAccount.state.StarbaseLoadingBay
+		) {
 			return yield* Effect.fail(new FleetNotIdleError());
 		}
 
@@ -150,7 +153,7 @@ export const createStartMiningIx = ({
 			return yield* Effect.fail(new FleetNotEnoughFuelError());
 		}
 
-		return Fleet.startMiningAsteroid(
+		const miningIx = Fleet.startMiningAsteroid(
 			programs.sage,
 			signer,
 			playerProfile,
@@ -166,4 +169,6 @@ export const createStartMiningIx = ({
 			fuelInTankData.tokenAccountKey,
 			{ keyIndex: 1 },
 		);
+
+		return [...ixs, miningIx];
 	});

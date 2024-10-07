@@ -2,16 +2,11 @@ import type { PublicKey } from "@solana/web3.js";
 import { Fleet } from "@staratlas/sage";
 import type BN from "bn.js";
 import { Effect } from "effect";
-import { resourceNameToMint } from "../../../constants/resources";
-import { getAssociatedTokenAddress } from "../../../utils/getAssociatedTokenAddress";
 import { SagePrograms } from "../../programs";
 import { GameService } from "../../services/GameService";
 import { getGameContext } from "../../services/GameService/utils";
 import { getFleetAccount } from "../../utils/accounts";
-import {
-	getCargoTypeAddress,
-	getProfileFactionAddress,
-} from "../../utils/pdas";
+import { getProfileFactionAddress } from "../../utils/pdas";
 import { FleetNotIdleError } from "../errors";
 import { getCurrentFleetSectorCoordinates } from "../utils/getCurrentFleetSectorCoordinates";
 import { createMovementHandlerIx } from "./createMovementHandlerIx";
@@ -21,7 +16,7 @@ type Param = {
 	targetSector: [BN, BN];
 };
 
-export const createWarpToCoordinateIx = ({
+export const createSubwarpToCoordinateIx = ({
 	fleetAddress,
 	targetSector: [targetSectorX, targetSectorY],
 }: Param) =>
@@ -55,17 +50,6 @@ export const createWarpToCoordinateIx = ({
 
 		const ixs = [];
 
-		const cargoTypeAddress = yield* getCargoTypeAddress(
-			resourceNameToMint.Fuel,
-			context.cargoStatsDefinition,
-		);
-
-		const fuelBankAta = yield* getAssociatedTokenAddress(
-			resourceNameToMint.Fuel,
-			fleetAccount.data.fuelTank,
-			true,
-		);
-
 		const playerFactionAddress = yield* getProfileFactionAddress(
 			fleetAccount.data.ownerProfile,
 		);
@@ -74,22 +58,16 @@ export const createWarpToCoordinateIx = ({
 
 		ixs.push(...movementHandlerIxs);
 
-		const warpIx = Fleet.warpToCoordinate(
+		const subwarpIx = Fleet.startSubwarp(
 			programs.sage,
 			signer,
 			fleetAccount.data.ownerProfile,
 			playerFactionAddress,
 			fleetAccount.key,
-			fleetAccount.data.fuelTank,
-			cargoTypeAddress,
-			context.cargoStatsDefinition.key,
-			fuelBankAta,
-			resourceNameToMint.Fuel,
-			context.gameState.key,
 			context.game.key,
-			programs.cargo,
+			context.gameState.key,
 			{ keyIndex: 1, toSector: [targetSectorX, targetSectorY] }, // 0 - normal wallet, 1 - hot wallet
 		);
 
-		return [...ixs, warpIx];
+		return [...ixs, subwarpIx];
 	});

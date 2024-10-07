@@ -25,16 +25,16 @@ import {
 	getSagePlayerProfileAddress,
 	getStarbasePlayerAddress,
 } from "../../../utils/pdas";
-import { InvalidFleetStateError } from "../../errors";
-import { getCurrentFleetStateName } from "../../utils/getCurrentFleetStateName";
 import {
 	FleetCargoPodFullError,
 	GetTokenBalanceError,
 	InvalidAmountError,
+	InvalidFleetStateError,
 	InvalidResourceForPodKind,
 	StarbaseCargoPodEmptyError,
 	StarbaseCargoPodTokenAccountNotFoundError,
-} from "../ixs";
+} from "../../errors";
+import { getCurrentFleetStateName } from "../../utils/getCurrentFleetStateName";
 
 export const createDepositCargoToFleetIx = ({
 	amount,

@@ -19,19 +19,20 @@ export const startMining = ({
 
 		console.log(`Start mining ${resourceMint}...`);
 
-		const ix = yield* createStartMiningIx({
+		const ixs = yield* createStartMiningIx({
 			fleetAddress,
 			resourceMint,
 		});
 
 		const gameService = yield* GameService;
 
-		const txs = yield* gameService.utils.buildAndSignTransactionWithAtlasPrime([
-			ix,
-		]);
+		const txs =
+			yield* gameService.utils.buildAndSignTransactionWithAtlasPrime(ixs);
 
 		const txIds = yield* Effect.all(
-			txs.map((tx) => gameService.utils.sendTransaction(tx)),
+			txs.map((tx) =>
+				gameService.utils.sendTransaction(tx, { skipPreflight: true }),
+			),
 		);
 
 		console.log("Mining started!");
