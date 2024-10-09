@@ -31,6 +31,8 @@ export const warpToSector = ({
 		console.log("Start warp...");
 		const fleetAccount = yield* getFleetAccount(fleetAddress);
 
+		// TODO: Not enough fuel to start warp
+
 		const ixs: InstructionReturn[] = [];
 
 		const preIxs = yield* Match.value(fleetAccount.state).pipe(

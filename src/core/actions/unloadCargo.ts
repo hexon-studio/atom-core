@@ -38,6 +38,8 @@ export const unloadCargo = ({
 
 		const fleetAccount = yield* getFleetAccount(fleetAddress);
 
+		// TODO: nothing to unload
+
 		const ixs: InstructionReturn[] = [];
 
 		const preIxs = yield* Match.value(fleetAccount.state).pipe(

@@ -26,6 +26,8 @@ export const startMining = ({
 
 		const fleetAccount = yield* getFleetAccount(fleetAddress);
 
+		// TODO: Not enough resources to star mining (fuel, ammo, food)
+
 		const ixs: InstructionReturn[] = [];
 
 		const preIxs = yield* Match.value(fleetAccount.state).pipe(

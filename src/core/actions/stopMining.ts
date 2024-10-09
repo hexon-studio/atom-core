@@ -17,13 +17,14 @@ export const stopMining = ({
 			? Effect.succeed(fleetNameOrAddress)
 			: getFleetAddressByName(fleetNameOrAddress);
 
-		console.log(`Stop mining ${resourceMint}...`);
-
 		const fleetAccount = yield* getFleetAccount(fleetAddress);
 
 		if (!fleetAccount.state.MineAsteroid) {
+			console.log("Fleet is not mining on asteroid");
 			return [];
 		}
+
+		console.log(`Stop mining ${resourceMint}...`);
 
 		const ixs = yield* createStopMiningIx({
 			fleetAccount,

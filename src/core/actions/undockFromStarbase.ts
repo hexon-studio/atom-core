@@ -16,6 +16,11 @@ export const undockFromStarbase = ({
 
 		const fleetAccount = yield* getFleetAccount(fleetAddress);
 
+		if (!fleetAccount.state.StarbaseLoadingBay) {
+			console.log("Fleet can't be undocked from starbase");
+			return [];
+		}
+
 		console.log("Undocking from starbase...");
 
 		const ix = yield* createUndockFromStarbaseIx(fleetAccount);

@@ -1,10 +1,20 @@
 import type { PublicKey } from "@solana/web3.js";
-import { Console, Data, Effect } from "effect";
+import { Console, Data, Effect, Match, pipe } from "effect";
 import type { CargoPodKind } from "../../types";
 import { isPublicKey } from "../../utils/public-key";
-import { createDepositCargoToFleetIx } from "../fleet/instructions";
+import {
+	createDepositCargoToFleetIx,
+	createDockToStarbaseIx,
+	createStopMiningIx,
+} from "../fleet/instructions";
 import { GameService } from "../services/GameService";
 import { getFleetAddressByName } from "../utils/pdas";
+import type { InstructionReturn } from "@staratlas/data-source";
+import {
+	getFleetAccount,
+	getMineItemAccount,
+	getResourceAccount,
+} from "../utils/accounts";
 
 export class BuildOptinalTxError extends Data.TaggedError(
 	"BuildOptinalTxError",
@@ -34,12 +44,57 @@ export const loadCargo = ({
 			`Loading cargo to fleet ${fleetNameOrAddress.toString()}`,
 		);
 
-		const ixs = yield* createDepositCargoToFleetIx({
+		const fleetAccount = yield* getFleetAccount(fleetAddress);
+
+		// TODO: nothing to load
+
+		const ixs: InstructionReturn[] = [];
+
+		const preIxs = yield* Match.value(fleetAccount.state).pipe(
+			Match.whenOr(
+				{ Idle: Match.defined },
+				{ MoveWarp: Match.defined },
+				{ MoveSubwarp: Match.defined },
+				() => createDockToStarbaseIx(fleetAccount),
+			),
+			Match.when(
+				{ MineAsteroid: Match.defined },
+				({ MineAsteroid: { resource } }) =>
+					Effect.Do.pipe(
+						Effect.bind("stopMiningIx", () =>
+							pipe(
+								getResourceAccount(resource),
+								Effect.flatMap((resource) =>
+									getMineItemAccount(resource.data.mineItem),
+								),
+								Effect.flatMap((mineItem) =>
+									createStopMiningIx({
+										resourceMint: mineItem.data.mint,
+										fleetAccount,
+									}),
+								),
+							),
+						),
+						Effect.bind("dockIx", () => createDockToStarbaseIx(fleetAccount)),
+						Effect.map(({ stopMiningIx, dockIx }) => [
+							...stopMiningIx,
+							...dockIx,
+						]),
+					),
+			),
+			Match.orElse(() => Effect.succeed([])),
+		);
+
+		ixs.push(...preIxs);
+
+		const loadCargoIxs = yield* createDepositCargoToFleetIx({
 			amount,
 			fleetAddress,
 			resourceMint,
 			cargoPodKind,
 		});
+
+		ixs.push(...loadCargoIxs);
 
 		const gameService = yield* GameService;
 

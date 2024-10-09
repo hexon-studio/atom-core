@@ -18,6 +18,11 @@ export const dockToStarbase = ({
 
 		const fleetAccount = yield* getFleetAccount(fleetAddress);
 
+		if (!fleetAccount.state.Idle) {
+			console.log("Fleet can't be docked to starbase");
+			return [];
+		}
+
 		const ixs = yield* createDockToStarbaseIx(fleetAccount);
 
 		const gameService = yield* GameService;
