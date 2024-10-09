@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 import { type Keypair, PublicKey } from "@solana/web3.js";
 import { Command } from "commander";
 import { Array as EffectArray, pipe } from "effect";
