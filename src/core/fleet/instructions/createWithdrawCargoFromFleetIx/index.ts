@@ -73,6 +73,7 @@ export const createWithdrawCargoFromFleetIx = ({
 			type: cargoPodKind,
 		});
 
+		// NOTE: this is 0 when mining,Token Account from where the resource will be withdrawn
 		const maybeTokenAccountFrom = yield* pipe(
 			gameService.utils.getParsedTokenAccountsByOwner(cargoPodInfo.key),
 			Effect.flatMap(
@@ -83,8 +84,8 @@ export const createWithdrawCargoFromFleetIx = ({
 		);
 
 		if (
-			isNone(maybeTokenAccountFrom) ||
-			maybeTokenAccountFrom.value.amount === 0n
+			isNone(maybeTokenAccountFrom)
+			// || maybeTokenAccountFrom.value.amount === 0n
 		) {
 			return yield* Effect.fail(new FleetCargoPodTokenAccountNotFoundError());
 		}
@@ -124,10 +125,11 @@ export const createWithdrawCargoFromFleetIx = ({
 			true,
 		);
 
-		const maxAmountToWithdraw = BN.min(
-			new BN(amount),
-			new BN(maybeTokenAccountFrom.value.amount.toString()),
-		);
+		// const maxAmountToWithdraw = BN.min(
+		// 	new BN(amount),
+		// 	new BN(maybeTokenAccountFrom.value.amount.toString()),
+		// );
+		const maxAmountToWithdraw = new BN(amount);
 
 		const programs = yield* SagePrograms;
 

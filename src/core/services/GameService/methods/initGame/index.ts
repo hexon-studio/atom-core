@@ -7,8 +7,8 @@ import {
 } from "../../../../utils/accounts";
 import { findGame } from "../findGame";
 
-export class AlreadyInitializedError extends Data.TaggedError(
-	"AlreadyInitializedError",
+export class GameAlreadyInitializedError extends Data.TaggedError(
+	"GameAlreadyInitializedError",
 ) {}
 
 export const initGame = (
@@ -20,7 +20,7 @@ export const initGame = (
 		const context = yield* Ref.get(contextRef);
 
 		if (Option.isSome(context)) {
-			return yield* Effect.fail(new AlreadyInitializedError());
+			return yield* Effect.fail(new GameAlreadyInitializedError());
 		}
 
 		const gameAccount = yield* findGame;
@@ -33,8 +33,8 @@ export const initGame = (
 
 		return yield* Ref.updateAndGet(contextRef, () =>
 			Option.some({
-				game,
 				cargoStatsDefinition,
+				game,
 				playerProfile,
 				owner,
 			}),
