@@ -165,23 +165,6 @@ export const getStarbaseAddressbyCoordinates = (
 		),
 	);
 
-// export class PlanetNotFoundError extends Data.TaggedError(
-// 	"PlanetNotFoundError",
-// )<{
-// 	readonly coordinates: [BN, BN];
-// }> {}
-
-// export const getPlanetAddressbyCoordinates = (coordinates: [BN, BN]) =>
-// 	getGameContext().pipe(
-// 		Effect.map((context) => context.planetsLookup),
-// 		Effect.map(Record.get(coordinates.toString())),
-// 		Effect.andThen((maybePlanetAddress) =>
-// 			Option.isSome(maybePlanetAddress)
-// 				? Effect.succeed(maybePlanetAddress.value)
-// 				: Effect.fail(new PlanetNotFoundError({ coordinates })),
-// 		),
-// 	);
-
 export const getResourceAddress = (mint: PublicKey, planet: PublicKey) =>
 	SagePrograms.pipe(
 		Effect.flatMap((programs) =>

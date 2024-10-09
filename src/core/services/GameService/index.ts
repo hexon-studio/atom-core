@@ -1,7 +1,7 @@
 import type { Keypair, PublicKey } from "@solana/web3.js";
 import type { CargoStatsDefinition } from "@staratlas/cargo";
 import { type AsyncSigner, keypairToAsyncSigner } from "@staratlas/data-source";
-import type { Game, GameState } from "@staratlas/sage";
+import type { Game } from "@staratlas/sage";
 import { Context, Effect, Layer, Option, Ref } from "effect";
 import { type CreateKeypairError, SolanaService } from "../SolanaService";
 import { type FindFleets, findFleets } from "./methods/findFleets";
@@ -28,7 +28,6 @@ import { type SendTransaction, sendTransaction } from "./utils/sendTransaction";
 
 export interface GameContext {
 	game: Game;
-	gameState: GameState;
 	cargoStatsDefinition: CargoStatsDefinition;
 	owner: PublicKey;
 	playerProfile: PublicKey;

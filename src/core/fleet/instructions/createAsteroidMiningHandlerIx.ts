@@ -113,7 +113,7 @@ export const createAsteroidMiningHandlerIx = ({
 					ammoCargoTypeAddress,
 					resourceCargoTypeAddress,
 					context.cargoStatsDefinition.key,
-					context.gameState.key,
+					context.game.data.gameState,
 					context.game.key,
 					foodCargoHoldAta,
 					ammoAmmoBankAta,

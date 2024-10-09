@@ -73,7 +73,7 @@ export const createWarpToCoordinateIx = ({
 			context.cargoStatsDefinition.key,
 			fuelBankAta,
 			resourceNameToMint.Fuel,
-			context.gameState.key,
+			context.game.data.gameState,
 			context.game.key,
 			programs.cargo,
 			{ keyIndex: 1, toSector: [targetSectorX, targetSectorY] }, // 0 - normal wallet, 1 - hot wallet

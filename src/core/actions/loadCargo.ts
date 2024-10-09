@@ -1,4 +1,5 @@
 import type { PublicKey } from "@solana/web3.js";
+import type { InstructionReturn } from "@staratlas/data-source";
 import { Console, Data, Effect, Match, pipe } from "effect";
 import type { CargoPodKind } from "../../types";
 import { isPublicKey } from "../../utils/public-key";
@@ -8,13 +9,12 @@ import {
 	createStopMiningIx,
 } from "../fleet/instructions";
 import { GameService } from "../services/GameService";
-import { getFleetAddressByName } from "../utils/pdas";
-import type { InstructionReturn } from "@staratlas/data-source";
 import {
 	getFleetAccount,
 	getMineItemAccount,
 	getResourceAccount,
 } from "../utils/accounts";
+import { getFleetAddressByName } from "../utils/pdas";
 
 export class BuildOptinalTxError extends Data.TaggedError(
 	"BuildOptinalTxError",
