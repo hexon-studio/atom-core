@@ -49,8 +49,8 @@ export const createStopMiningIx = ({
 
 		const context = yield* getGameContext();
 
-		const gameId = context.game.key;
-		const gameState = context.game.data.gameState;
+		const gameId = context.gameInfo.game.key;
+		const gameState = context.gameInfo.game.data.gameState;
 
 		const fleetCoordinates = yield* getCurrentFleetSectorCoordinates(
 			fleetAccount.state,
@@ -168,24 +168,18 @@ export const createStopMiningIx = ({
 			planetAddress,
 			fleetAccount.data.fuelTank,
 			fuelInTankData.cargoTypeKey,
-			context.cargoStatsDefinition.key,
+			context.gameInfo.cargoStatsDefinition.key,
 			miningXpKey,
-			// @ts-ignore
-			context.game.data.points.miningXpCategory.category,
-			// @ts-ignore
-			context.game.data.points.miningXpCategory.modifier,
+			context.gameInfo.game.data.points.miningXpCategory.category,
+			context.gameInfo.game.data.points.miningXpCategory.modifier,
 			pilotXpKey,
-			// @ts-ignore
-			context.game.data.points.pilotXpCategory.category,
-			// @ts-ignore
-			context.game.data.points.pilotXpCategory.modifier,
+			context.gameInfo.game.data.points.pilotXpCategory.category,
+			context.gameInfo.game.data.points.pilotXpCategory.modifier,
 			councilRankXpKey,
-			// @ts-ignore
-			context.game.data.points.councilRankXpCategory.category,
-			// @ts-ignore
-			context.game.data.points.councilRankXpCategory.modifier,
-			context.game.data.gameState,
-			context.game.key,
+			context.gameInfo.game.data.points.councilRankXpCategory.category,
+			context.gameInfo.game.data.points.councilRankXpCategory.modifier,
+			context.gameInfo.game.data.gameState,
+			context.gameInfo.game.key,
 			fuelInTankData.tokenAccountKey,
 			resourceNameToMint.Fuel,
 			{ keyIndex: 1 },

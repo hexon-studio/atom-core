@@ -71,8 +71,8 @@ export const createDockToStarbaseIx = (fleetAccount: Fleet) =>
 
 		const context = yield* getGameContext();
 
-		const gameId = context.game.key;
-		const gameState = context.game.data.gameState;
+		const gameId = context.gameInfo.game.key;
+		const gameState = context.gameInfo.game.data.gameState;
 
 		if (isNone(starbasePlayerAccount)) {
 			const ix_0 = StarbasePlayer.registerStarbasePlayer(
@@ -104,7 +104,7 @@ export const createDockToStarbaseIx = (fleetAccount: Fleet) =>
 				context.playerProfile,
 				playerFactionAddress,
 				starbaseAddress,
-				context.cargoStatsDefinition.key,
+				context.gameInfo.cargoStatsDefinition.key,
 				gameId,
 				gameState,
 				{
@@ -128,8 +128,8 @@ export const createDockToStarbaseIx = (fleetAccount: Fleet) =>
 			fleetAccount.key,
 			starbaseAddress,
 			starbasePlayerAddress,
-			context.game.key,
-			context.game.data.gameState,
+			context.gameInfo.game.key,
+			context.gameInfo.game.data.gameState,
 			1,
 		);
 

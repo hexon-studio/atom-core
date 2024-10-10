@@ -43,8 +43,8 @@ export const createStartMiningIx = ({
 
 		const context = yield* getGameContext();
 
-		const gameId = context.game.key;
-		const gameState = context.game.data.gameState;
+		const gameId = context.gameInfo.game.key;
+		const gameState = context.gameInfo.game.data.gameState;
 
 		const fleetCoordinates = yield* getCurrentFleetSectorCoordinates(
 			fleetAccount.state,
@@ -152,8 +152,8 @@ export const createStartMiningIx = ({
 			mineItemKey,
 			resourceKey,
 			planetPubkey,
-			context.game.data.gameState,
-			context.game.key,
+			context.gameInfo.game.data.gameState,
+			context.gameInfo.game.key,
 			fuelInTankData.tokenAccountKey,
 			{ keyIndex: 1 },
 		);

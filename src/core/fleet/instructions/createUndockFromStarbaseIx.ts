@@ -27,7 +27,7 @@ export const createUndockFromStarbaseIx = (fleetAccount: Fleet) =>
 		const starbaseAccount = yield* getStarbaseAccount(starbaseKey);
 
 		const sagePlayerProfileAddress = yield* getSagePlayerProfileAddress(
-			context.game.key,
+			context.gameInfo.game.key,
 			fleetAccount.data.ownerProfile,
 		);
 
@@ -49,8 +49,8 @@ export const createUndockFromStarbaseIx = (fleetAccount: Fleet) =>
 			fleetAccount.key,
 			starbaseKey,
 			starbasePlayerKey,
-			context.game.key,
-			context.game.data.gameState,
+			context.gameInfo.game.key,
+			context.gameInfo.game.data.gameState,
 			1, // 0 - normal wallet, 1 - hot wallet
 		);
 	});

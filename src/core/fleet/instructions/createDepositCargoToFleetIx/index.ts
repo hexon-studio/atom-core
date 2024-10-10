@@ -14,11 +14,7 @@ import { SagePrograms } from "../../../programs";
 import { GameService } from "../../../services/GameService";
 import { getGameContext } from "../../../services/GameService/utils";
 import { SolanaService } from "../../../services/SolanaService";
-import {
-	getCargoStatsDefinitionAccount,
-	getFleetAccount,
-	getStarbaseAccount,
-} from "../../../utils/accounts";
+import { getFleetAccount, getStarbaseAccount } from "../../../utils/accounts";
 import {
 	getCargoTypeAddress,
 	getProfileFactionAddress,
@@ -88,7 +84,7 @@ export const createDepositCargoToFleetIx = ({
 			fleetAccount.state,
 		);
 		const starbasePubkey = yield* getStarbaseAddressbyCoordinates(
-			context.game.key,
+			context.gameInfo.game.key,
 			fleetCoords,
 		);
 		const starbaseAccount = yield* getStarbaseAccount(starbasePubkey);
@@ -189,16 +185,13 @@ export const createDepositCargoToFleetIx = ({
 		const programs = yield* SagePrograms;
 		const signer = yield* gameService.signer;
 
-		const gameId = context.game.key;
-		const gameState = context.game.data.gameState;
-
-		const cargoStatsDefinition = yield* getCargoStatsDefinitionAccount(
-			context.game.data.cargo.statsDefinition,
-		);
+		const gameId = context.gameInfo.game.key;
+		const gameState = context.gameInfo.game.data.gameState;
 
 		const cargoType = yield* getCargoTypeAddress(
 			resourceMint,
-			cargoStatsDefinition,
+			context.gameInfo.cargoStatsDefinition.key,
+			context.gameInfo.cargoStatsDefinition.data.seqId,
 		);
 
 		const ix_1 = Fleet.depositCargoToFleet(
@@ -214,7 +207,7 @@ export const createDepositCargoToFleetIx = ({
 			starbasePlayerCargoPodsPubkey,
 			cargoPodInfo.key,
 			cargoType,
-			cargoStatsDefinition.key,
+			context.gameInfo.cargoStatsDefinition.key,
 			tokenAccountFromPubkey,
 			tokenAccountToPubkey,
 			resourceMint,

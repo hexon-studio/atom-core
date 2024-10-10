@@ -1,6 +1,6 @@
 import type { PublicKey } from "@solana/web3.js";
 import type { BN } from "@staratlas/anchor";
-import { type CargoStatsDefinition, CargoType } from "@staratlas/cargo";
+import { CargoType } from "@staratlas/cargo";
 import { stringToByteArray } from "@staratlas/data-source";
 import { ProfileFactionAccount } from "@staratlas/profile-faction";
 import {
@@ -24,7 +24,7 @@ export const getFleetAddressByName = (fleetName: string) =>
 
 				const [fleet] = Fleet.findAddress(
 					programs.sage,
-					context.game.key,
+					context.gameInfo.game.key,
 					context.playerProfile,
 					fleetLabel,
 				);
@@ -36,16 +36,17 @@ export const getFleetAddressByName = (fleetName: string) =>
 
 export const getCargoTypeAddress = (
 	mint: PublicKey,
-	cargoStatsDefinition: CargoStatsDefinition,
+	cargoStatsDefinitionAddress: PublicKey,
+	cargoStatsDefinitionseqId = 0,
 ) =>
 	SagePrograms.pipe(
 		Effect.flatMap((programs) =>
 			Effect.try(() => {
 				const [cargoType] = CargoType.findAddress(
 					programs.cargo,
-					cargoStatsDefinition.key,
+					cargoStatsDefinitionAddress,
 					mint,
-					cargoStatsDefinition.data.seqId,
+					cargoStatsDefinitionseqId,
 				);
 
 				return cargoType;

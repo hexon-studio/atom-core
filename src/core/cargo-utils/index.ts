@@ -1,4 +1,4 @@
-import type { PublicKey } from "@solana/web3.js";
+import { PublicKey } from "@solana/web3.js";
 import {
 	type CargoStats,
 	type Fleet,
@@ -77,7 +77,8 @@ export const getFleetCargoPodInfoByType = ({
 		for (const cargoPodTokenAccount of cargoPodTokenAccounts) {
 			const cargoTypeKey = yield* getCargoTypeAddress(
 				cargoPodTokenAccount.mint,
-				context.cargoStatsDefinition,
+				new PublicKey(context.gameInfo.cargoStatsDefinition.key),
+				context.gameInfo.cargoStatsDefinition.data.seqId,
 			);
 			const cargoType = yield* getCargoTypeAccount(cargoTypeKey);
 

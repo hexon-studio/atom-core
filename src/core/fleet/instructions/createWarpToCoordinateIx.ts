@@ -45,7 +45,8 @@ export const createWarpToCoordinateIx = ({
 
 		const cargoTypeAddress = yield* getCargoTypeAddress(
 			resourceNameToMint.Fuel,
-			context.cargoStatsDefinition,
+			context.gameInfo.cargoStatsDefinition.key,
+			context.gameInfo.cargoStatsDefinition.data.seqId,
 		);
 
 		const fuelBankAta = yield* getAssociatedTokenAddress(
@@ -70,11 +71,11 @@ export const createWarpToCoordinateIx = ({
 			fleetAccount.key,
 			fleetAccount.data.fuelTank,
 			cargoTypeAddress,
-			context.cargoStatsDefinition.key,
+			context.gameInfo.cargoStatsDefinition.key,
 			fuelBankAta,
 			resourceNameToMint.Fuel,
-			context.game.data.gameState,
-			context.game.key,
+			context.gameInfo.game.data.gameState,
+			context.gameInfo.game.key,
 			programs.cargo,
 			{ keyIndex: 1, toSector: [targetSectorX, targetSectorY] }, // 0 - normal wallet, 1 - hot wallet
 		);

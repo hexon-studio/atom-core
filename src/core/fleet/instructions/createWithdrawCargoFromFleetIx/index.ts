@@ -9,10 +9,7 @@ import { getFleetCargoPodInfoByType } from "../../../cargo-utils";
 import { SagePrograms } from "../../../programs";
 import { GameService } from "../../../services/GameService";
 import { getGameContext } from "../../../services/GameService/utils";
-import {
-	getCargoStatsDefinitionAccount,
-	getStarbaseAccount,
-} from "../../../utils/accounts";
+import { getStarbaseAccount } from "../../../utils/accounts";
 import {
 	getCargoTypeAddress,
 	getProfileFactionAddress,
@@ -97,7 +94,7 @@ export const createWithdrawCargoFromFleetIx = ({
 			fleetAccount.state,
 		);
 		const starbasePubkey = yield* getStarbaseAddressbyCoordinates(
-			context.game.key,
+			context.gameInfo.game.key,
 			fleetCoords,
 		);
 		const starbaseAccount = yield* getStarbaseAccount(starbasePubkey);
@@ -134,18 +131,13 @@ export const createWithdrawCargoFromFleetIx = ({
 		const programs = yield* SagePrograms;
 
 		const signer = yield* gameService.signer;
-		const gameId = context.game.key;
-		const gameState = context.game.data.gameState;
-
-		const cargoStatsDefinitionKey = context.game.data.cargo.statsDefinition;
-
-		const cargoStatsDefinition = yield* getCargoStatsDefinitionAccount(
-			cargoStatsDefinitionKey,
-		);
+		const gameId = context.gameInfo.game.key;
+		const gameState = context.gameInfo.game.data.gameState;
 
 		const cargoType = yield* getCargoTypeAddress(
 			resourceMint,
-			cargoStatsDefinition,
+			context.gameInfo.cargoStatsDefinition.key,
+			context.gameInfo.cargoStatsDefinition.data.seqId,
 		);
 
 		const withdrawCargoFromFleetIx = Fleet.withdrawCargoFromFleet(
@@ -161,7 +153,7 @@ export const createWithdrawCargoFromFleetIx = ({
 			cargoPodInfo.key,
 			starbasePlayerCargoPodsPubkey,
 			cargoType,
-			cargoStatsDefinition.key,
+			context.gameInfo.cargoStatsDefinition.key,
 			tokenAccountFromPubkey,
 			starbasePlayerResourceMintAta,
 			resourceMint,

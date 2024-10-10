@@ -1,3 +1,4 @@
+import { PublicKey } from "@solana/web3.js";
 import { Fleet } from "@staratlas/sage";
 import { Effect, Match } from "effect";
 import { resourceNameToMint } from "../../../constants/resources";
@@ -32,7 +33,8 @@ export const createMovementHandlerIx = (fleetAccount: Fleet) =>
 
 		const cargoTypeAddress = yield* getCargoTypeAddress(
 			resourceNameToMint.Fuel,
-			context.cargoStatsDefinition,
+			new PublicKey(context.gameInfo.cargoStatsDefinition.key),
+			context.gameInfo.cargoStatsDefinition.data.seqId,
 		);
 
 		const maybeMoveHandlerIx = Match.value(fleetAccount.state).pipe(
@@ -43,16 +45,12 @@ export const createMovementHandlerIx = (fleetAccount: Fleet) =>
 					context.playerProfile,
 					fleetAccount.key,
 					pilotXpKey,
-					// @ts-ignore
-					context.game.data.points.pilotXpCategory.category,
-					// @ts-ignore
-					context.game.data.points.pilotXpCategory.modifier,
+					context.gameInfo.game.data.points.pilotXpCategory.category,
+					context.gameInfo.game.data.points.pilotXpCategory.modifier,
 					councilRankXpKey,
-					// @ts-ignore
-					context.game.data.points.councilRankXpCategory.category,
-					// @ts-ignore
-					context.game.data.points.councilRankXpCategory.modifier,
-					context.game.key,
+					context.gameInfo.game.data.points.councilRankXpCategory.category,
+					context.gameInfo.game.data.points.councilRankXpCategory.modifier,
+					context.gameInfo.game.key,
 				),
 			),
 			Match.when({ MoveSubwarp: Match.defined }, () =>
@@ -64,20 +62,16 @@ export const createMovementHandlerIx = (fleetAccount: Fleet) =>
 					fleetAccount.key,
 					fleetAccount.data.fuelTank,
 					cargoTypeAddress,
-					context.cargoStatsDefinition.key,
+					context.gameInfo.cargoStatsDefinition.key,
 					fuelFuelTankAta,
 					resourceNameToMint.Fuel,
 					pilotXpKey,
-					// @ts-ignore
-					context.game.data.points.pilotXpCategory.category,
-					// @ts-ignore
-					context.game.data.points.pilotXpCategory.modifier,
+					context.gameInfo.game.data.points.pilotXpCategory.category,
+					context.gameInfo.game.data.points.pilotXpCategory.modifier,
 					councilRankXpKey,
-					// @ts-ignore
-					context.game.data.points.councilRankXpCategory.category,
-					// @ts-ignore
-					context.game.data.points.councilRankXpCategory.modifier,
-					context.game.key,
+					context.gameInfo.game.data.points.councilRankXpCategory.category,
+					context.gameInfo.game.data.points.councilRankXpCategory.modifier,
+					context.gameInfo.game.key,
 				),
 			),
 			Match.orElse(() => null),

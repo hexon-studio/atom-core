@@ -1,8 +1,7 @@
 import { Keypair, PublicKey } from "@solana/web3.js";
 import { AnchorProvider } from "@staratlas/anchor";
-import type { CargoStatsDefinition } from "@staratlas/cargo";
 import { keypairToAsyncSigner } from "@staratlas/data-source";
-import type { Fleet, Game } from "@staratlas/sage";
+import type { Fleet } from "@staratlas/sage";
 import { Effect, Exit, Layer, Option, Ref } from "effect";
 import { constant, unsafeCoerce } from "effect/Function";
 import mock from "mock-fs";
@@ -14,6 +13,7 @@ import { findFleets } from "../../../services/GameService/methods/findFleets";
 import { findGame } from "../../../services/GameService/methods/findGame";
 import { findAllPlanets } from "../../../services/GameService/methods/findPlanets";
 import { initGame } from "../../../services/GameService/methods/initGame";
+import type { GameInfo } from "../../../services/GameService/methods/initGame/fetchGameInfo";
 import { SolanaService } from "../../../services/SolanaService";
 import { getFleetAccount } from "../../../utils/accounts";
 import {
@@ -26,8 +26,7 @@ vi.mock("../../accounts");
 
 const gameContextRef = Ref.unsafeMake(
 	Option.some<GameContext>({
-		game: {} as Game,
-		cargoStatsDefinition: {} as CargoStatsDefinition,
+		gameInfo: {} as GameInfo,
 		owner: new PublicKey("11111111111111111111111111111111"),
 		playerProfile: new PublicKey("11111111111111111111111111111111"),
 	}),

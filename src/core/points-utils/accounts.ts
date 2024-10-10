@@ -10,8 +10,7 @@ export const getMiningXpKey = (playerProfilePublicKey: PublicKey) =>
 			Effect.try(() => {
 				const [pubKey] = UserPoints.findAddress(
 					programs.points,
-					// @ts-ignore
-					context.game.data.points.miningXpCategory.category,
+					context.gameInfo.game.data.points.miningXpCategory.category,
 					playerProfilePublicKey,
 				);
 
@@ -26,8 +25,7 @@ export const getPilotXpKey = (playerProfilePublicKey: PublicKey) =>
 			Effect.try(() => {
 				const [pubKey] = UserPoints.findAddress(
 					programs.points,
-					// @ts-ignore
-					context.game.data.points.pilotXpCategory.category,
+					context.gameInfo.game.data.points.pilotXpCategory.category,
 					playerProfilePublicKey,
 				);
 				return pubKey;
@@ -41,8 +39,7 @@ export const getCouncilRankXpKey = (playerProfilePublicKey: PublicKey) =>
 			Effect.try(() => {
 				const [pubKey] = UserPoints.findAddress(
 					programs.points,
-					// @ts-ignore
-					context.game.data.points.councilRankXpCategory.category,
+					context.gameInfo.game.data.points.councilRankXpCategory.category,
 					playerProfilePublicKey,
 				);
 				return pubKey;

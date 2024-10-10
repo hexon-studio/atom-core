@@ -1,4 +1,4 @@
-import type { PublicKey } from "@solana/web3.js";
+import { PublicKey } from "@solana/web3.js";
 import type { InstructionReturn } from "@staratlas/data-source";
 import { Fleet } from "@staratlas/sage";
 import { Effect, Match } from "effect";
@@ -62,17 +62,20 @@ export const createAsteroidMiningHandlerIx = ({
 
 		const foodCargoTypeAddress = yield* getCargoTypeAddress(
 			resourceNameToMint.Food,
-			context.cargoStatsDefinition,
+			new PublicKey(context.gameInfo.cargoStatsDefinition.key),
+			context.gameInfo.cargoStatsDefinition.data.seqId,
 		);
 
 		const ammoCargoTypeAddress = yield* getCargoTypeAddress(
 			resourceNameToMint.Ammunition,
-			context.cargoStatsDefinition,
+			new PublicKey(context.gameInfo.cargoStatsDefinition.key),
+			context.gameInfo.cargoStatsDefinition.data.seqId,
 		);
 
 		const resourceCargoTypeAddress = yield* getCargoTypeAddress(
 			resourceMint,
-			context.cargoStatsDefinition,
+			new PublicKey(context.gameInfo.cargoStatsDefinition.key),
+			context.gameInfo.cargoStatsDefinition.data.seqId,
 		);
 
 		const fleetCoordinates = yield* getCurrentFleetSectorCoordinates(
@@ -112,9 +115,9 @@ export const createAsteroidMiningHandlerIx = ({
 					foodCargoTypeAddress,
 					ammoCargoTypeAddress,
 					resourceCargoTypeAddress,
-					context.cargoStatsDefinition.key,
-					context.game.data.gameState,
-					context.game.key,
+					context.gameInfo.cargoStatsDefinition.key,
+					context.gameInfo.game.data.gameState,
+					context.gameInfo.game.key,
 					foodCargoHoldAta,
 					ammoAmmoBankAta,
 					resourceTokenFromAta,

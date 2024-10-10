@@ -1,11 +1,7 @@
 import type { PublicKey } from "@solana/web3.js";
 import { Data, Effect, Option, Ref } from "effect";
 import type { GameContext } from "../..";
-import {
-	getCargoStatsDefinitionAccount,
-	getGameAccount,
-} from "../../../../utils/accounts";
-import { findGame } from "../findGame";
+import { fetchGameInfoOrAccounts } from "./fetchGameInfoOrAccount";
 
 export class GameAlreadyInitializedError extends Data.TaggedError(
 	"GameAlreadyInitializedError",
@@ -23,18 +19,11 @@ export const initGame = (
 			return yield* Effect.fail(new GameAlreadyInitializedError());
 		}
 
-		const gameAccount = yield* findGame;
-
-		const game = yield* getGameAccount(gameAccount.publicKey);
-
-		const cargoStatsDefinition = yield* getCargoStatsDefinitionAccount(
-			game.data.cargo.statsDefinition,
-		);
+		const gameInfo = yield* fetchGameInfoOrAccounts();
 
 		return yield* Ref.updateAndGet(contextRef, () =>
 			Option.some({
-				cargoStatsDefinition,
-				game,
+				gameInfo,
 				playerProfile,
 				owner,
 			}),
