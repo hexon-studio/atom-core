@@ -2,7 +2,12 @@
 
 import { type Keypair, PublicKey } from "@solana/web3.js";
 import { Command, InvalidArgumentError } from "commander";
-import { Array as EffectArray, String, Tuple, pipe } from "effect";
+import {
+	Array as EffectArray,
+	String as EffectString,
+	Tuple,
+	pipe,
+} from "effect";
 import { z } from "zod";
 import { runDock } from "./commands/dock";
 import { runLoadCargo } from "./commands/loadCargo";
@@ -233,10 +238,9 @@ const main = async () => {
 				rpcUrl: string;
 			}>();
 
-			const isTupleOf2 = Tuple.isTupleOf(2);
-			const maybeSector = String.split(targetSectorArg, ",");
+			const maybeSector = EffectString.split(targetSectorArg, ",");
 
-			if (!isTupleOf2(maybeSector)) {
+			if (!Tuple.isTupleOf(maybeSector, 2)) {
 				throw new InvalidArgumentError("Invalid sector coordinates");
 			}
 
@@ -266,11 +270,9 @@ const main = async () => {
 				rpcUrl: string;
 			}>();
 
-			const maybeSector = String.split(targetSectorArg, ",");
+			const maybeSector = EffectString.split(targetSectorArg, ",");
 
-			const isTupleOf2 = Tuple.isTupleOf(2);
-
-			if (!isTupleOf2(maybeSector)) {
+			if (!Tuple.isTupleOf(maybeSector, 2)) {
 				throw new InvalidArgumentError("Invalid sector coordinates");
 			}
 
