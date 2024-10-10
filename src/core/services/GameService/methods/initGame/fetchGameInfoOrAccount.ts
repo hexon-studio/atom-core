@@ -1,7 +1,6 @@
 import type { CargoStatsDefinition } from "@staratlas/cargo";
 import type { Game } from "@staratlas/sage";
 import { Effect } from "effect";
-import type { NoSuchElementException } from "effect/Cause";
 import {
 	type ReadFromRPCError,
 	getCargoStatsDefinitionAccount,
@@ -12,10 +11,10 @@ import type {
 	CreateProviderError,
 	SolanaService,
 } from "../../../SolanaService";
-import { type FindGameError, findGame } from "../findGame";
+import { type GameNotFoundError, findGame } from "../findGame";
 import { type GameInfo, fetchGameInfo } from "./fetchGameInfo";
 
-const gameAccoutToGameInfo = ({
+const mapGameAccoutToGameInfo = ({
 	gameAccount,
 	cargoStatsDefinition,
 }: {
@@ -96,12 +95,11 @@ export const fetchGameInfoOrAccounts = (): Effect.Effect<
 	GameInfo,
 	| CreateKeypairError
 	| CreateProviderError
-	| FindGameError
-	| NoSuchElementException
+	| GameNotFoundError
 	| ReadFromRPCError,
 	SolanaService
-> => {
-	return fetchGameInfo().pipe(
+> =>
+	fetchGameInfo().pipe(
 		Effect.orElse(() =>
 			Effect.Do.pipe(
 				Effect.bind("gameAccount", () =>
@@ -114,13 +112,7 @@ export const fetchGameInfoOrAccounts = (): Effect.Effect<
 						gameAccount.data.cargo.statsDefinition,
 					),
 				),
-				Effect.map(({ cargoStatsDefinition, gameAccount }) =>
-					gameAccoutToGameInfo({
-						gameAccount,
-						cargoStatsDefinition,
-					}),
-				),
+				Effect.map(mapGameAccoutToGameInfo),
 			),
 		),
 	);
-};

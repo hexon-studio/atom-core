@@ -6,7 +6,7 @@ class FetchGameInfoError extends Data.TaggedError("FetchGameInfoError")<{
 	error: unknown;
 }> {}
 
-class DecodeGameInfoError extends Data.TaggedError("DecodeGameInfoError")<{
+class GameInfoDecodeError extends Data.TaggedError("DecodeGameInfoError")<{
 	error: unknown;
 }> {}
 
@@ -64,7 +64,7 @@ export type GameInfo = z.infer<typeof decoder>["data"];
 
 export const fetchGameInfo = (): Effect.Effect<
 	GameInfo,
-	FetchGameInfoError | DecodeGameInfoError
+	FetchGameInfoError | GameInfoDecodeError
 > => {
 	const url = "https://n8n.staratlasitalia.com/webhook/v1/initGame";
 
@@ -76,7 +76,7 @@ export const fetchGameInfo = (): Effect.Effect<
 		Effect.flatMap((decodedData) =>
 			decodedData.success
 				? Effect.succeed(decodedData.data)
-				: Effect.fail(new DecodeGameInfoError({ error: decodedData.error })),
+				: Effect.fail(new GameInfoDecodeError({ error: decodedData.error })),
 		),
 		Effect.map(({ data }) => data),
 	);
