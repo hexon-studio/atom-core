@@ -1,4 +1,4 @@
-FROM node:20-slim AS base
+FROM node:20.12-alpine3.19 as base
 
 ENV PNPM_HOME="/pnpm"
 
@@ -17,7 +17,7 @@ FROM base AS build
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
 RUN pnpm run build
 
-FROM node:20-slim
+FROM node:20.12-alpine3.19
 
 WORKDIR /app
 
