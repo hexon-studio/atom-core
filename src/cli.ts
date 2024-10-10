@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 
 import { type Keypair, PublicKey } from "@solana/web3.js";
-import { Command } from "commander";
-import { Array as EffectArray, pipe } from "effect";
+import { Command, InvalidArgumentError } from "commander";
+import { Array as EffectArray, String, Tuple, pipe } from "effect";
 import { z } from "zod";
 import { runDock } from "./commands/dock";
 import { runLoadCargo } from "./commands/loadCargo";
@@ -224,8 +224,8 @@ const main = async () => {
 	program
 		.command("warp")
 		.argument("<fleetNameOrAddress>", "The fleet to stop mining")
-		.argument("<targetSector...>", "Rhe coordinates of the target sector")
-		.action(async (fleetNameOrAddress: string, targetSector: string[]) => {
+		.argument("<targetSector>", "Rhe coordinates of the target sector")
+		.action(async (fleetNameOrAddress: string, targetSectorArg: string) => {
 			const globalOpts = program.opts<{
 				owner: PublicKey;
 				playerProfile: PublicKey;
@@ -233,9 +233,21 @@ const main = async () => {
 				rpcUrl: string;
 			}>();
 
+			const isTupleOf2 = Tuple.isTupleOf(2);
+			const maybeSector = String.split(targetSectorArg, ",");
+
+			if (!isTupleOf2(maybeSector)) {
+				throw new InvalidArgumentError("Invalid sector coordinates");
+			}
+
+			const targetSector = Tuple.mapBoth(maybeSector, {
+				onFirst: Number,
+				onSecond: Number,
+			});
+
 			return runWarp({
 				...globalOpts,
-				targetSector: targetSector.map(Number) as [number, number],
+				targetSector,
 				fleetNameOrAddress: isPublicKey(fleetNameOrAddress)
 					? new PublicKey(fleetNameOrAddress)
 					: fleetNameOrAddress,
@@ -245,14 +257,27 @@ const main = async () => {
 	program
 		.command("subwarp")
 		.argument("<fleetNameOrAddress>", "The fleet to stop mining")
-		.argument("<targetSector...>", "Rhe coordinates of the target sector")
-		.action(async (fleetNameOrAddress: string, targetSector: string[]) => {
+		.argument("<targetSector>", "Rhe coordinates of the target sector")
+		.action(async (fleetNameOrAddress: string, targetSectorArg: string) => {
 			const globalOpts = program.opts<{
 				owner: PublicKey;
 				playerProfile: PublicKey;
 				keypair: Keypair;
 				rpcUrl: string;
 			}>();
+
+			const maybeSector = String.split(targetSectorArg, ",");
+
+			const isTupleOf2 = Tuple.isTupleOf(2);
+
+			if (!isTupleOf2(maybeSector)) {
+				throw new InvalidArgumentError("Invalid sector coordinates");
+			}
+
+			const targetSector = Tuple.mapBoth(maybeSector, {
+				onFirst: Number,
+				onSecond: Number,
+			});
 
 			return runSubwarp({
 				...globalOpts,
