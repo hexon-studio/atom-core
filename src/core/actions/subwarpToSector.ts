@@ -32,6 +32,8 @@ export const subwarpToSector = ({
 
 		const fleetAccount = yield* getFleetAccount(fleetAddress);
 
+		// TODO: check valid coords
+
 		// TODO: Not enough fuel to start subwarp
 
 		const ixs: InstructionReturn[] = [];

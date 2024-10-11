@@ -1,0 +1,103 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model accounts {
+  id         BigInt    @id @default(autoincrement())
+  created_at DateTime  @default(now()) @db.Timestamptz(6)
+  pbk        String    @unique
+  last_login DateTime? @db.Timestamptz(6)
+  updated_at DateTime? @db.Timestamptz(6)
+  actions    actions[]
+  logs       logs[]
+  plans      plans[]
+  routes     routes[]
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model actions {
+  id                 BigInt        @id @default(autoincrement())
+  created_at         DateTime      @default(now()) @db.Timestamptz(6)
+  cargo_type         String?
+  cargo_mint         String?
+  quantity           Decimal?      @db.Decimal
+  movement_type      String?
+  destination_sector String?
+  action_type        action_types?
+  position           Decimal?      @db.Decimal
+  created_by         BigInt?
+  updated_at         DateTime?     @db.Timestamptz(6)
+  parent             BigInt?
+  refuel             Boolean?
+  rearm              Boolean?
+  refood             Boolean?
+  routes_id          BigInt?
+  mine_resource      String?
+  sector             String?
+  accounts           accounts?     @relation(fields: [created_by], references: [id], onDelete: Cascade)
+  actions            actions?      @relation("actionsToactions", fields: [parent], references: [id], onDelete: Cascade)
+  other_actions      actions[]     @relation("actionsToactions")
+  routes             routes?       @relation(fields: [routes_id], references: [id], onDelete: Cascade)
+
+  @@index([routes_id, position])
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model logs {
+  id          BigInt    @id @default(autoincrement())
+  created_at  DateTime  @default(now()) @db.Timestamptz(6)
+  message     String?
+  accounts_id BigInt?
+  plans_id    BigInt?
+  accounts    accounts? @relation(fields: [accounts_id], references: [id], onDelete: Cascade)
+  plans       plans?    @relation(fields: [plans_id], references: [id], onDelete: Cascade)
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model plans {
+  id            BigInt    @id @default(autoincrement())
+  created_at    DateTime  @default(now()) @db.Timestamptz(6)
+  title         String?
+  description   String?
+  routes_id     BigInt?
+  fleet_pbk     String?
+  created_by    BigInt?
+  cycles        Decimal?  @db.Decimal
+  updated_at    DateTime? @db.Timestamptz(6)
+  base64_script String?
+  logs          logs[]
+  accounts      accounts? @relation(fields: [created_by], references: [id], onDelete: Cascade)
+  routes        routes?   @relation(fields: [routes_id], references: [id], onDelete: NoAction)
+
+  @@unique([title, created_by], map: "title_created_by_key")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model routes {
+  id                 BigInt    @id(map: "activities_pkey") @default(autoincrement())
+  created_at         DateTime  @default(now()) @db.Timestamptz(6)
+  title              String?
+  description        String?
+  created_by         BigInt?
+  updated_at         DateTime? @db.Timestamptz(6)
+  start_sector       String?
+  last_action_sector String?
+  actions            actions[]
+  plans              plans[]
+  accounts           accounts? @relation(fields: [created_by], references: [id], onDelete: Cascade, map: "activities_created_by_fkey")
+}
+
+enum action_types {
+  load_cargo
+  unload_cargo
+  start_mining
+  trip
+  crafting
+}

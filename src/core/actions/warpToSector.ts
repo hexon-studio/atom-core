@@ -31,6 +31,8 @@ export const warpToSector = ({
 		console.log("Start warp...");
 		const fleetAccount = yield* getFleetAccount(fleetAddress);
 
+		// TODO: check valid coords
+
 		// TODO: Not enough fuel to start warp
 
 		const ixs: InstructionReturn[] = [];
