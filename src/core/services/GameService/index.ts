@@ -24,11 +24,13 @@ import {
 	getParsedTokenAccountsByOwner,
 } from "./utils/getParsedTokenAccountsByOwner";
 import { type SendTransaction, sendTransaction } from "./utils/sendTransaction";
+import type { Fees } from "./methods/initGame/fetchFees";
 
 export interface GameContext {
 	gameInfo: GameInfo;
 	owner: PublicKey;
 	playerProfile: PublicKey;
+	fees: Fees;
 }
 
 export class GameService extends Context.Tag("app/GameService")<
