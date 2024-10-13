@@ -10,37 +10,39 @@ class GameInfoDecodeError extends Data.TaggedError("DecodeGameInfoError")<{
 	error: unknown;
 }> {}
 
+const publicKeyDecoder = z.string().transform((value) => new PublicKey(value));
+
 const decoder = z.object({
 	data: z.object({
 		game: z.object({
-			key: z.string().transform((value) => new PublicKey(value)),
+			key: publicKeyDecoder,
 			data: z.object({
-				profile: z.string().transform((value) => new PublicKey(value)),
-				gameState: z.string().transform((value) => new PublicKey(value)),
+				profile: publicKeyDecoder,
+				gameState: publicKeyDecoder,
 				points: z.object({
 					lpCategory: z.object({
-						category: z.string().transform((value) => new PublicKey(value)),
-						modifier: z.string().transform((value) => new PublicKey(value)),
+						category: publicKeyDecoder,
+						modifier: publicKeyDecoder,
 					}),
 					councilRankXpCategory: z.object({
-						category: z.string().transform((value) => new PublicKey(value)),
-						modifier: z.string().transform((value) => new PublicKey(value)),
+						category: publicKeyDecoder,
+						modifier: publicKeyDecoder,
 					}),
 					pilotXpCategory: z.object({
-						category: z.string().transform((value) => new PublicKey(value)),
-						modifier: z.string().transform((value) => new PublicKey(value)),
+						category: publicKeyDecoder,
+						modifier: publicKeyDecoder,
 					}),
 					dataRunningXpCategory: z.object({
-						category: z.string().transform((value) => new PublicKey(value)),
-						modifier: z.string().transform((value) => new PublicKey(value)),
+						category: publicKeyDecoder,
+						modifier: publicKeyDecoder,
 					}),
 					miningXpCategory: z.object({
-						category: z.string().transform((value) => new PublicKey(value)),
-						modifier: z.string().transform((value) => new PublicKey(value)),
+						category: publicKeyDecoder,
+						modifier: publicKeyDecoder,
 					}),
 					craftingXpCategory: z.object({
-						category: z.string().transform((value) => new PublicKey(value)),
-						modifier: z.string().transform((value) => new PublicKey(value)),
+						category: publicKeyDecoder,
+						modifier: publicKeyDecoder,
 					}),
 				}),
 				cargo: z.object({

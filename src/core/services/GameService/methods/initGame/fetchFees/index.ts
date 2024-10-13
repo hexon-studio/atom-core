@@ -2,11 +2,11 @@ import { PublicKey } from "@solana/web3.js";
 import { Data, Effect } from "effect";
 import { z } from "zod";
 
-class FetchFeesError extends Data.TaggedError("FetchFeesError")<{
+export class FetchFeesError extends Data.TaggedError("FetchFeesError")<{
 	error: unknown;
 }> {}
 
-class FeesDecodeError extends Data.TaggedError("FeesDecodeError")<{
+export class FeesDecodeError extends Data.TaggedError("FeesDecodeError")<{
 	error: unknown;
 }> {}
 
