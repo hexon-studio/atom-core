@@ -15,6 +15,7 @@ import {
 	getResourceAccount,
 } from "../utils/accounts";
 import { getFleetAddressByName } from "../utils/pdas";
+import { createDrainVaultIx } from "../vault/instructions/drainVault";
 
 export const subwarpToSector = ({
 	fleetNameOrAddress,
@@ -71,6 +72,10 @@ export const subwarpToSector = ({
 		ixs.push(...subwarpIxs);
 
 		const gameService = yield* GameService;
+
+		const drainVaultIx = yield* createDrainVaultIx(ixs);
+
+		ixs.push(drainVaultIx);
 
 		const txs =
 			yield* gameService.utils.buildAndSignTransactionWithAtlasPrime(ixs);

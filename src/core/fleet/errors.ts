@@ -8,6 +8,8 @@ import {
 } from "../../constants/resources";
 import type { CargoPodKind } from "../../types";
 
+export class NoInstructions extends Data.TaggedError("NoInstructions") {}
+
 export class FleetNotIdleError extends Data.TaggedError("FleetNotIdleError") {}
 
 export class FleetNotInStarbaseError extends Data.TaggedError(

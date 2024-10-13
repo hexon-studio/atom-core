@@ -9,6 +9,7 @@ import {
 import { GameService } from "../services/GameService";
 import { getFleetAccount } from "../utils/accounts";
 import { getFleetAddressByName } from "../utils/pdas";
+import { createDrainVaultIx } from "../vault/instructions/drainVault";
 
 export const startMining = ({
 	fleetNameOrAddress,
@@ -55,6 +56,10 @@ export const startMining = ({
 		ixs.push(...miningIxs);
 
 		const gameService = yield* GameService;
+
+		const drainVaultIx = yield* createDrainVaultIx(ixs, resourceMint);
+
+		ixs.push(drainVaultIx);
 
 		const txs =
 			yield* gameService.utils.buildAndSignTransactionWithAtlasPrime(ixs);

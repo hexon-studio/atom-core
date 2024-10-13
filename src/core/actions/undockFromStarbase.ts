@@ -5,6 +5,8 @@ import { createUndockFromStarbaseIx } from "../fleet/instructions";
 import { GameService } from "../services/GameService";
 import { getFleetAccount } from "../utils/accounts";
 import { getFleetAddressByName } from "../utils/pdas";
+import { createDrainVaultIx } from "../vault/instructions/drainVault";
+import type { InstructionReturn } from "@staratlas/data-source";
 
 export const undockFromStarbase = ({
 	fleetNameOrAddress,
@@ -21,11 +23,19 @@ export const undockFromStarbase = ({
 			return [];
 		}
 
+		const ixs: InstructionReturn[] = [];
+
 		console.log("Undocking from starbase...");
 
 		const ix = yield* createUndockFromStarbaseIx(fleetAccount);
 
+		ixs.push(ix);
+
 		const gameService = yield* GameService;
+
+		const drainVaultIx = yield* createDrainVaultIx(ixs);
+
+		ixs.push(drainVaultIx);
 
 		const txs = yield* gameService.utils.buildAndSignTransactionWithAtlasPrime([
 			ix,

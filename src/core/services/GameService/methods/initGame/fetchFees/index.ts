@@ -10,29 +10,21 @@ class FeesDecodeError extends Data.TaggedError("FeesDecodeError")<{
 	error: unknown;
 }> {}
 
-const resourceSchema = z.object({
+const mintFeeSchema = z.object({
+	name: z.string(),
 	mint: z.string().transform((value) => new PublicKey(value)),
 	fee: z.number(),
 });
 
 const decoder = z.object({
-	feeAddress: z.string().transform((value) => new PublicKey(value)),
-	default_fee: z.number(),
-	hydrogen: resourceSchema,
-	carbon: resourceSchema,
-	copperOre: resourceSchema,
-	ironOre: resourceSchema,
-	silica: resourceSchema,
-	nitrogen: resourceSchema,
-	lumanite: resourceSchema,
-	biomass: resourceSchema,
-	titaniumOre: resourceSchema,
-	arco: resourceSchema,
-	diamond: resourceSchema,
-	rochinol: resourceSchema,
+	data: z.object({
+		feeAddress: z.string().transform((value) => new PublicKey(value)),
+		defaultFee: z.number(),
+		mintFees: z.array(mintFeeSchema),
+	}),
 });
 
-export type Fees = z.infer<typeof decoder>;
+export type Fees = z.infer<typeof decoder>["data"];
 
 export const fetchFees = (): Effect.Effect<
 	Fees,
@@ -50,5 +42,6 @@ export const fetchFees = (): Effect.Effect<
 				? Effect.succeed(decodedData.data)
 				: Effect.fail(new FeesDecodeError({ error: decodedData.error })),
 		),
+		Effect.map(({ data }) => data),
 	);
 };

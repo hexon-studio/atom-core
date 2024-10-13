@@ -5,6 +5,7 @@ import { createDockToStarbaseIx } from "../fleet/instructions";
 import { GameService } from "../services/GameService";
 import { getFleetAccount } from "../utils/accounts";
 import { getFleetAddressByName } from "../utils/pdas";
+import { createDrainVaultIx } from "../vault/instructions/drainVault";
 
 export const dockToStarbase = ({
 	fleetNameOrAddress,
@@ -26,6 +27,10 @@ export const dockToStarbase = ({
 		const ixs = yield* createDockToStarbaseIx(fleetAccount);
 
 		const gameService = yield* GameService;
+
+		const drainVaultIx = yield* createDrainVaultIx(ixs);
+
+		ixs.push(drainVaultIx);
 
 		const txs =
 			yield* gameService.utils.buildAndSignTransactionWithAtlasPrime(ixs);
