@@ -1,8 +1,8 @@
 import type { PublicKey } from "@solana/web3.js";
 import { Data, Effect, Option, Ref } from "effect";
 import type { GameContext } from "../..";
-import { fetchGameInfoOrAccounts } from "./fetchGameInfoOrAccount";
 import { fetchFees } from "./fetchFees";
+import { fetchGameInfoOrAccounts } from "./fetchGameInfoOrAccount";
 
 export class GameAlreadyInitializedError extends Data.TaggedError(
 	"GameAlreadyInitializedError",

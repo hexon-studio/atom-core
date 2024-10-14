@@ -9,7 +9,7 @@ import {
 import { GameService } from "../services/GameService";
 import { getFleetAccount } from "../utils/accounts";
 import { getFleetAddressByName } from "../utils/pdas";
-import { createDrainVaultIx } from "../vault/instructions/drainVault";
+import { createDrainVaultIx } from "../vault/instructions/createDrainVaultIx";
 
 export const startMining = ({
 	fleetNameOrAddress,

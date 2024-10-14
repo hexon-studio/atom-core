@@ -6,6 +6,7 @@ import { type FindFleets, findFleets } from "./methods/findFleets";
 import { type FindGame, findGame } from "./methods/findGame";
 import { type FindPlanets, findAllPlanets } from "./methods/findPlanets";
 import { type InitGame, initGame } from "./methods/initGame";
+import type { Fees } from "./methods/initGame/fetchFees";
 import type { GameInfo } from "./methods/initGame/fetchGameInfo";
 import {
 	type BuildAndSignTransaction,
@@ -24,7 +25,6 @@ import {
 	getParsedTokenAccountsByOwner,
 } from "./utils/getParsedTokenAccountsByOwner";
 import { type SendTransaction, sendTransaction } from "./utils/sendTransaction";
-import type { Fees } from "./methods/initGame/fetchFees";
 
 export interface GameContext {
 	gameInfo: GameInfo;

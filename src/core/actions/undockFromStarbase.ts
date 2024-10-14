@@ -1,12 +1,12 @@
 import type { PublicKey } from "@solana/web3.js";
+import type { InstructionReturn } from "@staratlas/data-source";
 import { Effect } from "effect";
 import { isPublicKey } from "../../utils/public-key";
 import { createUndockFromStarbaseIx } from "../fleet/instructions";
 import { GameService } from "../services/GameService";
 import { getFleetAccount } from "../utils/accounts";
 import { getFleetAddressByName } from "../utils/pdas";
-import { createDrainVaultIx } from "../vault/instructions/drainVault";
-import type { InstructionReturn } from "@staratlas/data-source";
+import { createDrainVaultIx } from "../vault/instructions/createDrainVaultIx";
 
 export const undockFromStarbase = ({
 	fleetNameOrAddress,

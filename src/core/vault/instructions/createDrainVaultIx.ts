@@ -1,38 +1,42 @@
+import { getAssociatedTokenAddressSync } from "@solana/spl-token";
+import type { PublicKey } from "@solana/web3.js";
+import type { InstructionReturn } from "@staratlas/data-source";
+import { ProfileVault } from "@staratlas/profile-vault";
+import { BN } from "bn.js";
 import { Effect } from "effect";
+import { ATLAS_DECIMALS, tokenMints } from "../../../constants/tokens";
+import { MissingInstructionsError } from "../../fleet/errors";
 import { SagePrograms } from "../../programs";
 import { GameService } from "../../services/GameService";
 import { getGameContext } from "../../services/GameService/utils";
-import { ATLAS_DECIMALS, tokenMints } from "../../../constants/tokens";
-import { ProfileVault } from "@staratlas/profile-vault";
-import { getAssociatedTokenAddressSync } from "@solana/spl-token";
-import { BN } from "bn.js";
-import type { InstructionReturn } from "@staratlas/data-source";
-import type { PublicKey } from "@solana/web3.js";
-import { NoInstructions } from "../../fleet/errors";
 
 export const createDrainVaultIx = (
 	ixs: InstructionReturn[],
 	resourceMint?: PublicKey,
 ) =>
 	Effect.gen(function* () {
-		if (ixs.length === 0) {
-			return yield* Effect.fail(new NoInstructions());
+		if (!ixs.length) {
+			return yield* Effect.fail(new MissingInstructionsError());
 		}
 
-		const [programs, context, signer] = yield* GameService.pipe(
-			Effect.flatMap((service) =>
-				Effect.all([SagePrograms, getGameContext(), service.signer]),
-			),
+		const programs = yield* SagePrograms;
+
+		const context = yield* getGameContext();
+
+		const signer = yield* GameService.pipe(
+			Effect.flatMap((service) => service.signer),
 		);
 
 		const ixsFee = context.fees.defaultFee * ixs.length * ATLAS_DECIMALS;
 
-		const mintFee = resourceMint
-			? context.fees.mintFees.find((item) => item.mint.equals(resourceMint))
-			: undefined;
-		const miningFee = mintFee ? mintFee.fee * ATLAS_DECIMALS : 0;
+		const { fee: mintFee } = context.fees.mintFees.find(
+			(item) => resourceMint && item.mint.equals(resourceMint),
+		) ?? { fee: 0 };
+
+		const miningFee = mintFee * ATLAS_DECIMALS;
 
 		const estimatedFee = ixsFee + miningFee;
+
 		const totalFee = estimatedFee < 10 * ATLAS_DECIMALS ? estimatedFee : 0;
 
 		const [vaultAuthority] = ProfileVault.findVaultSigner(
@@ -53,7 +57,7 @@ export const createDrainVaultIx = (
 			true,
 		);
 
-		const drainVaultIx = ProfileVault.drainVault(
+		return ProfileVault.drainVault(
 			programs.profileVaultProgram,
 			vault,
 			vaultAuthority,
@@ -66,6 +70,4 @@ export const createDrainVaultIx = (
 				keyIndex: 3,
 			},
 		);
-
-		return drainVaultIx;
 	});
