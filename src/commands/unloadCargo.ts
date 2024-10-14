@@ -2,10 +2,10 @@ import type { PublicKey } from "@solana/web3.js";
 import { Cause, Console, Effect, Exit, Option } from "effect";
 import { unloadCargo } from "../core/actions/unloadCargo";
 import { GameService } from "../core/services/GameService";
-import type { CargoPodKind, RequiredParam } from "../types";
+import type { CargoPodKind, GlobalOptions } from "../types";
 import { createMainLiveService } from "../utils/createLiveService";
 
-type Param = RequiredParam & {
+type Param = GlobalOptions & {
 	fleetNameOrAddress: string | PublicKey;
 	items: Array<{
 		resourceMint: PublicKey;

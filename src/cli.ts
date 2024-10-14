@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { type Keypair, PublicKey } from "@solana/web3.js";
+import { Keypair, PublicKey } from "@solana/web3.js";
 import { Command, InvalidArgumentError } from "commander";
 import {
 	Array as EffectArray,
@@ -10,6 +10,7 @@ import {
 } from "effect";
 import { z } from "zod";
 import { runDock } from "./commands/dock";
+import { runFleetInfo } from "./commands/fleetInfo";
 import { runLoadCargo } from "./commands/loadCargo";
 import { runStartMining } from "./commands/startMining";
 import { runStopMining } from "./commands/stopMining";
@@ -17,7 +18,8 @@ import { runSubwarp } from "./commands/subwarp";
 import { runUndock } from "./commands/undock";
 import { runUnloadCargo } from "./commands/unloadCargo";
 import { runWarp } from "./commands/warp";
-import { cargoPodKindDecoder } from "./types";
+import { noopPublicKey } from "./constants/tokens";
+import { type GlobalOptions, cargoPodKindDecoder } from "./types";
 import { parseSecretKey } from "./utils/keypair";
 import { isPublicKey, parsePublicKey } from "./utils/public-key";
 
@@ -38,7 +40,8 @@ const main = async () => {
 			"-k, --keypair <secretKey>",
 			"The secret key of the hot wallet as a base58 string",
 			parseSecretKey,
-		);
+		)
+		.option("--verbose", "Print additional logs", false);
 
 	const itemsDecoder = z.array(
 		z.object({
@@ -47,6 +50,21 @@ const main = async () => {
 			cargoPodKind: cargoPodKindDecoder,
 		}),
 	);
+
+	program
+		.setOptionValue("owner", noopPublicKey)
+		.setOptionValue("keypair", Keypair.generate())
+		.command("fleet-info <fleetNameOrAddress>")
+		.action(async (fleetNameOrAddress: string) => {
+			const globalOpts = program.opts<GlobalOptions>();
+
+			return runFleetInfo({
+				...globalOpts,
+				fleetNameOrAddress: isPublicKey(fleetNameOrAddress)
+					? new PublicKey(fleetNameOrAddress)
+					: fleetNameOrAddress,
+			});
+		});
 
 	program
 		.command("load-cargo <fleetNameOrAddress>")
@@ -62,12 +80,7 @@ const main = async () => {
 					pods: string[];
 				},
 			) => {
-				const globalOpts = program.opts<{
-					owner: PublicKey;
-					playerProfile: PublicKey;
-					keypair: Keypair;
-					rpcUrl: string;
-				}>();
+				const globalOpts = program.opts<GlobalOptions>();
 
 				const items = pipe(
 					options.mints,
@@ -108,12 +121,7 @@ const main = async () => {
 					pods: string[];
 				},
 			) => {
-				const globalOpts = program.opts<{
-					owner: PublicKey;
-					playerProfile: PublicKey;
-					keypair: Keypair;
-					rpcUrl: string;
-				}>();
+				const globalOpts = program.opts<GlobalOptions>();
 
 				const items = pipe(
 					options.mints,
@@ -143,12 +151,7 @@ const main = async () => {
 	program
 		.command("dock <fleetNameOrAddress>")
 		.action(async (fleetNameOrAddress: string) => {
-			const globalOpts = program.opts<{
-				owner: PublicKey;
-				playerProfile: PublicKey;
-				keypair: Keypair;
-				rpcUrl: string;
-			}>();
+			const globalOpts = program.opts<GlobalOptions>();
 
 			return runDock({
 				...globalOpts,
@@ -161,12 +164,7 @@ const main = async () => {
 	program
 		.command("undock <fleetNameOrAddress>")
 		.action(async (fleetNameOrAddress: string) => {
-			const globalOpts = program.opts<{
-				owner: PublicKey;
-				playerProfile: PublicKey;
-				keypair: Keypair;
-				rpcUrl: string;
-			}>();
+			const globalOpts = program.opts<GlobalOptions>();
 
 			return runUndock({
 				...globalOpts,
@@ -185,12 +183,7 @@ const main = async () => {
 			parsePublicKey,
 		)
 		.action(async (fleetNameOrAddress: string, resourceMint: PublicKey) => {
-			const globalOpts = program.opts<{
-				owner: PublicKey;
-				playerProfile: PublicKey;
-				keypair: Keypair;
-				rpcUrl: string;
-			}>();
+			const globalOpts = program.opts<GlobalOptions>();
 
 			return runStartMining({
 				...globalOpts,
@@ -210,12 +203,7 @@ const main = async () => {
 			parsePublicKey,
 		)
 		.action(async (fleetNameOrAddress: string, resourceMint: PublicKey) => {
-			const globalOpts = program.opts<{
-				owner: PublicKey;
-				playerProfile: PublicKey;
-				keypair: Keypair;
-				rpcUrl: string;
-			}>();
+			const globalOpts = program.opts<GlobalOptions>();
 
 			return runStopMining({
 				...globalOpts,
@@ -231,12 +219,7 @@ const main = async () => {
 		.argument("<fleetNameOrAddress>", "The fleet to stop mining")
 		.argument("<targetSector>", "Rhe coordinates of the target sector")
 		.action(async (fleetNameOrAddress: string, targetSectorArg: string) => {
-			const globalOpts = program.opts<{
-				owner: PublicKey;
-				playerProfile: PublicKey;
-				keypair: Keypair;
-				rpcUrl: string;
-			}>();
+			const globalOpts = program.opts<GlobalOptions>();
 
 			const maybeSector = EffectString.split(targetSectorArg, ",");
 
@@ -263,12 +246,7 @@ const main = async () => {
 		.argument("<fleetNameOrAddress>", "The fleet to stop mining")
 		.argument("<targetSector>", "Rhe coordinates of the target sector")
 		.action(async (fleetNameOrAddress: string, targetSectorArg: string) => {
-			const globalOpts = program.opts<{
-				owner: PublicKey;
-				playerProfile: PublicKey;
-				keypair: Keypair;
-				rpcUrl: string;
-			}>();
+			const globalOpts = program.opts<GlobalOptions>();
 
 			const maybeSector = EffectString.split(targetSectorArg, ",");
 

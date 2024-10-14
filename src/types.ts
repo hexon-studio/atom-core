@@ -1,11 +1,12 @@
 import type { Keypair, PublicKey } from "@solana/web3.js";
 import { z } from "zod";
 
-export type RequiredParam = {
-	rpcUrl: string;
+export type GlobalOptions = {
 	keypair: Keypair;
 	owner: PublicKey;
 	playerProfile: PublicKey;
+	rpcUrl: string;
+	verbose: boolean;
 };
 
 export const cargoPodKinds = ["ammo_bank", "fuel_tank", "cargo_hold"] as const;

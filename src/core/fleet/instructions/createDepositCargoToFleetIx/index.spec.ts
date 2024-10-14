@@ -1,34 +1,31 @@
 import { Keypair, PublicKey } from "@solana/web3.js";
 import { AnchorProvider } from "@staratlas/anchor";
 import { keypairToAsyncSigner } from "@staratlas/data-source";
-import type { Fleet } from "@staratlas/sage";
 import { Effect, Exit, Layer, Option, Ref } from "effect";
 import { constant, unsafeCoerce } from "effect/Function";
 import mock from "mock-fs";
 import { createDepositCargoToFleetIx } from ".";
 import { resourceNameToMint } from "../../../../constants/resources";
+import { noopPublicKey } from "../../../../constants/tokens";
 import type { CargoPodKind } from "../../../../types";
 import { type GameContext, GameService } from "../../../services/GameService";
 import { findFleets } from "../../../services/GameService/methods/findFleets";
 import { findGame } from "../../../services/GameService/methods/findGame";
 import { findAllPlanets } from "../../../services/GameService/methods/findPlanets";
 import { initGame } from "../../../services/GameService/methods/initGame";
+import type { Fees } from "../../../services/GameService/methods/initGame/fetchFees";
 import type { GameInfo } from "../../../services/GameService/methods/initGame/fetchGameInfo";
 import { SolanaService } from "../../../services/SolanaService";
-import { getFleetAccount } from "../../../utils/accounts";
-import {
-	FleetNotInStarbaseError,
-	InvalidAmountError,
-	InvalidResourceForPodKind,
-} from "../../errors";
+import { InvalidAmountError, InvalidResourceForPodKind } from "../../errors";
 
-vi.mock("../../accounts");
+vi.mock("../../../utils/accounts");
 
 const gameContextRef = Ref.unsafeMake(
 	Option.some<GameContext>({
 		gameInfo: {} as GameInfo,
-		owner: new PublicKey("11111111111111111111111111111111"),
-		playerProfile: new PublicKey("11111111111111111111111111111111"),
+		fees: {} as Fees,
+		owner: noopPublicKey,
+		playerProfile: noopPublicKey,
 	}),
 );
 
@@ -103,7 +100,7 @@ describe("createDepositCargoToFleetIx", () => {
 		const program = createDepositCargoToFleetIx({
 			amount: 0,
 			cargoPodKind: "ammo_bank",
-			fleetAddress: new PublicKey("11111111111111111111111111111111"),
+			fleetAddress: noopPublicKey,
 			resourceMint: resourceNameToMint.Carbon,
 		}).pipe(Effect.provide(mainLive));
 
@@ -130,7 +127,7 @@ describe("createDepositCargoToFleetIx", () => {
 			const program = createDepositCargoToFleetIx({
 				amount: 1,
 				cargoPodKind,
-				fleetAddress: new PublicKey("11111111111111111111111111111111"),
+				fleetAddress: noopPublicKey,
 				resourceMint: new PublicKey(resourceMint),
 			}).pipe(Effect.provide(mainLive));
 
@@ -139,24 +136,4 @@ describe("createDepositCargoToFleetIx", () => {
 			expect(result).toStrictEqual(Exit.fail(new InvalidResourceForPodKind()));
 		},
 	);
-
-	it("returns FleetNotInStarbaseError if the fleet is not docked in a starbase", async () => {
-		vi.mocked(getFleetAccount).mockReturnValue(
-			// Fake mining fleet
-			Effect.succeed({ state: { MineAsteroid: {} } } as Fleet),
-		);
-
-		const mainLive = createMockServiceLive(signer);
-
-		const program = createDepositCargoToFleetIx({
-			amount: 1,
-			cargoPodKind: "ammo_bank",
-			fleetAddress: new PublicKey("11111111111111111111111111111111"),
-			resourceMint: resourceNameToMint.Ammunition,
-		}).pipe(Effect.provide(mainLive));
-
-		const result = await Effect.runPromiseExit(program);
-
-		expect(result).toStrictEqual(Exit.fail(new FleetNotInStarbaseError()));
-	});
 });

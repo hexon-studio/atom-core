@@ -1,22 +1,23 @@
 import type { PublicKey } from "@solana/web3.js";
 import { Cause, Console, Effect, Exit, Option } from "effect";
-import { startMining } from "../core/actions/startMining";
 import { GameService } from "../core/services/GameService";
+import { getFleetAccount } from "../core/utils/accounts";
+import { getFleetAddressByName } from "../core/utils/pdas";
 import type { GlobalOptions } from "../types";
 import { createMainLiveService } from "../utils/createLiveService";
+import { isPublicKey } from "../utils/public-key";
 
 type Param = GlobalOptions & {
 	fleetNameOrAddress: string | PublicKey;
-	resourceMint: PublicKey;
 };
 
-export const runStartMining = async ({
+export const runFleetInfo = async ({
 	fleetNameOrAddress,
-	resourceMint,
 	keypair,
+	rpcUrl,
 	owner,
 	playerProfile,
-	rpcUrl,
+	verbose,
 }: Param) => {
 	const mainServiceLive = createMainLiveService({
 		keypair,
@@ -27,13 +28,13 @@ export const runStartMining = async ({
 		Effect.tap((service) =>
 			service.methods.initGame(owner, playerProfile, service.context),
 		),
-		Effect.tap(() => Console.log("Game initialized.")),
+		Effect.tap(() => verbose && Console.log("Game initialized.")),
 		Effect.flatMap(() =>
-			startMining({
-				fleetNameOrAddress,
-				resourceMint,
-			}),
+			isPublicKey(fleetNameOrAddress)
+				? Effect.succeed(fleetNameOrAddress)
+				: getFleetAddressByName(fleetNameOrAddress),
 		),
+		Effect.flatMap((fleetAddress) => getFleetAccount(fleetAddress)),
 		Effect.provide(mainServiceLive),
 	);
 
@@ -41,8 +42,8 @@ export const runStartMining = async ({
 
 	exit.pipe(
 		Exit.match({
-			onSuccess: (txId) => {
-				console.log(`Transactions ${txId.join(",")} completed`);
+			onSuccess: (fleet) => {
+				console.log(JSON.stringify(fleet, null, 2));
 				process.exit(0);
 			},
 			onFailure: (cause) => {
