@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import { Keypair, PublicKey } from "@solana/web3.js";
-import { Command, InvalidArgumentError } from "commander";
+import { Command, InvalidArgumentError, Option } from "commander";
 import {
 	Array as EffectArray,
 	String as EffectString,
@@ -20,26 +20,41 @@ import { runUnloadCargo } from "./commands/unloadCargo";
 import { runWarp } from "./commands/warp";
 import { noopPublicKey } from "./constants/tokens";
 import { type GlobalOptions, cargoPodKindDecoder } from "./types";
-import { parseSecretKey } from "./utils/keypair";
 import { isPublicKey, parsePublicKey } from "./utils/public-key";
 
 const main = async () => {
 	const program = new Command("atom")
-		.requiredOption(
-			"-o, --owner <publickKey>",
-			"The publicKey of the player's wallet",
-			parsePublicKey,
+		.addOption(
+			new Option(
+				"-o, --owner <publickKey>",
+				"The publicKey of the player's wallet",
+			)
+				.argParser(parsePublicKey)
+				.env("ATOM_OWNER")
+				.makeOptionMandatory(true),
 		)
-		.requiredOption(
-			"-p, --playerProfile <publickKey>",
-			"The publicKey of the player",
-			parsePublicKey,
+		.addOption(
+			new Option(
+				"-p, --playerProfile <publickKey>",
+				"The publicKey of the player",
+			)
+				.argParser(parsePublicKey)
+				.env("ATOM_PLAYER_PROFILE")
+				.makeOptionMandatory(true),
 		)
-		.requiredOption("-r, --rpcUrl <rpcUrl>", "The solona rpc url")
-		.requiredOption(
-			"-k, --keypair <secretKey>",
-			"The secret key of the hot wallet as a base58 string",
-			parseSecretKey,
+		.addOption(
+			new Option("-r, --rpcUrl <rpcUrl>", "The solona rpc url")
+				.env("ATOM_RPC_URL")
+				.makeOptionMandatory(true),
+		)
+		.addOption(
+			new Option(
+				"-k, --keypair <secretKey>",
+				"The secret key of the hot wallet as a base58 string",
+			)
+				.argParser(parsePublicKey)
+				.env("ATOM_HOT_WALLET")
+				.makeOptionMandatory(true),
 		)
 		.option("--verbose", "Print additional logs", false);
 
