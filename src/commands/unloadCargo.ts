@@ -9,7 +9,7 @@ type Param = GlobalOptions & {
 	fleetNameOrAddress: string | PublicKey;
 	items: Array<{
 		resourceMint: PublicKey;
-		amount: number;
+		amount: "full" | number;
 		cargoPodKind: CargoPodKind;
 	}>;
 };
