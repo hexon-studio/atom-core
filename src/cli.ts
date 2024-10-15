@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
-import { Keypair, PublicKey } from "@solana/web3.js";
-import { Command, InvalidArgumentError, Option } from "commander";
+import { PublicKey } from "@solana/web3.js";
+import { InvalidArgumentError, Option, program as commander } from "commander";
 import {
 	Array as EffectArray,
 	String as EffectString,
@@ -12,20 +12,26 @@ import {
 import { z } from "zod";
 import { runDock } from "./commands/dock";
 import { runFleetInfo } from "./commands/fleetInfo";
-import { runLoadCargo } from "./commands/loadCargo";
 import { runStartMining } from "./commands/startMining";
 import { runStopMining } from "./commands/stopMining";
 import { runSubwarp } from "./commands/subwarp";
 import { runUndock } from "./commands/undock";
 import { runUnloadCargo } from "./commands/unloadCargo";
 import { runWarp } from "./commands/warp";
-import { noopPublicKey } from "./constants/tokens";
-import { type GlobalOptions, cargoPodKindDecoder } from "./types";
+import { runLoadCargo } from "./main";
+import {
+	type CargoPodKind,
+	type GlobalOptions,
+	cargoPodKindDecoder,
+	cargoPodKinds,
+} from "./types";
 import { parseSecretKey } from "./utils/keypair";
 import { isPublicKey, parsePublicKey } from "./utils/public-key";
 
 const main = async () => {
-	const program = new Command("atom")
+	const program = commander
+		.name("atom")
+		.version(process.env.npm_package_version ?? "0.0.0")
 		.addOption(
 			new Option(
 				"-o, --owner <publickKey>",
@@ -62,15 +68,13 @@ const main = async () => {
 
 	const itemsDecoder = z.array(
 		z.object({
-			resourceMint: z.string(),
+			resourceMint: z.string().transform((value) => new PublicKey(value)),
 			amount: z.union([z.literal("full"), z.number()]),
 			cargoPodKind: cargoPodKindDecoder,
 		}),
 	);
 
 	program
-		.setOptionValue("owner", noopPublicKey)
-		.setOptionValue("keypair", Keypair.generate())
 		.command("fleet-info <fleetNameOrAddress>")
 		.action(async (fleetNameOrAddress: string) => {
 			const globalOpts = program.opts<GlobalOptions>();
@@ -85,16 +89,20 @@ const main = async () => {
 
 	program
 		.command("load-cargo <fleetNameOrAddress>")
-		.requiredOption("--mints <mints...>", "Resources to load") // pbk
-		.requiredOption("--amounts <amounts...>", "The amount of each resource") // pbk
-		.requiredOption("--pods <pods...>", "Fleet cargo pods type") // fuel_tank, ammo_bank, cargo_hold
+		.requiredOption("--mints <mints...>", "Resources to load")
+		.requiredOption("--amounts <amounts...>", "The amount of each resource")
+		.addOption(
+			new Option("--pods <pods...>", "Fleet cargo pods type")
+				.choices(cargoPodKinds)
+				.makeOptionMandatory(true),
+		)
 		.action(
 			async (
 				fleetNameOrAddress: string,
 				options: {
 					mints: string[];
 					amounts: string[];
-					pods: string[];
+					pods: CargoPodKind[];
 				},
 			) => {
 				const globalOpts = program.opts<GlobalOptions>();
@@ -112,10 +120,7 @@ const main = async () => {
 					})),
 				);
 
-				const parsedItems = itemsDecoder.parse(items).map((item) => ({
-					...item,
-					resourceMint: new PublicKey(item.resourceMint),
-				}));
+				const parsedItems = itemsDecoder.parse(items);
 
 				return runLoadCargo({
 					...globalOpts,
@@ -131,14 +136,18 @@ const main = async () => {
 		.command("unload-cargo <fleetNameOrAddress>")
 		.requiredOption("--mints <mints...>", "Resources to load") // pbk
 		.requiredOption("--amounts <amounts...>", "The amount of each resource") // pbk
-		.requiredOption("--pods <pods...>", "Fleet cargo pods type") // fuel_tank, ammo_bank, cargo_hold
+		.addOption(
+			new Option("--pods <pods...>", "Fleet cargo pods type")
+				.choices(cargoPodKinds)
+				.makeOptionMandatory(true),
+		)
 		.action(
 			async (
 				fleetNameOrAddress: string,
 				options: {
 					mints: string[];
 					amounts: string[];
-					pods: string[];
+					pods: CargoPodKind[];
 				},
 			) => {
 				const globalOpts = program.opts<GlobalOptions>();
@@ -153,10 +162,7 @@ const main = async () => {
 					})),
 				);
 
-				const parsedItems = itemsDecoder.parse(items).map((item) => ({
-					...item,
-					resourceMint: new PublicKey(item.resourceMint),
-				}));
+				const parsedItems = itemsDecoder.parse(items);
 
 				return runUnloadCargo({
 					...globalOpts,
