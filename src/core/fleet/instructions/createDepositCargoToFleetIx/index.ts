@@ -1,5 +1,9 @@
 import type { PublicKey } from "@solana/web3.js";
-import { Fleet } from "@staratlas/sage";
+import {
+	Fleet,
+	SAGE_CARGO_STAT_VALUE_INDEX,
+	getCargoSpaceUsedByTokenAmount,
+} from "@staratlas/sage";
 import BN from "bn.js";
 import { Effect, pipe } from "effect";
 import { isNone } from "effect/Option";
@@ -14,7 +18,11 @@ import { SagePrograms } from "../../../programs";
 import { GameService } from "../../../services/GameService";
 import { getGameContext } from "../../../services/GameService/utils";
 import { SolanaService } from "../../../services/SolanaService";
-import { getFleetAccount, getStarbaseAccount } from "../../../utils/accounts";
+import {
+	getCargoTypeAccount,
+	getFleetAccount,
+	getStarbaseAccount,
+} from "../../../utils/accounts";
 import {
 	getCargoTypeAddress,
 	getProfileFactionAddress,
@@ -38,13 +46,13 @@ export const createDepositCargoToFleetIx = ({
 	resourceMint,
 	cargoPodKind,
 }: {
-	amount: number;
+	amount: "full" | number;
 	fleetAddress: PublicKey;
 	resourceMint: PublicKey;
 	cargoPodKind: CargoPodKind;
 }) =>
 	Effect.gen(function* () {
-		if (amount <= 0) {
+		if (amount !== "full" && amount <= 0) {
 			return yield* Effect.fail(
 				new InvalidAmountError({ resourceMint, amount }),
 			);
@@ -133,24 +141,36 @@ export const createDepositCargoToFleetIx = ({
 
 		const ix_0 = tokenAccountToATA.instructions;
 
-		const resourceSpaceInCargoPerUnit = new BN(2);
+		const cargoTypeAddress = yield* getCargoTypeAddress(
+			resourceMint,
+			context.gameInfo.cargoStatsDefinition.key,
+			context.gameInfo.cargoStatsDefinition.data.seqId,
+		);
 
-		const amountInCargoUnit = new BN(amount).mul(resourceSpaceInCargoPerUnit);
+		const cargoType = yield* getCargoTypeAccount(cargoTypeAddress);
 
-		const freeSpaceInCargoUnit = cargoPodInfo.loadedAmount.gt(new BN(0))
+		const freeSpaceInCargoSpace = cargoPodInfo.loadedAmount.gt(new BN(0))
 			? cargoPodInfo.maxCapacity.sub(cargoPodInfo.loadedAmount)
 			: cargoPodInfo.maxCapacity;
 
-		const amountToDepositInCargoUnit = BN.min(
-			amountInCargoUnit,
-			freeSpaceInCargoUnit,
+		const amountInCargoSpace =
+			amount === "full"
+				? freeSpaceInCargoSpace
+				: getCargoSpaceUsedByTokenAmount(cargoType, new BN(amount));
+
+		const amountToDepositInCargoSpace = BN.min(
+			amountInCargoSpace,
+			freeSpaceInCargoSpace,
 		);
 
-		const amountToDeposit = amountToDepositInCargoUnit.div(
-			resourceSpaceInCargoPerUnit,
+		const resourceSpaceMultiplier =
+			cargoType.stats[SAGE_CARGO_STAT_VALUE_INDEX] ?? new BN(0);
+
+		const amountToDepositInTokens = amountToDepositInCargoSpace.div(
+			resourceSpaceMultiplier,
 		);
 
-		if (amountToDeposit.eq(new BN(0))) {
+		if (amountToDepositInTokens.lten(0)) {
 			return yield* Effect.fail(
 				new FleetCargoPodFullError({ podKind: cargoPodKind }),
 			);
@@ -172,7 +192,7 @@ export const createDepositCargoToFleetIx = ({
 		}).pipe(Effect.map((response) => new BN(response.value.uiAmount ?? 0)));
 
 		const amountToDepositAvailable = BN.min(
-			amountToDeposit,
+			amountToDepositInTokens,
 			starbasePodMintAtaBalance,
 		);
 
@@ -188,12 +208,6 @@ export const createDepositCargoToFleetIx = ({
 		const gameId = context.gameInfo.game.key;
 		const gameState = context.gameInfo.game.data.gameState;
 
-		const cargoType = yield* getCargoTypeAddress(
-			resourceMint,
-			context.gameInfo.cargoStatsDefinition.key,
-			context.gameInfo.cargoStatsDefinition.data.seqId,
-		);
-
 		const ix_1 = Fleet.depositCargoToFleet(
 			programs.sage,
 			programs.cargo,
@@ -206,7 +220,7 @@ export const createDepositCargoToFleetIx = ({
 			fleetAddress,
 			starbasePlayerCargoPodsPubkey,
 			cargoPodInfo.key,
-			cargoType,
+			cargoType.key,
 			context.gameInfo.cargoStatsDefinition.key,
 			tokenAccountFromPubkey,
 			tokenAccountToPubkey,

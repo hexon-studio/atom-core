@@ -5,6 +5,7 @@ import { Command, InvalidArgumentError, Option } from "commander";
 import {
 	Array as EffectArray,
 	String as EffectString,
+	Match,
 	Tuple,
 	pipe,
 } from "effect";
@@ -20,6 +21,7 @@ import { runUnloadCargo } from "./commands/unloadCargo";
 import { runWarp } from "./commands/warp";
 import { noopPublicKey } from "./constants/tokens";
 import { type GlobalOptions, cargoPodKindDecoder } from "./types";
+import { parseSecretKey } from "./utils/keypair";
 import { isPublicKey, parsePublicKey } from "./utils/public-key";
 
 const main = async () => {
@@ -52,7 +54,7 @@ const main = async () => {
 				"-k, --keypair <secretKey>",
 				"The secret key of the hot wallet as a base58 string",
 			)
-				.argParser(parsePublicKey)
+				.argParser(parseSecretKey)
 				.env("ATOM_HOT_WALLET")
 				.makeOptionMandatory(true),
 		)
@@ -61,7 +63,7 @@ const main = async () => {
 	const itemsDecoder = z.array(
 		z.object({
 			resourceMint: z.string(),
-			amount: z.number(),
+			amount: z.union([z.literal("full"), z.number()]),
 			cargoPodKind: cargoPodKindDecoder,
 		}),
 	);
@@ -102,7 +104,10 @@ const main = async () => {
 					EffectArray.zip(options.amounts),
 					EffectArray.zipWith(options.pods, ([mint, amount], cargoPodKind) => ({
 						resourceMint: mint,
-						amount: Number(amount),
+						amount: Match.value(amount).pipe(
+							Match.when("full", () => "full" as const),
+							Match.orElse(Number),
+						),
 						cargoPodKind,
 					})),
 				);

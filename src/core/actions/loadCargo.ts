@@ -1,6 +1,13 @@
 import type { PublicKey } from "@solana/web3.js";
 import type { InstructionReturn } from "@staratlas/data-source";
-import { Console, Data, Effect, Match, pipe } from "effect";
+import {
+	Console,
+	Data,
+	Effect,
+	Array as EffectArray,
+	Match,
+	pipe,
+} from "effect";
 import type { CargoPodKind } from "../../types";
 import { isPublicKey } from "../../utils/public-key";
 import {
@@ -26,15 +33,15 @@ export class BuildOptinalTxError extends Data.TaggedError(
 }
 
 export const loadCargo = ({
-	amount,
+	items,
 	fleetNameOrAddress,
-	resourceMint,
-	cargoPodKind,
 }: {
-	amount: number;
 	fleetNameOrAddress: string | PublicKey;
-	resourceMint: PublicKey;
-	cargoPodKind: CargoPodKind;
+	items: Array<{
+		amount: "full" | number;
+		resourceMint: PublicKey;
+		cargoPodKind: CargoPodKind;
+	}>;
 }) =>
 	Effect.gen(function* () {
 		const fleetAddress = yield* isPublicKey(fleetNameOrAddress)
@@ -46,8 +53,6 @@ export const loadCargo = ({
 		);
 
 		const fleetAccount = yield* getFleetAccount(fleetAddress);
-
-		// TODO: nothing to load
 
 		const ixs: InstructionReturn[] = [];
 
@@ -88,20 +93,24 @@ export const loadCargo = ({
 
 		ixs.push(...preIxs);
 
-		const loadCargoIxs = yield* createDepositCargoToFleetIx({
-			amount,
-			fleetAddress,
-			resourceMint,
-			cargoPodKind,
-		});
+		const loadCargoIxs = yield* Effect.all(
+			EffectArray.map(items, ({ amount, resourceMint, cargoPodKind }) =>
+				createDepositCargoToFleetIx({
+					amount,
+					fleetAddress,
+					resourceMint,
+					cargoPodKind,
+				}),
+			),
+		).pipe(Effect.map(EffectArray.flatten));
 
 		ixs.push(...loadCargoIxs);
-
-		const gameService = yield* GameService;
 
 		const drainVaultIx = yield* createDrainVaultIx(ixs);
 
 		ixs.push(drainVaultIx);
+
+		const gameService = yield* GameService;
 
 		const txs =
 			yield* gameService.utils.buildAndSignTransactionWithAtlasPrime(ixs);

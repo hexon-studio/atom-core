@@ -9,7 +9,7 @@ type Param = GlobalOptions & {
 	fleetNameOrAddress: string | PublicKey;
 	items: Array<{
 		resourceMint: PublicKey;
-		amount: number;
+		amount: "full" | number;
 		cargoPodKind: CargoPodKind;
 	}>;
 };
@@ -33,14 +33,10 @@ export const runLoadCargo = async ({
 		),
 		Effect.tap(() => Console.log("Game initialized.")),
 		Effect.flatMap(() =>
-			Effect.forEach(items, ({ amount, resourceMint, cargoPodKind }) =>
-				loadCargo({
-					fleetNameOrAddress,
-					resourceMint,
-					amount: amount,
-					cargoPodKind,
-				}),
-			),
+			loadCargo({
+				fleetNameOrAddress,
+				items,
+			}),
 		),
 		Effect.provide(mainServiceLive),
 	);
@@ -49,8 +45,8 @@ export const runLoadCargo = async ({
 
 	exit.pipe(
 		Exit.match({
-			onSuccess: (txId) => {
-				console.log(`Transactions ${txId.join(",")} completed`);
+			onSuccess: (txIds) => {
+				console.log(`Transactions ${txIds.join(",")} completed`);
 				process.exit(0);
 			},
 			onFailure: (cause) => {

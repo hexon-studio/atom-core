@@ -2,6 +2,7 @@ import { PublicKey } from "@solana/web3.js";
 import {
 	type CargoStats,
 	type Fleet,
+	getCargoSpaceUsedByTokenAmount,
 	getCargoPodsByAuthority as sageGetCargoPodsByAuthority,
 } from "@staratlas/sage";
 import BN from "bn.js";
@@ -80,15 +81,15 @@ export const getFleetCargoPodInfoByType = ({
 				new PublicKey(context.gameInfo.cargoStatsDefinition.key),
 				context.gameInfo.cargoStatsDefinition.data.seqId,
 			);
-			const cargoType = yield* getCargoTypeAccount(cargoTypeKey);
 
-			const resourceSpaceInCargoPerUnit = cargoType.stats[0] as BN;
+			const cargoType = yield* getCargoTypeAccount(cargoTypeKey);
 
 			resources.push({
 				mint: cargoPodTokenAccount.mint,
 				amount: new BN(cargoPodTokenAccount.amount.toString()),
-				cargoUnitAmount: new BN(cargoPodTokenAccount.amount.toString()).mul(
-					resourceSpaceInCargoPerUnit,
+				cargoUnitAmount: getCargoSpaceUsedByTokenAmount(
+					cargoType,
+					new BN(cargoPodTokenAccount.amount.toString()),
 				),
 				cargoTypeKey: cargoType.key,
 				tokenAccountKey: cargoPodTokenAccount.address,
