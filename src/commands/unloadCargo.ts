@@ -33,14 +33,10 @@ export const runUnloadCargo = async ({
 		),
 		Effect.tap(() => Console.log("Game initialized.")),
 		Effect.flatMap(() =>
-			Effect.forEach(items, ({ amount, resourceMint, cargoPodKind }) =>
-				unloadCargo({
-					fleetNameOrAddress,
-					resourceMint,
-					amount: amount,
-					cargoPodKind,
-				}),
-			),
+			unloadCargo({
+				fleetNameOrAddress,
+				items,
+			}),
 		),
 		Effect.provide(mainServiceLive),
 	);

@@ -157,7 +157,10 @@ const main = async () => {
 					EffectArray.zip(options.amounts),
 					EffectArray.zipWith(options.pods, ([mint, amount], cargoPodKind) => ({
 						resourceMint: mint,
-						amount: Number(amount),
+						amount: Match.value(amount).pipe(
+							Match.when("full", () => "full" as const),
+							Match.orElse(Number),
+						),
 						cargoPodKind,
 					})),
 				);
