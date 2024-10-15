@@ -1,6 +1,6 @@
 import type { PublicKey } from "@solana/web3.js";
 import type { InstructionReturn } from "@staratlas/data-source";
-import { Console, Effect, Match, pipe } from "effect";
+import { Console, Data, Effect, Match, pipe } from "effect";
 import type { CargoPodKind } from "../../types";
 import { isPublicKey } from "../../utils/public-key";
 import {
@@ -17,18 +17,26 @@ import {
 import { getFleetAddressByName } from "../utils/pdas";
 import { createDrainVaultIx } from "../vault/instructions/createDrainVaultIx";
 
+export class NotImplementedError extends Data.TaggedError(
+	"NotImplementedError",
+) {}
+
 export const unloadCargo = ({
 	amount,
 	fleetNameOrAddress,
 	resourceMint,
 	cargoPodKind,
 }: {
-	amount: number;
+	amount: "full" | number;
 	fleetNameOrAddress: string | PublicKey;
 	resourceMint: PublicKey;
 	cargoPodKind: CargoPodKind;
 }) =>
 	Effect.gen(function* () {
+		if (amount === "full") {
+			return yield* Effect.fail(new NotImplementedError());
+		}
+
 		const fleetAddress = yield* isPublicKey(fleetNameOrAddress)
 			? Effect.succeed(fleetNameOrAddress)
 			: getFleetAddressByName(fleetNameOrAddress);
