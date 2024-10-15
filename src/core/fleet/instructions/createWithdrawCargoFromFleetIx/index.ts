@@ -1,15 +1,23 @@
 import type { PublicKey } from "@solana/web3.js";
-import { Fleet } from "@staratlas/sage";
+import {
+	Fleet,
+	SAGE_CARGO_STAT_VALUE_INDEX,
+	getCargoSpaceUsedByTokenAmount,
+} from "@staratlas/sage";
 import BN from "bn.js";
 import { Data, Effect, pipe } from "effect";
-import { isNone } from "effect/Option";
+import { isSome } from "effect/Option";
 import type { CargoPodKind } from "../../../../types";
+import { getAssociatedTokenAddress } from "../../../../utils/getAssociatedTokenAddress";
 import { isResourceAllowedForCargoPod } from "../../../../utils/resources/isResourceAllowedForCargoPod";
 import { getFleetCargoPodInfoByType } from "../../../cargo-utils";
 import { SagePrograms } from "../../../programs";
 import { GameService } from "../../../services/GameService";
 import { getGameContext } from "../../../services/GameService/utils";
-import { getStarbaseAccount } from "../../../utils/accounts";
+import {
+	getCargoTypeAccount,
+	getStarbaseAccount,
+} from "../../../utils/accounts";
 import {
 	getCargoTypeAddress,
 	getProfileFactionAddress,
@@ -31,13 +39,13 @@ export const createWithdrawCargoFromFleetIx = ({
 	resourceMint,
 	cargoPodKind,
 }: {
-	amount: number;
+	amount: "full" | number;
 	fleetAccount: Fleet;
 	resourceMint: PublicKey;
 	cargoPodKind: CargoPodKind;
 }) =>
 	Effect.gen(function* () {
-		if (amount <= 0) {
+		if (amount !== "full" && amount <= 0) {
 			return yield* Effect.fail(
 				new InvalidAmountError({ resourceMint, amount }),
 			);
@@ -70,24 +78,11 @@ export const createWithdrawCargoFromFleetIx = ({
 			type: cargoPodKind,
 		});
 
-		// NOTE: this is 0 when mining,Token Account from where the resource will be withdrawn
-		const maybeTokenAccountFrom = yield* pipe(
-			gameService.utils.getParsedTokenAccountsByOwner(cargoPodInfo.key),
-			Effect.flatMap(
-				Effect.findFirst((account) =>
-					Effect.succeed(account.mint.toBase58() === resourceMint.toBase58()),
-				),
-			),
+		const cargoPodTokenAccount = yield* getAssociatedTokenAddress(
+			resourceMint,
+			cargoPodInfo.key,
+			true,
 		);
-
-		if (
-			isNone(maybeTokenAccountFrom)
-			// || maybeTokenAccountFrom.value.amount === 0n
-		) {
-			return yield* Effect.fail(new FleetCargoPodTokenAccountNotFoundError());
-		}
-
-		const tokenAccountFromPubkey = maybeTokenAccountFrom.value.address;
 
 		// Starbase where the fleet is located
 		const fleetCoords = yield* getCurrentFleetSectorCoordinates(
@@ -122,23 +117,45 @@ export const createWithdrawCargoFromFleetIx = ({
 			true,
 		);
 
-		// const maxAmountToWithdraw = BN.min(
-		// 	new BN(amount),
-		// 	new BN(maybeTokenAccountFrom.value.amount.toString()),
-		// );
-		const maxAmountToWithdraw = new BN(amount);
+		const maybeTokenAccountFrom = yield* pipe(
+			gameService.utils.getParsedTokenAccountsByOwner(cargoPodInfo.key),
+			Effect.flatMap(
+				Effect.findFirst((account) =>
+					Effect.succeed(account.mint.toBase58() === resourceMint.toBase58()),
+				),
+			),
+		);
+
+		const cargoTypeAddress = yield* getCargoTypeAddress(
+			resourceMint,
+			context.gameInfo.cargoStatsDefinition.key,
+			context.gameInfo.cargoStatsDefinition.data.seqId,
+		);
+
+		const cargoType = yield* getCargoTypeAccount(cargoTypeAddress);
+
+		const amoutInCargoSpace =
+			amount === "full"
+				? cargoPodInfo.maxCapacity
+				: getCargoSpaceUsedByTokenAmount(cargoType, new BN(amount));
+
+		const resourceSpaceMultiplier =
+			cargoType.stats[SAGE_CARGO_STAT_VALUE_INDEX] ?? new BN(0);
+
+		const amoutInTokens = amoutInCargoSpace.div(resourceSpaceMultiplier);
+
+		const maxAmountToWithdraw = isSome(maybeTokenAccountFrom)
+			? BN.min(
+					new BN(amoutInTokens),
+					new BN(maybeTokenAccountFrom.value.amount.toString()),
+				)
+			: new BN(amoutInTokens);
 
 		const programs = yield* SagePrograms;
 
 		const signer = yield* gameService.signer;
 		const gameId = context.gameInfo.game.key;
 		const gameState = context.gameInfo.game.data.gameState;
-
-		const cargoType = yield* getCargoTypeAddress(
-			resourceMint,
-			context.gameInfo.cargoStatsDefinition.key,
-			context.gameInfo.cargoStatsDefinition.data.seqId,
-		);
 
 		const withdrawCargoFromFleetIx = Fleet.withdrawCargoFromFleet(
 			programs.sage,
@@ -152,9 +169,9 @@ export const createWithdrawCargoFromFleetIx = ({
 			fleetAccount.key,
 			cargoPodInfo.key,
 			starbasePlayerCargoPodsPubkey,
-			cargoType,
+			cargoTypeAddress,
 			context.gameInfo.cargoStatsDefinition.key,
-			tokenAccountFromPubkey,
+			cargoPodTokenAccount,
 			starbasePlayerResourceMintAta,
 			resourceMint,
 			gameId,
