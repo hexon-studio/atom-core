@@ -17,11 +17,16 @@ export const runFleetInfo = async ({
 	rpcUrl,
 	owner,
 	playerProfile,
+	supabaseUrl,
+	supabaseKey,
+	taskId,
 	verbose,
 }: Param) => {
 	const mainServiceLive = createMainLiveService({
 		keypair,
 		rpcUrl,
+		supabaseUrl,
+		supabaseKey,
 	});
 
 	const program = GameService.pipe(

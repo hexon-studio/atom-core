@@ -17,10 +17,15 @@ export const runStartMining = async ({
 	owner,
 	playerProfile,
 	rpcUrl,
+	supabaseUrl,
+	supabaseKey,
+	taskId,
 }: Param) => {
 	const mainServiceLive = createMainLiveService({
 		keypair,
 		rpcUrl,
+		supabaseUrl,
+		supabaseKey,
 	});
 
 	const program = GameService.pipe(

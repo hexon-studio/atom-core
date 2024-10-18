@@ -64,6 +64,25 @@ const main = async () => {
 				.env("ATOM_HOT_WALLET")
 				.makeOptionMandatory(true),
 		)
+		.addOption(
+			new Option(
+				"-su, --supabaseUrl <supabaseUrl>",
+				"The supabase database url",
+			)
+				.env("ATOM_SUPABASE_URL")
+				.makeOptionMandatory(true),
+		)
+		.addOption(
+			new Option("-sk, --supabaseKey <supabaseKey>", "The supabase anon key")
+				.env("ATOM_SUPABASE_KEY")
+				.makeOptionMandatory(true),
+		)
+		.addOption(
+			new Option(
+				"-t, --taskId <taskId>",
+				"The task to update",
+			).makeOptionMandatory(true),
+		)
 		.option("--verbose", "Print additional logs", false);
 
 	const itemsDecoder = z.array(

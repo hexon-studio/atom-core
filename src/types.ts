@@ -6,6 +6,9 @@ export type GlobalOptions = {
 	owner: PublicKey;
 	playerProfile: PublicKey;
 	rpcUrl: string;
+	supabaseUrl: string;
+	supabaseKey: string;
+	taskId: number;
 	verbose: boolean;
 };
 
