@@ -3,11 +3,11 @@ import { Cause, Console, Effect, Exit, Option } from "effect";
 import { GameService } from "../core/services/GameService";
 import { getFleetAccount } from "../core/utils/accounts";
 import { getFleetAddressByName } from "../core/utils/pdas";
-import type { GlobalOptions } from "../types";
+import type { GlobalOptionsWithSupabase } from "../types";
 import { createMainLiveService } from "../utils/createLiveService";
 import { isPublicKey } from "../utils/public-key";
 
-type Param = GlobalOptions & {
+type Param = GlobalOptionsWithSupabase & {
 	fleetNameOrAddress: string | PublicKey;
 };
 
@@ -17,16 +17,13 @@ export const runFleetInfo = async ({
 	rpcUrl,
 	owner,
 	playerProfile,
-	supabaseUrl,
-	supabaseKey,
-	taskId,
+	supabaseArgs,
 	verbose,
 }: Param) => {
 	const mainServiceLive = createMainLiveService({
 		keypair,
 		rpcUrl,
-		supabaseUrl,
-		supabaseKey,
+		supabaseArgs,
 	});
 
 	const program = GameService.pipe(

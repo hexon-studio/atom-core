@@ -2,11 +2,11 @@ import type { PublicKey } from "@solana/web3.js";
 import { Cause, Console, Effect, Exit, Option } from "effect";
 import { loadCargo } from "../core/actions/loadCargo";
 import { GameService } from "../core/services/GameService";
-import type { CargoPodKind, GlobalOptions } from "../types";
+import type { CargoPodKind, GlobalOptionsWithSupabase } from "../types";
 import { createMainLiveService } from "../utils/createLiveService";
-import { DatabaseService } from "../core/services/DatabaseService";
+import { runBaseCommand } from "./baseCommand";
 
-type Param = GlobalOptions & {
+type Param = GlobalOptionsWithSupabase & {
 	fleetNameOrAddress: string | PublicKey;
 	items: Array<{
 		resourceMint: PublicKey;
@@ -22,40 +22,27 @@ export const runLoadCargo = async ({
 	owner,
 	playerProfile,
 	rpcUrl,
-	supabaseUrl,
-	supabaseKey,
-	taskId,
+	supabaseArgs,
 }: Param) => {
 	const mainServiceLive = createMainLiveService({
 		keypair,
 		rpcUrl,
-		supabaseUrl,
-		supabaseKey,
+		supabaseArgs,
 	});
 
-	const program = DatabaseService.pipe(
-		Effect.flatMap((service) => service.client),
-		Effect.flatMap((client) =>
-			Effect.promise(() =>
-				client
-					.from("tasks")
-					.update({ status: "running", schedule_expire_at: null })
-					.eq("id", taskId),
-			),
+	const program = GameService.pipe(
+		Effect.tap((service) =>
+			service.methods.initGame(owner, playerProfile, service.context),
 		),
+		Effect.tap(() => Console.log("Game initialized.")),
 		Effect.flatMap(() =>
-			GameService.pipe(
-				Effect.tap((service) =>
-					service.methods.initGame(owner, playerProfile, service.context),
-				),
-				Effect.tap(() => Console.log("Game initialized.")),
-				Effect.flatMap(() =>
-					loadCargo({
-						fleetNameOrAddress,
-						items,
-					}),
-				),
-			),
+			runBaseCommand({
+				self: loadCargo({
+					fleetNameOrAddress,
+					items,
+				}),
+				mapError: (err) => err._tag,
+			}),
 		),
 		Effect.provide(mainServiceLive),
 	);
@@ -64,38 +51,11 @@ export const runLoadCargo = async ({
 
 	exit.pipe(
 		Exit.match({
-			onSuccess: async (txIds) => {
-				const success = DatabaseService.pipe(
-					Effect.flatMap((service) => service.client),
-					Effect.flatMap((client) =>
-						Effect.promise(() =>
-							client
-								.from("tasks")
-								.update({ status: "success" })
-								.eq("id", taskId),
-						),
-					),
-					Effect.provide(mainServiceLive),
-				);
-
-				await Effect.runPromise(success);
-
+			onSuccess: (txIds) => {
 				console.log(`Transactions ${txIds.join(",")} completed`);
 				process.exit(0);
 			},
-			onFailure: async (cause) => {
-				const failure = DatabaseService.pipe(
-					Effect.flatMap((service) => service.client),
-					Effect.flatMap((client) =>
-						Effect.promise(() =>
-							client.from("tasks").update({ status: "error" }).eq("id", taskId),
-						),
-					),
-					Effect.provide(mainServiceLive),
-				);
-
-				await Effect.runPromise(failure);
-
+			onFailure: (cause) => {
 				console.log(`Transaction error: ${Cause.pretty(cause)}`);
 
 				const error = Cause.failureOption(cause).pipe(Option.getOrUndefined);

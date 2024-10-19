@@ -2,10 +2,11 @@ import type { PublicKey } from "@solana/web3.js";
 import { Cause, Console, Effect, Exit, Option } from "effect";
 import { startMining } from "../core/actions/startMining";
 import { GameService } from "../core/services/GameService";
-import type { GlobalOptions } from "../types";
+import type { GlobalOptionsWithSupabase } from "../types";
 import { createMainLiveService } from "../utils/createLiveService";
+import { runBaseCommand } from "./baseCommand";
 
-type Param = GlobalOptions & {
+type Param = GlobalOptionsWithSupabase & {
 	fleetNameOrAddress: string | PublicKey;
 	resourceMint: PublicKey;
 };
@@ -17,15 +18,12 @@ export const runStartMining = async ({
 	owner,
 	playerProfile,
 	rpcUrl,
-	supabaseUrl,
-	supabaseKey,
-	taskId,
+	supabaseArgs,
 }: Param) => {
 	const mainServiceLive = createMainLiveService({
 		keypair,
 		rpcUrl,
-		supabaseUrl,
-		supabaseKey,
+		supabaseArgs,
 	});
 
 	const program = GameService.pipe(
@@ -34,9 +32,12 @@ export const runStartMining = async ({
 		),
 		Effect.tap(() => Console.log("Game initialized.")),
 		Effect.flatMap(() =>
-			startMining({
-				fleetNameOrAddress,
-				resourceMint,
+			runBaseCommand({
+				self: startMining({
+					fleetNameOrAddress,
+					resourceMint,
+				}),
+				mapError: (err) => err._tag,
 			}),
 		),
 		Effect.provide(mainServiceLive),

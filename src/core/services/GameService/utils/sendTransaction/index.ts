@@ -34,7 +34,9 @@ export const sendTransaction = (
 					Effect.flatMap((result) =>
 						result.value.isOk()
 							? Effect.succeed(result.value.value)
-							: Effect.fail(result.value.error),
+							: Effect.fail(
+									new SendTransactionError({ error: result.value.error }),
+								),
 					),
 				),
 				{ times: 5 },

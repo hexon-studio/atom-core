@@ -1,32 +1,72 @@
-import { createClient, type SupabaseClient } from "@supabase/supabase-js";
-import { Context, Data, Effect, Layer } from "effect";
+import type { SupabaseClient } from "@supabase/supabase-js";
+import { Context, Data, Effect, Layer, Match } from "effect";
+import type { Database } from "../../../libs/database.types";
+import {
+	type CreateSupabaseClient,
+	createSupabaseClient,
+} from "../../../libs/supabase";
+import type { SupabaseOptions } from "../../../types";
+
+const createUpdateTaskStatus =
+	(client: SupabaseClient<Database>, taskId: string) =>
+	({
+		newStatus,
+		errorTag,
+	}: { newStatus: "running" | "success" | "error"; errorTag?: string }) => {
+		const { whereStatus, payload } = Match.value(newStatus).pipe(
+			Match.when("running", (status) => ({
+				whereStatus: "scheduled" as const,
+				payload: {
+					status,
+					schedule_expire_at: null,
+				},
+			})),
+			Match.when("success", (status) => ({
+				whereStatus: "running" as const,
+				payload: { status },
+			})),
+			Match.when("error", (status) => ({
+				whereStatus: "running" as const,
+				payload: { status, error_tag: errorTag },
+			})),
+			Match.exhaustive,
+		);
+
+		return Effect.tryPromise({
+			try: () =>
+				client
+					.from("tasks")
+					.update(payload)
+					.eq("status", whereStatus)
+					.eq("id", taskId),
+			catch: (error) => new UpdateTaskStatusError({ error }),
+		});
+	};
 
 export class DatabaseService extends Context.Tag("app/DatabaseService")<
 	DatabaseService,
 	{
-		client: Effect.Effect<SupabaseClient, CreateSupabaseClientError>;
+		client: CreateSupabaseClient;
+		updateTaskStatus: ReturnType<typeof createUpdateTaskStatus>;
 	}
 >() {}
 
-export class CreateSupabaseClientError extends Data.TaggedError(
-	"CreateSupabaseClientError",
-)<{
-	error: unknown;
-}> {}
+export class UpdateTaskStatusError extends Data.TaggedError(
+	"UpdateTaskStatusError",
+)<{ error: unknown }> {}
 
 export const createDatabaseServiceLive = ({
 	supabaseUrl,
 	supabaseKey,
-}: {
-	supabaseUrl: string;
-	supabaseKey: string;
-}) =>
-	Layer.succeed(
+	taskId,
+}: SupabaseOptions) => {
+	const client = createSupabaseClient({ supabaseKey, supabaseUrl });
+
+	return Layer.succeed(
 		DatabaseService,
 		DatabaseService.of({
-			client: Effect.try({
-				try: () => createClient(supabaseUrl, supabaseKey),
-				catch: (error) => new CreateSupabaseClientError({ error }),
-			}),
+			client,
+			updateTaskStatus: createUpdateTaskStatus(client, taskId),
 		}),
 	);
+};

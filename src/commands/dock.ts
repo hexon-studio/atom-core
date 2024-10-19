@@ -2,10 +2,11 @@ import type { PublicKey } from "@solana/web3.js";
 import { Cause, Console, Effect, Exit, Option } from "effect";
 import { dockToStarbase } from "../core/actions/dockToStarbase";
 import { GameService } from "../core/services/GameService";
-import type { GlobalOptions } from "../types";
+import type { GlobalOptionsWithSupabase } from "../types";
 import { createMainLiveService } from "../utils/createLiveService";
+import { runBaseCommand } from "./baseCommand";
 
-type Param = GlobalOptions & {
+type Param = GlobalOptionsWithSupabase & {
 	fleetNameOrAddress: string | PublicKey;
 };
 
@@ -15,15 +16,12 @@ export const runDock = async ({
 	owner,
 	playerProfile,
 	rpcUrl,
-	supabaseUrl,
-	supabaseKey,
-	taskId,
+	supabaseArgs,
 }: Param) => {
 	const mainServiceLive = createMainLiveService({
 		keypair,
 		rpcUrl,
-		supabaseUrl,
-		supabaseKey,
+		supabaseArgs,
 	});
 
 	const program = GameService.pipe(
@@ -32,8 +30,11 @@ export const runDock = async ({
 		),
 		Effect.tap(() => Console.log("Game initialized.")),
 		Effect.flatMap(() =>
-			dockToStarbase({
-				fleetNameOrAddress,
+			runBaseCommand({
+				self: dockToStarbase({
+					fleetNameOrAddress,
+				}),
+				mapError: (err) => err._tag,
 			}),
 		),
 		Effect.provide(mainServiceLive),

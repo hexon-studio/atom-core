@@ -2,10 +2,11 @@ import type { PublicKey } from "@solana/web3.js";
 import { Cause, Console, Effect, Exit, Option } from "effect";
 import { unloadCargo } from "../core/actions/unloadCargo";
 import { GameService } from "../core/services/GameService";
-import type { CargoPodKind, GlobalOptions } from "../types";
+import type { CargoPodKind, GlobalOptionsWithSupabase } from "../types";
 import { createMainLiveService } from "../utils/createLiveService";
+import { runBaseCommand } from "./baseCommand";
 
-type Param = GlobalOptions & {
+type Param = GlobalOptionsWithSupabase & {
 	fleetNameOrAddress: string | PublicKey;
 	items: Array<{
 		resourceMint: PublicKey;
@@ -21,15 +22,12 @@ export const runUnloadCargo = async ({
 	owner,
 	playerProfile,
 	rpcUrl,
-	supabaseUrl,
-	supabaseKey,
-	taskId,
+	supabaseArgs,
 }: Param) => {
 	const mainServiceLive = createMainLiveService({
 		keypair,
 		rpcUrl,
-		supabaseUrl,
-		supabaseKey,
+		supabaseArgs,
 	});
 
 	const program = GameService.pipe(
@@ -38,9 +36,12 @@ export const runUnloadCargo = async ({
 		),
 		Effect.tap(() => Console.log("Game initialized.")),
 		Effect.flatMap(() =>
-			unloadCargo({
-				fleetNameOrAddress,
-				items,
+			runBaseCommand({
+				self: unloadCargo({
+					fleetNameOrAddress,
+					items,
+				}),
+				mapError: (err) => err._tag,
 			}),
 		),
 		Effect.provide(mainServiceLive),

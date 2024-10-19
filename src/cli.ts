@@ -2,6 +2,7 @@
 
 import { PublicKey } from "@solana/web3.js";
 import { InvalidArgumentError, Option, program as commander } from "commander";
+import Dotenv from "dotenv";
 import {
 	Array as EffectArray,
 	String as EffectString,
@@ -25,8 +26,11 @@ import {
 	cargoPodKindDecoder,
 	cargoPodKinds,
 } from "./types";
+import { creactOptionsWithSupabase } from "./utils/creactOptionsWithSupabase";
 import { parseSecretKey } from "./utils/keypair";
 import { isPublicKey, parsePublicKey } from "./utils/public-key";
+
+Dotenv.config();
 
 const main = async () => {
 	const program = commander
@@ -70,18 +74,18 @@ const main = async () => {
 				"The supabase database url",
 			)
 				.env("ATOM_SUPABASE_URL")
-				.makeOptionMandatory(true),
+				.makeOptionMandatory(false),
 		)
 		.addOption(
 			new Option("-sk, --supabaseKey <supabaseKey>", "The supabase anon key")
 				.env("ATOM_SUPABASE_KEY")
-				.makeOptionMandatory(true),
+				.makeOptionMandatory(false),
 		)
 		.addOption(
 			new Option(
 				"-t, --taskId <taskId>",
 				"The task to update",
-			).makeOptionMandatory(true),
+			).makeOptionMandatory(false),
 		)
 		.option("--verbose", "Print additional logs", false);
 
@@ -96,7 +100,9 @@ const main = async () => {
 	program
 		.command("fleet-info <fleetNameOrAddress>")
 		.action(async (fleetNameOrAddress: string) => {
-			const globalOpts = program.opts<GlobalOptions>();
+			const globalOpts = creactOptionsWithSupabase(
+				program.opts<GlobalOptions>(),
+			);
 
 			return runFleetInfo({
 				...globalOpts,
@@ -124,7 +130,9 @@ const main = async () => {
 					pods: CargoPodKind[];
 				},
 			) => {
-				const globalOpts = program.opts<GlobalOptions>();
+				const globalOpts = creactOptionsWithSupabase(
+					program.opts<GlobalOptions>(),
+				);
 
 				const items = pipe(
 					options.mints,
@@ -169,7 +177,9 @@ const main = async () => {
 					pods: CargoPodKind[];
 				},
 			) => {
-				const globalOpts = program.opts<GlobalOptions>();
+				const globalOpts = creactOptionsWithSupabase(
+					program.opts<GlobalOptions>(),
+				);
 
 				const items = pipe(
 					options.mints,
@@ -199,7 +209,9 @@ const main = async () => {
 	program
 		.command("dock <fleetNameOrAddress>")
 		.action(async (fleetNameOrAddress: string) => {
-			const globalOpts = program.opts<GlobalOptions>();
+			const globalOpts = creactOptionsWithSupabase(
+				program.opts<GlobalOptions>(),
+			);
 
 			return runDock({
 				...globalOpts,
@@ -212,7 +224,9 @@ const main = async () => {
 	program
 		.command("undock <fleetNameOrAddress>")
 		.action(async (fleetNameOrAddress: string) => {
-			const globalOpts = program.opts<GlobalOptions>();
+			const globalOpts = creactOptionsWithSupabase(
+				program.opts<GlobalOptions>(),
+			);
 
 			return runUndock({
 				...globalOpts,
@@ -231,7 +245,9 @@ const main = async () => {
 			parsePublicKey,
 		)
 		.action(async (fleetNameOrAddress: string, resourceMint: PublicKey) => {
-			const globalOpts = program.opts<GlobalOptions>();
+			const globalOpts = creactOptionsWithSupabase(
+				program.opts<GlobalOptions>(),
+			);
 
 			return runStartMining({
 				...globalOpts,
@@ -251,7 +267,9 @@ const main = async () => {
 			parsePublicKey,
 		)
 		.action(async (fleetNameOrAddress: string, resourceMint: PublicKey) => {
-			const globalOpts = program.opts<GlobalOptions>();
+			const globalOpts = creactOptionsWithSupabase(
+				program.opts<GlobalOptions>(),
+			);
 
 			return runStopMining({
 				...globalOpts,
@@ -267,7 +285,9 @@ const main = async () => {
 		.argument("<fleetNameOrAddress>", "The fleet to stop mining")
 		.argument("<targetSector>", "Rhe coordinates of the target sector")
 		.action(async (fleetNameOrAddress: string, targetSectorArg: string) => {
-			const globalOpts = program.opts<GlobalOptions>();
+			const globalOpts = creactOptionsWithSupabase(
+				program.opts<GlobalOptions>(),
+			);
 
 			const maybeSector = EffectString.split(targetSectorArg, ",");
 
@@ -294,7 +314,9 @@ const main = async () => {
 		.argument("<fleetNameOrAddress>", "The fleet to stop mining")
 		.argument("<targetSector>", "Rhe coordinates of the target sector")
 		.action(async (fleetNameOrAddress: string, targetSectorArg: string) => {
-			const globalOpts = program.opts<GlobalOptions>();
+			const globalOpts = creactOptionsWithSupabase(
+				program.opts<GlobalOptions>(),
+			);
 
 			const maybeSector = EffectString.split(targetSectorArg, ",");
 
