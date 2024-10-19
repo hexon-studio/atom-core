@@ -33,35 +33,6 @@ export type Database = {
 				};
 				Relationships: [];
 			};
-			action_queues: {
-				Row: {
-					active_plans_id: number | null;
-					created_at: string;
-					id: number;
-					status: Database["public"]["Enums"]["action_queue_status"] | null;
-				};
-				Insert: {
-					active_plans_id?: number | null;
-					created_at?: string;
-					id?: number;
-					status?: Database["public"]["Enums"]["action_queue_status"] | null;
-				};
-				Update: {
-					active_plans_id?: number | null;
-					created_at?: string;
-					id?: number;
-					status?: Database["public"]["Enums"]["action_queue_status"] | null;
-				};
-				Relationships: [
-					{
-						foreignKeyName: "action_queues_active_plans_id_fkey";
-						columns: ["active_plans_id"];
-						isOneToOne: false;
-						referencedRelation: "active_plans";
-						referencedColumns: ["id"];
-					},
-				];
-			};
 			actions: {
 				Row: {
 					action_type: Database["public"]["Enums"]["action_types"] | null;
@@ -147,34 +118,34 @@ export type Database = {
 					},
 				];
 			};
-			active_plans: {
+			executions: {
 				Row: {
 					created_at: string;
+					duration: number | null;
 					id: number;
-					plans_id: number | null;
-					remaining_cycles: number | null;
-					status: Database["public"]["Enums"]["active_plans_status"] | null;
+					routes_id: number | null;
+					status: Database["public"]["Enums"]["execution_status"] | null;
 				};
 				Insert: {
 					created_at?: string;
+					duration?: number | null;
 					id?: number;
-					plans_id?: number | null;
-					remaining_cycles?: number | null;
-					status?: Database["public"]["Enums"]["active_plans_status"] | null;
+					routes_id?: number | null;
+					status?: Database["public"]["Enums"]["execution_status"] | null;
 				};
 				Update: {
 					created_at?: string;
+					duration?: number | null;
 					id?: number;
-					plans_id?: number | null;
-					remaining_cycles?: number | null;
-					status?: Database["public"]["Enums"]["active_plans_status"] | null;
+					routes_id?: number | null;
+					status?: Database["public"]["Enums"]["execution_status"] | null;
 				};
 				Relationships: [
 					{
-						foreignKeyName: "active_plans_plans_id_fkey";
-						columns: ["plans_id"];
+						foreignKeyName: "executions_routes_id_fkey";
+						columns: ["routes_id"];
 						isOneToOne: false;
-						referencedRelation: "plans";
+						referencedRelation: "routes";
 						referencedColumns: ["id"];
 					},
 				];
@@ -277,6 +248,7 @@ export type Database = {
 					id: number;
 					last_action_sector: string | null;
 					start_sector: string | null;
+					status: Database["public"]["Enums"]["route_status"] | null;
 					title: string | null;
 					updated_at: string | null;
 				};
@@ -287,6 +259,7 @@ export type Database = {
 					id?: number;
 					last_action_sector?: string | null;
 					start_sector?: string | null;
+					status?: Database["public"]["Enums"]["route_status"] | null;
 					title?: string | null;
 					updated_at?: string | null;
 				};
@@ -297,6 +270,7 @@ export type Database = {
 					id?: number;
 					last_action_sector?: string | null;
 					start_sector?: string | null;
+					status?: Database["public"]["Enums"]["route_status"] | null;
 					title?: string | null;
 					updated_at?: string | null;
 				};
@@ -306,6 +280,53 @@ export type Database = {
 						columns: ["created_by"];
 						isOneToOne: false;
 						referencedRelation: "accounts";
+						referencedColumns: ["id"];
+					},
+				];
+			};
+			tasks: {
+				Row: {
+					action_position: number | null;
+					created_at: string;
+					duration: number | null;
+					error_tag: string | null;
+					executions_id: number | null;
+					id: number;
+					retry_attempts: number | null;
+					schedule_expire_at: string | null;
+					status: Database["public"]["Enums"]["task_status"] | null;
+					wait_until: string | null;
+				};
+				Insert: {
+					action_position?: number | null;
+					created_at?: string;
+					duration?: number | null;
+					error_tag?: string | null;
+					executions_id?: number | null;
+					id?: number;
+					retry_attempts?: number | null;
+					schedule_expire_at?: string | null;
+					status?: Database["public"]["Enums"]["task_status"] | null;
+					wait_until?: string | null;
+				};
+				Update: {
+					action_position?: number | null;
+					created_at?: string;
+					duration?: number | null;
+					error_tag?: string | null;
+					executions_id?: number | null;
+					id?: number;
+					retry_attempts?: number | null;
+					schedule_expire_at?: string | null;
+					status?: Database["public"]["Enums"]["task_status"] | null;
+					wait_until?: string | null;
+				};
+				Relationships: [
+					{
+						foreignKeyName: "tasks_executions_id_fkey";
+						columns: ["executions_id"];
+						isOneToOne: false;
+						referencedRelation: "executions";
 						referencedColumns: ["id"];
 					},
 				];
@@ -326,14 +347,22 @@ export type Database = {
 			};
 		};
 		Enums: {
-			action_queue_status: "idle" | "running" | "waiting" | "done" | "error";
 			action_types:
 				| "load_cargo"
 				| "unload_cargo"
 				| "start_mining"
 				| "trip"
 				| "crafting";
-			active_plans_status: "idle" | "running";
+			execution_status: "success" | "error" | "running";
+			route_status: "off" | "on";
+			task_status:
+				| "idle"
+				| "scheduled"
+				| "running"
+				| "waiting"
+				| "success"
+				| "error"
+				| "done";
 		};
 		CompositeTypes: {
 			[_ in never]: never;
