@@ -7,6 +7,7 @@ name: ci
 
 jobs:
   docker-deploy:
+    if: ${{ github.event.pull_request.merged }}
     runs-on: ubuntu-latest
     permissions:
       actions: 'read'
