@@ -37,7 +37,7 @@ export const runWarp = async ({
 					fleetNameOrAddress,
 					targetSector,
 				}),
-				mapError: (err) => err._tag,
+				mapError: (err) => ({ tag: err._tag, message: err.message }),
 			}),
 		),
 		Effect.provide(mainServiceLive),

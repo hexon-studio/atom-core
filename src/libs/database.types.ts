@@ -12,23 +12,29 @@ export type Database = {
 			accounts: {
 				Row: {
 					created_at: string;
+					hot_wallet: boolean | null;
 					id: number;
 					last_login: string | null;
 					pbk: string;
+					secrets_id: string | null;
 					updated_at: string | null;
 				};
 				Insert: {
 					created_at?: string;
+					hot_wallet?: boolean | null;
 					id?: number;
 					last_login?: string | null;
 					pbk: string;
+					secrets_id?: string | null;
 					updated_at?: string | null;
 				};
 				Update: {
 					created_at?: string;
+					hot_wallet?: boolean | null;
 					id?: number;
 					last_login?: string | null;
 					pbk?: string;
+					secrets_id?: string | null;
 					updated_at?: string | null;
 				};
 				Relationships: [];
@@ -36,6 +42,7 @@ export type Database = {
 			actions: {
 				Row: {
 					action_type: Database["public"]["Enums"]["action_types"] | null;
+					cargo_data: Json | null;
 					cargo_mint: string | null;
 					cargo_type: string | null;
 					created_at: string;
@@ -43,6 +50,7 @@ export type Database = {
 					destination_sector: string | null;
 					id: number;
 					mine_resource: string | null;
+					mining_data: Json | null;
 					movement_type: string | null;
 					parent: number | null;
 					position: number | null;
@@ -52,10 +60,13 @@ export type Database = {
 					refuel: boolean | null;
 					routes_id: number | null;
 					sector: string | null;
+					trip_count: number | null;
+					trip_data: Json | null;
 					updated_at: string | null;
 				};
 				Insert: {
 					action_type?: Database["public"]["Enums"]["action_types"] | null;
+					cargo_data?: Json | null;
 					cargo_mint?: string | null;
 					cargo_type?: string | null;
 					created_at?: string;
@@ -63,6 +74,7 @@ export type Database = {
 					destination_sector?: string | null;
 					id?: number;
 					mine_resource?: string | null;
+					mining_data?: Json | null;
 					movement_type?: string | null;
 					parent?: number | null;
 					position?: number | null;
@@ -72,10 +84,13 @@ export type Database = {
 					refuel?: boolean | null;
 					routes_id?: number | null;
 					sector?: string | null;
+					trip_count?: number | null;
+					trip_data?: Json | null;
 					updated_at?: string | null;
 				};
 				Update: {
 					action_type?: Database["public"]["Enums"]["action_types"] | null;
+					cargo_data?: Json | null;
 					cargo_mint?: string | null;
 					cargo_type?: string | null;
 					created_at?: string;
@@ -83,6 +98,7 @@ export type Database = {
 					destination_sector?: string | null;
 					id?: number;
 					mine_resource?: string | null;
+					mining_data?: Json | null;
 					movement_type?: string | null;
 					parent?: number | null;
 					position?: number | null;
@@ -92,6 +108,8 @@ export type Database = {
 					refuel?: boolean | null;
 					routes_id?: number | null;
 					sector?: string | null;
+					trip_count?: number | null;
+					trip_data?: Json | null;
 					updated_at?: string | null;
 				};
 				Relationships: [
@@ -125,6 +143,7 @@ export type Database = {
 					id: number;
 					routes_id: number | null;
 					status: Database["public"]["Enums"]["execution_status"] | null;
+					updated_at: string | null;
 				};
 				Insert: {
 					created_at?: string;
@@ -132,6 +151,7 @@ export type Database = {
 					id?: number;
 					routes_id?: number | null;
 					status?: Database["public"]["Enums"]["execution_status"] | null;
+					updated_at?: string | null;
 				};
 				Update: {
 					created_at?: string;
@@ -139,6 +159,7 @@ export type Database = {
 					id?: number;
 					routes_id?: number | null;
 					status?: Database["public"]["Enums"]["execution_status"] | null;
+					updated_at?: string | null;
 				};
 				Relationships: [
 					{
@@ -244,35 +265,56 @@ export type Database = {
 				Row: {
 					created_at: string;
 					created_by: number | null;
+					cycles: number | null;
 					description: string | null;
+					end_hour: string | null;
+					fleet: string | null;
 					id: number;
 					last_action_sector: string | null;
+					player_profile: string | null;
+					start_hour: string | null;
 					start_sector: string | null;
 					status: Database["public"]["Enums"]["route_status"] | null;
 					title: string | null;
+					trigger_type: Database["public"]["Enums"]["trigger_types"] | null;
 					updated_at: string | null;
+					week_days: string | null;
 				};
 				Insert: {
 					created_at?: string;
 					created_by?: number | null;
+					cycles?: number | null;
 					description?: string | null;
+					end_hour?: string | null;
+					fleet?: string | null;
 					id?: number;
 					last_action_sector?: string | null;
+					player_profile?: string | null;
+					start_hour?: string | null;
 					start_sector?: string | null;
 					status?: Database["public"]["Enums"]["route_status"] | null;
 					title?: string | null;
+					trigger_type?: Database["public"]["Enums"]["trigger_types"] | null;
 					updated_at?: string | null;
+					week_days?: string | null;
 				};
 				Update: {
 					created_at?: string;
 					created_by?: number | null;
+					cycles?: number | null;
 					description?: string | null;
+					end_hour?: string | null;
+					fleet?: string | null;
 					id?: number;
 					last_action_sector?: string | null;
+					player_profile?: string | null;
+					start_hour?: string | null;
 					start_sector?: string | null;
 					status?: Database["public"]["Enums"]["route_status"] | null;
 					title?: string | null;
+					trigger_type?: Database["public"]["Enums"]["trigger_types"] | null;
 					updated_at?: string | null;
+					week_days?: string | null;
 				};
 				Relationships: [
 					{
@@ -287,38 +329,59 @@ export type Database = {
 			tasks: {
 				Row: {
 					action_position: number | null;
+					action_type: Database["public"]["Enums"]["action_types"] | null;
+					cargo_data: Json | null;
 					created_at: string;
 					duration: number | null;
+					error_message: string | null;
 					error_tag: string | null;
 					executions_id: number | null;
 					id: number;
+					mining_data: Json | null;
 					retry_attempts: number | null;
 					schedule_expire_at: string | null;
 					status: Database["public"]["Enums"]["task_status"] | null;
+					trip_count: number | null;
+					trip_data: Json | null;
+					updated_at: string | null;
 					wait_until: string | null;
 				};
 				Insert: {
 					action_position?: number | null;
+					action_type?: Database["public"]["Enums"]["action_types"] | null;
+					cargo_data?: Json | null;
 					created_at?: string;
 					duration?: number | null;
+					error_message?: string | null;
 					error_tag?: string | null;
 					executions_id?: number | null;
 					id?: number;
+					mining_data?: Json | null;
 					retry_attempts?: number | null;
 					schedule_expire_at?: string | null;
 					status?: Database["public"]["Enums"]["task_status"] | null;
+					trip_count?: number | null;
+					trip_data?: Json | null;
+					updated_at?: string | null;
 					wait_until?: string | null;
 				};
 				Update: {
 					action_position?: number | null;
+					action_type?: Database["public"]["Enums"]["action_types"] | null;
+					cargo_data?: Json | null;
 					created_at?: string;
 					duration?: number | null;
+					error_message?: string | null;
 					error_tag?: string | null;
 					executions_id?: number | null;
 					id?: number;
+					mining_data?: Json | null;
 					retry_attempts?: number | null;
 					schedule_expire_at?: string | null;
 					status?: Database["public"]["Enums"]["task_status"] | null;
+					trip_count?: number | null;
+					trip_data?: Json | null;
+					updated_at?: string | null;
 					wait_until?: string | null;
 				};
 				Relationships: [
@@ -345,6 +408,13 @@ export type Database = {
 				};
 				Returns: undefined;
 			};
+			store_account_secret: {
+				Args: {
+					accounts_id: number;
+					private_key: string;
+				};
+				Returns: Json;
+			};
 		};
 		Enums: {
 			action_types:
@@ -353,7 +423,7 @@ export type Database = {
 				| "start_mining"
 				| "trip"
 				| "crafting";
-			execution_status: "success" | "error" | "running";
+			execution_status: "success" | "error" | "running" | "paused";
 			route_status: "off" | "on";
 			task_status:
 				| "idle"
@@ -363,6 +433,7 @@ export type Database = {
 				| "success"
 				| "error"
 				| "done";
+			trigger_types: "instant" | "schedule";
 		};
 		CompositeTypes: {
 			[_ in never]: never;

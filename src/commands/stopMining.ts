@@ -37,7 +37,7 @@ export const runStopMining = async ({
 					fleetNameOrAddress,
 					resourceMint,
 				}),
-				mapError: (err) => err._tag,
+				mapError: (err) => ({ tag: err._tag, message: err.message }),
 			}),
 		),
 		Effect.provide(mainServiceLive),
