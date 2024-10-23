@@ -37,7 +37,7 @@ export const runSubwarp = async ({
 					fleetNameOrAddress,
 					targetSector,
 				}),
-				mapError: (err) => err._tag,
+				mapError: (err) => ({ tag: err._tag, message: err.message }),
 			}),
 		),
 		Effect.provide(mainServiceLive),

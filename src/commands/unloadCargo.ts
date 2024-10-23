@@ -41,7 +41,7 @@ export const runUnloadCargo = async ({
 					fleetNameOrAddress,
 					items,
 				}),
-				mapError: (err) => err._tag,
+				mapError: (err) => ({ tag: err._tag, message: err.message }),
 			}),
 		),
 		Effect.provide(mainServiceLive),

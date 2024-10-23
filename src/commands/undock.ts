@@ -34,7 +34,7 @@ export const runUndock = async ({
 				self: undockFromStarbase({
 					fleetNameOrAddress,
 				}),
-				mapError: (err) => err._tag,
+				mapError: (err) => ({ tag: err._tag, message: err.message }),
 			}),
 		),
 		Effect.provide(mainServiceLive),

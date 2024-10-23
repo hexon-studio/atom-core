@@ -12,7 +12,12 @@ const createUpdateTaskStatus =
 	({
 		newStatus,
 		errorTag,
-	}: { newStatus: "running" | "success" | "error"; errorTag?: string }) => {
+		errorMessage,
+	}: {
+		newStatus: "running" | "success" | "error";
+		errorTag?: string;
+		errorMessage?: string;
+	}) => {
 		const { whereStatus, payload } = Match.value(newStatus).pipe(
 			Match.when("running", (status) => ({
 				whereStatus: "scheduled" as const,
@@ -27,7 +32,7 @@ const createUpdateTaskStatus =
 			})),
 			Match.when("error", (status) => ({
 				whereStatus: "running" as const,
-				payload: { status, error_tag: errorTag },
+				payload: { status, error_tag: errorTag, error_message: errorMessage },
 			})),
 			Match.exhaustive,
 		);

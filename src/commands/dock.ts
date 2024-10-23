@@ -34,7 +34,7 @@ export const runDock = async ({
 				self: dockToStarbase({
 					fleetNameOrAddress,
 				}),
-				mapError: (err) => err._tag,
+				mapError: (err) => ({ tag: err._tag, message: err.message }),
 			}),
 		),
 		Effect.provide(mainServiceLive),
