@@ -4,7 +4,12 @@ import { DatabaseService } from "../services/DatabaseService";
 export const updateTaskIfDatabaseServiceAvailable = ({
 	newStatus,
 	errorTag,
-}: { newStatus: "running" | "success" | "error"; errorTag?: string }) =>
+	errorMessage,
+}: {
+	newStatus: "running" | "success" | "error";
+	errorTag?: string;
+	errorMessage?: string;
+}) =>
 	Effect.serviceOption(DatabaseService).pipe(
 		Effect.map(Option.getOrNull),
 		Effect.flatMap((service) =>
@@ -12,6 +17,7 @@ export const updateTaskIfDatabaseServiceAvailable = ({
 				? service.updateTaskStatus({
 						newStatus,
 						errorTag: newStatus === "error" ? errorTag : undefined,
+						errorMessage: newStatus === "error" ? errorMessage : undefined,
 					})
 				: Effect.succeed(null),
 		),
