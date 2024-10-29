@@ -57,7 +57,7 @@ export const createSubwarpToCoordinateIx = ({
 			{
 				keyIndex: context.keyIndexes.sage,
 				toSector: [targetSectorX, targetSectorY],
-			}, // 0 - normal wallet, 1 - hot wallet
+			},
 		);
 
 		return [...ixs, subwarpIx];
