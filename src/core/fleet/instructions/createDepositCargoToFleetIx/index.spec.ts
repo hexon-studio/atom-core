@@ -1,6 +1,7 @@
 import { Keypair, PublicKey } from "@solana/web3.js";
 import { AnchorProvider } from "@staratlas/anchor";
 import { keypairToAsyncSigner } from "@staratlas/data-source";
+import type { PlayerProfile } from "@staratlas/player-profile";
 import { Effect, Exit, Layer, Option, Ref } from "effect";
 import { constant, unsafeCoerce } from "effect/Function";
 import mock from "mock-fs";
@@ -25,7 +26,12 @@ const gameContextRef = Ref.unsafeMake(
 		gameInfo: {} as GameInfo,
 		fees: {} as Fees,
 		owner: noopPublicKey,
-		playerProfile: noopPublicKey,
+		playerProfile: {} as PlayerProfile,
+		keyIndexes: {
+			points: 0,
+			profileVault: 0,
+			sage: 0,
+		},
 	}),
 );
 

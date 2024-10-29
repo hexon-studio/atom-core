@@ -54,7 +54,10 @@ export const createSubwarpToCoordinateIx = ({
 			fleetAccount.key,
 			context.gameInfo.game.key,
 			context.gameInfo.game.data.gameState,
-			{ keyIndex: 1, toSector: [targetSectorX, targetSectorY] }, // 0 - normal wallet, 1 - hot wallet
+			{
+				keyIndex: context.keyIndexes.sage,
+				toSector: [targetSectorX, targetSectorY],
+			}, // 0 - normal wallet, 1 - hot wallet
 		);
 
 		return [...ixs, subwarpIx];

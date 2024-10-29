@@ -155,7 +155,7 @@ export const createStartMiningIx = ({
 			context.gameInfo.game.data.gameState,
 			context.gameInfo.game.key,
 			fuelInTankData.tokenAccountKey,
-			{ keyIndex: 1 },
+			{ keyIndex: context.keyIndexes.sage },
 		);
 
 		return [...ixs, miningIx];

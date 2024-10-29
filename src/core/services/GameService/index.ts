@@ -1,5 +1,6 @@
 import type { Keypair, PublicKey } from "@solana/web3.js";
 import { type AsyncSigner, keypairToAsyncSigner } from "@staratlas/data-source";
+import type { PlayerProfile } from "@staratlas/player-profile";
 import { Context, Effect, Layer, Option, Ref } from "effect";
 import { type CreateKeypairError, SolanaService } from "../SolanaService";
 import { type FindFleets, findFleets } from "./methods/findFleets";
@@ -29,7 +30,12 @@ import { type SendTransaction, sendTransaction } from "./utils/sendTransaction";
 export interface GameContext {
 	gameInfo: GameInfo;
 	owner: PublicKey;
-	playerProfile: PublicKey;
+	playerProfile: PlayerProfile;
+	keyIndexes: {
+		sage: number;
+		points: number;
+		profileVault: number;
+	};
 	fees: Fees;
 }
 

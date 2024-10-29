@@ -101,14 +101,14 @@ export const createDockToStarbaseIx = (fleetAccount: Fleet) =>
 				programs.cargo,
 				starbasePlayerAddress,
 				signer,
-				context.playerProfile,
+				context.playerProfile.key,
 				playerFactionAddress,
 				starbaseAddress,
 				context.gameInfo.cargoStatsDefinition.key,
 				gameId,
 				gameState,
 				{
-					keyIndex: 1,
+					keyIndex: context.keyIndexes.sage,
 					podSeeds,
 				},
 			);

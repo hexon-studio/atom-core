@@ -32,7 +32,12 @@ export const runLoadCargo = async ({
 
 	const program = GameService.pipe(
 		Effect.tap((service) =>
-			service.methods.initGame(owner, playerProfile, service.context),
+			service.methods.initGame({
+				owner,
+				playerProfile,
+				signerAddress: keypair.publicKey,
+				contextRef: service.context,
+			}),
 		),
 		Effect.tap(() => Console.log("Game initialized.")),
 		Effect.flatMap(() =>

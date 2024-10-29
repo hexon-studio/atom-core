@@ -227,7 +227,7 @@ export const createDepositCargoToFleetIx = ({
 			resourceMint,
 			gameId,
 			gameState,
-			{ keyIndex: 1, amount: amountToDepositAvailable },
+			{ keyIndex: context.keyIndexes.sage, amount: amountToDepositAvailable },
 		);
 
 		return [ix_0, ix_1];
