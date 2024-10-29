@@ -104,8 +104,6 @@ export const createWithdrawCargoFromFleetIx = ({
 			starbaseAccount.data.seqId,
 		);
 
-		const ixs: InstructionReturn[] = [];
-
 		const programs = yield* SagePrograms;
 		const signer = yield* gameService.signer;
 		const gameId = context.gameInfo.game.key;
@@ -117,44 +115,51 @@ export const createWithdrawCargoFromFleetIx = ({
 			starbasePlayerAddress,
 		).pipe(Effect.option);
 
-		const starbasePlayerCargoPodsPubkey = yield* pipe(
-			starbasePlayerCargoPodAccount,
-			Option.match({
-				onNone: () => {
-					const podSeedBuffer = Keypair.generate().publicKey.toBuffer();
-					const podSeeds = Array.from(podSeedBuffer);
+		const { ixs, starbasePlayerCargoPodAddress } =
+			yield* starbasePlayerCargoPodAccount.pipe(
+				Option.match({
+					onNone: () =>
+						Effect.gen(function* () {
+							const podSeedBuffer = Keypair.generate().publicKey.toBuffer();
+							const podSeeds = Array.from(podSeedBuffer);
 
-					const createCargoPodIx = StarbasePlayer.createCargoPod(
-						programs.sage,
-						programs.cargo,
-						starbasePlayerAddress,
-						signer,
-						context.playerProfile.key,
-						playerFactionAddress,
-						starbaseAddress,
-						context.gameInfo.cargoStatsDefinition.key,
-						gameId,
-						gameState,
-						{
-							keyIndex: context.keyIndexes.sage,
-							podSeeds,
-						},
-					);
+							const createCargoPodIx = StarbasePlayer.createCargoPod(
+								programs.sage,
+								programs.cargo,
+								starbasePlayerAddress,
+								signer,
+								context.playerProfile.key,
+								playerFactionAddress,
+								starbaseAddress,
+								context.gameInfo.cargoStatsDefinition.key,
+								gameId,
+								gameState,
+								{
+									keyIndex: context.keyIndexes.sage,
+									podSeeds,
+								},
+							);
 
-					ixs.push(createCargoPodIx);
-
-					return getCargoPodAddress(podSeedBuffer);
-				},
-				onSome: (account) => Effect.succeed(account.key),
-			}),
-		);
+							return {
+								ixs: [createCargoPodIx],
+								starbasePlayerCargoPodAddress:
+									yield* getCargoPodAddress(podSeedBuffer),
+							};
+						}),
+					onSome: (account) =>
+						Effect.succeed({
+							ixs: [] as InstructionReturn[],
+							starbasePlayerCargoPodAddress: account.key,
+						}),
+				}),
+			);
 
 		const {
 			address: starbasePlayerResourceMintAta,
 			instructions: createStarbasePlayerResourceMintAtaIx,
 		} = yield* gameService.utils.createAssociatedTokenAccountIdempotent(
 			resourceMint,
-			starbasePlayerCargoPodsPubkey,
+			starbasePlayerCargoPodAddress,
 			true,
 		);
 
@@ -205,7 +210,7 @@ export const createWithdrawCargoFromFleetIx = ({
 			starbasePlayerAddress,
 			fleetAccount.key,
 			cargoPodInfo.key,
-			starbasePlayerCargoPodsPubkey,
+			starbasePlayerCargoPodAddress,
 			cargoTypeAddress,
 			context.gameInfo.cargoStatsDefinition.key,
 			cargoPodTokenAccount,
