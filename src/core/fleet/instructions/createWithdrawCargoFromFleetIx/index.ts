@@ -1,11 +1,13 @@
-import type { PublicKey } from "@solana/web3.js";
+import { Keypair, type PublicKey } from "@solana/web3.js";
+import type { InstructionReturn } from "@staratlas/data-source";
 import {
 	Fleet,
 	SAGE_CARGO_STAT_VALUE_INDEX,
+	StarbasePlayer,
 	getCargoSpaceUsedByTokenAmount,
 } from "@staratlas/sage";
 import BN from "bn.js";
-import { Data, Effect, pipe } from "effect";
+import { Data, Effect, Option, pipe } from "effect";
 import { isSome } from "effect/Option";
 import type { CargoPodKind } from "../../../../types";
 import { getAssociatedTokenAddress } from "../../../../utils/getAssociatedTokenAddress";
@@ -19,6 +21,7 @@ import {
 	getStarbaseAccount,
 } from "../../../utils/accounts";
 import {
+	getCargoPodAddress,
 	getCargoTypeAddress,
 	getProfileFactionAddress,
 	getSagePlayerProfileAddress,
@@ -70,7 +73,7 @@ export const createWithdrawCargoFromFleetIx = ({
 			playerProfilePubkey,
 		);
 
-		const profileFactionPubkey =
+		const playerFactionAddress =
 			yield* getProfileFactionAddress(playerProfilePubkey);
 
 		const cargoPodInfo = yield* getFleetCargoPodInfoByType({
@@ -88,34 +91,79 @@ export const createWithdrawCargoFromFleetIx = ({
 		const fleetCoords = yield* getCurrentFleetSectorCoordinates(
 			fleetAccount.state,
 		);
-		const starbasePubkey = yield* getStarbaseAddressbyCoordinates(
+		const starbaseAddress = yield* getStarbaseAddressbyCoordinates(
 			context.gameInfo.game.key,
 			fleetCoords,
 		);
-		const starbaseAccount = yield* getStarbaseAccount(starbasePubkey);
+		const starbaseAccount = yield* getStarbaseAccount(starbaseAddress);
 
 		// PDA Starbase - Player
-		const starbasePlayerPubkey = yield* getStarbasePlayerAddress(
-			starbasePubkey,
+		const starbasePlayerAddress = yield* getStarbasePlayerAddress(
+			starbaseAddress,
 			sagePlayerProfilePubkey,
 			starbaseAccount.data.seqId,
 		);
 
+		const programs = yield* SagePrograms;
+		const signer = yield* gameService.signer;
+		const gameId = context.gameInfo.game.key;
+		const gameState = context.gameInfo.game.data.gameState;
+
 		// This PDA account is the owner of all player resource token accounts
 		// in the starbase where the fleet is located (Starbase Cargo Pods - Deposito merci nella Starbase)
-		const starbasePlayerCargoPodsAccount =
-			yield* getCargoPodsByAuthority(starbasePlayerPubkey);
+		const starbasePlayerCargoPodAccount = yield* getCargoPodsByAuthority(
+			starbasePlayerAddress,
+		).pipe(Effect.option);
 
-		const starbasePlayerCargoPodsPubkey = starbasePlayerCargoPodsAccount.key;
+		const { ixs, starbasePlayerCargoPodAddress } =
+			yield* starbasePlayerCargoPodAccount.pipe(
+				Option.match({
+					onNone: () =>
+						Effect.gen(function* () {
+							const podSeedBuffer = Keypair.generate().publicKey.toBuffer();
+							const podSeeds = Array.from(podSeedBuffer);
+
+							const createCargoPodIx = StarbasePlayer.createCargoPod(
+								programs.sage,
+								programs.cargo,
+								starbasePlayerAddress,
+								signer,
+								context.playerProfile.key,
+								playerFactionAddress,
+								starbaseAddress,
+								context.gameInfo.cargoStatsDefinition.key,
+								gameId,
+								gameState,
+								{
+									keyIndex: context.keyIndexes.sage,
+									podSeeds,
+								},
+							);
+
+							return {
+								ixs: [createCargoPodIx],
+								starbasePlayerCargoPodAddress:
+									yield* getCargoPodAddress(podSeedBuffer),
+							};
+						}),
+					onSome: (account) =>
+						Effect.succeed({
+							ixs: [] as InstructionReturn[],
+							starbasePlayerCargoPodAddress: account.key,
+						}),
+				}),
+			);
 
 		const {
 			address: starbasePlayerResourceMintAta,
 			instructions: createStarbasePlayerResourceMintAtaIx,
 		} = yield* gameService.utils.createAssociatedTokenAccountIdempotent(
 			resourceMint,
-			starbasePlayerCargoPodsPubkey,
+			starbasePlayerCargoPodAddress,
 			true,
 		);
+
+		ixs.push(createStarbasePlayerResourceMintAtaIx);
 
 		const maybeTokenAccountFrom = yield* pipe(
 			gameService.utils.getParsedTokenAccountsByOwner(cargoPodInfo.key),
@@ -151,24 +199,18 @@ export const createWithdrawCargoFromFleetIx = ({
 				)
 			: new BN(amoutInTokens);
 
-		const programs = yield* SagePrograms;
-
-		const signer = yield* gameService.signer;
-		const gameId = context.gameInfo.game.key;
-		const gameState = context.gameInfo.game.data.gameState;
-
 		const withdrawCargoFromFleetIx = Fleet.withdrawCargoFromFleet(
 			programs.sage,
 			programs.cargo,
 			signer,
 			"funder",
 			playerProfilePubkey,
-			profileFactionPubkey,
-			starbasePubkey,
-			starbasePlayerPubkey,
+			playerFactionAddress,
+			starbaseAddress,
+			starbasePlayerAddress,
 			fleetAccount.key,
 			cargoPodInfo.key,
-			starbasePlayerCargoPodsPubkey,
+			starbasePlayerCargoPodAddress,
 			cargoTypeAddress,
 			context.gameInfo.cargoStatsDefinition.key,
 			cargoPodTokenAccount,
@@ -179,5 +221,5 @@ export const createWithdrawCargoFromFleetIx = ({
 			{ keyIndex: context.keyIndexes.sage, amount: maxAmountToWithdraw },
 		);
 
-		return [createStarbasePlayerResourceMintAtaIx, withdrawCargoFromFleetIx];
+		return [...ixs, withdrawCargoFromFleetIx];
 	});
