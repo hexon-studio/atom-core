@@ -77,7 +77,10 @@ export const createWarpToCoordinateIx = ({
 			context.gameInfo.game.data.gameState,
 			context.gameInfo.game.key,
 			programs.cargo,
-			{ keyIndex: 1, toSector: [targetSectorX, targetSectorY] }, // 0 - normal wallet, 1 - hot wallet
+			{
+				keyIndex: context.keyIndexes.sage,
+				toSector: [targetSectorX, targetSectorY],
+			}, // 0 - normal wallet, 1 - hot wallet
 		);
 
 		return [...ixs, warpIx];

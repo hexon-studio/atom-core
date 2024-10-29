@@ -28,8 +28,10 @@ export const createMovementHandlerIx = (fleetAccount: Fleet) =>
 
 		ixs.push(instructions);
 
-		const pilotXpKey = yield* getPilotXpKey(context.playerProfile);
-		const councilRankXpKey = yield* getCouncilRankXpKey(context.playerProfile);
+		const pilotXpKey = yield* getPilotXpKey(context.playerProfile.key);
+		const councilRankXpKey = yield* getCouncilRankXpKey(
+			context.playerProfile.key,
+		);
 
 		const cargoTypeAddress = yield* getCargoTypeAddress(
 			resourceNameToMint.Fuel,
@@ -42,7 +44,7 @@ export const createMovementHandlerIx = (fleetAccount: Fleet) =>
 				Fleet.moveWarpHandler(
 					programs.sage,
 					programs.points,
-					context.playerProfile,
+					context.playerProfile.key,
 					fleetAccount.key,
 					pilotXpKey,
 					context.gameInfo.game.data.points.pilotXpCategory.category,
@@ -58,7 +60,7 @@ export const createMovementHandlerIx = (fleetAccount: Fleet) =>
 					programs.sage,
 					programs.cargo,
 					programs.points,
-					context.playerProfile,
+					context.playerProfile.key,
 					fleetAccount.key,
 					fleetAccount.data.fuelTank,
 					cargoTypeAddress,

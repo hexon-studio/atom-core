@@ -41,7 +41,7 @@ export const createDrainVaultIx = (
 
 		const [vaultAuthority] = ProfileVault.findVaultSigner(
 			programs.profileVaultProgram,
-			context.playerProfile,
+			context.playerProfile.key,
 			context.owner,
 		);
 
@@ -66,8 +66,8 @@ export const createDrainVaultIx = (
 			{
 				playerProfileProgram: programs.playerProfile,
 				key: signer,
-				profileKey: context.playerProfile,
-				keyIndex: 3,
+				profileKey: context.playerProfile.key,
+				keyIndex: context.keyIndexes.profileVault,
 			},
 		);
 	});

@@ -25,7 +25,7 @@ export const getFleetAddressByName = (fleetName: string) =>
 				const [fleet] = Fleet.findAddress(
 					programs.sage,
 					context.gameInfo.game.key,
-					context.playerProfile,
+					context.playerProfile.key,
 					fleetLabel,
 				);
 

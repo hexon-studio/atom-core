@@ -151,9 +151,11 @@ export const createStopMiningIx = ({
 
 		ixs.push(...miningHandlerIxs);
 
-		const miningXpKey = yield* getMiningXpKey(context.playerProfile);
-		const pilotXpKey = yield* getPilotXpKey(context.playerProfile);
-		const councilRankXpKey = yield* getCouncilRankXpKey(context.playerProfile);
+		const miningXpKey = yield* getMiningXpKey(context.playerProfile.key);
+		const pilotXpKey = yield* getPilotXpKey(context.playerProfile.key);
+		const councilRankXpKey = yield* getCouncilRankXpKey(
+			context.playerProfile.key,
+		);
 
 		const stopMiningAsteroidIx = Fleet.stopMiningAsteroid(
 			programs.sage,
@@ -182,7 +184,7 @@ export const createStopMiningIx = ({
 			context.gameInfo.game.key,
 			fuelInTankData.tokenAccountKey,
 			resourceNameToMint.Fuel,
-			{ keyIndex: 1 },
+			{ keyIndex: context.keyIndexes.sage },
 		);
 
 		ixs.push(stopMiningAsteroidIx);

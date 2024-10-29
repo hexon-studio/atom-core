@@ -13,10 +13,7 @@ import { GameService } from "../..";
 import { tokenMints } from "../../../../../constants/tokens";
 import type { FetchDummyKeysError } from "../../../../atlas-core-utils/dummy-keys";
 import { SagePrograms } from "../../../../programs";
-import {
-	type ReadFromRPCError,
-	getPlayerProfileAccout,
-} from "../../../../utils/accounts";
+import type { ReadFromRPCError } from "../../../../utils/accounts";
 import {
 	type CreateKeypairError,
 	type CreateProviderError,
@@ -66,72 +63,65 @@ export const buildAndSignTransactionWithAtlasPrime = (
 			]),
 		),
 		Effect.flatMap(([programs, provider, signer, context]) =>
-			getPlayerProfileAccout(context.playerProfile).pipe(
-				Effect.andThen((playerProfile) =>
-					Effect.tryPromise({
-						try: async () => {
-							const [vaultAuthority] = ProfileVault.findVaultSigner(
-								programs.profileVaultProgram,
-								context.playerProfile,
-								context.owner,
-							);
+			Effect.tryPromise({
+				try: async () => {
+					const [vaultAuthority] = ProfileVault.findVaultSigner(
+						programs.profileVaultProgram,
+						context.playerProfile.key,
+						context.owner,
+					);
 
-							const lookupTable =
-								await provider.connection.getAddressLookupTable(
-									// TODO: remove hardcode
-									new PublicKey("5NrYTRkLRsSSJGgfX2vNRbSXiEFi9yUHV5n7bs7VM9P2"),
-								);
+					const lookupTable = await provider.connection.getAddressLookupTable(
+						// TODO: remove hardcode
+						new PublicKey("5NrYTRkLRsSSJGgfX2vNRbSXiEFi9yUHV5n7bs7VM9P2"),
+					);
 
-							const builder = await AtlasPrimeTransactionBuilder.new({
-								afpUrl: "https://prime.staratlas.com/",
-								connection: provider.connection,
-								commitment: "confirmed",
-								lookupTables: lookupTable.value
-									? [lookupTable.value]
-									: undefined,
-								postArgs: {
-									vault: {
-										funderVaultAuthority: vaultAuthority,
-										funderVault: getAssociatedTokenAddressSync(
-											tokenMints.atlas,
-											vaultAuthority,
-											true,
-										),
-										keyInput: {
-											key: signer,
-											profile: playerProfile,
-											playerProfileProgram: programs.playerProfile,
-										},
-										vaultProgram: programs.profileVaultProgram,
-									},
+					const builder = await AtlasPrimeTransactionBuilder.new({
+						afpUrl: "https://prime.staratlas.com/",
+						connection: provider.connection,
+						commitment: "confirmed",
+						lookupTables: lookupTable.value ? [lookupTable.value] : undefined,
+						postArgs: {
+							vault: {
+								funderVaultAuthority: vaultAuthority,
+								funderVault: getAssociatedTokenAddressSync(
+									tokenMints.atlas,
+									vaultAuthority,
+									true,
+								),
+								keyInput: {
+									key: signer,
+									profile: context.playerProfile,
+									playerProfileProgram: programs.playerProfile,
 								},
-								program: programs.atlasPrime,
-							});
-
-							builder.add(instructions);
-
-							const txs: Result<TransactionReturn, string>[] = [];
-
-							for await (const tx of builder.optimalTransactions()) {
-								txs.push(tx);
-							}
-
-							return txs;
+								vaultProgram: programs.profileVaultProgram,
+							},
 						},
-						catch: (error) =>
-							new BuildAndSignTransactionWithAtlasPrimeError({
-								error,
-							}),
+						program: programs.atlasPrime,
+					});
+
+					builder.add(instructions);
+
+					const txs: Result<TransactionReturn, string>[] = [];
+
+					for await (const tx of builder.optimalTransactions()) {
+						txs.push(tx);
+					}
+
+					return txs;
+				},
+				catch: (error) =>
+					new BuildAndSignTransactionWithAtlasPrimeError({
+						error,
 					}),
-				),
-				Effect.flatMap((txs) =>
-					Effect.all(
-						EffectArray.map(txs, (result) =>
-							result.isOk()
-								? Effect.succeed(result.value)
-								: Effect.fail(new BuildOptimalTxError({ error: result.error })),
-						),
-					),
+			}),
+		),
+		Effect.flatMap((txs) =>
+			Effect.all(
+				EffectArray.map(txs, (result) =>
+					result.isOk()
+						? Effect.succeed(result.value)
+						: Effect.fail(new BuildOptimalTxError({ error: result.error })),
 				),
 			),
 		),

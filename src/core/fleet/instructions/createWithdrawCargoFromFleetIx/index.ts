@@ -176,7 +176,7 @@ export const createWithdrawCargoFromFleetIx = ({
 			resourceMint,
 			gameId,
 			gameState,
-			{ keyIndex: 1, amount: maxAmountToWithdraw },
+			{ keyIndex: context.keyIndexes.sage, amount: maxAmountToWithdraw },
 		);
 
 		return [createStarbasePlayerResourceMintAtaIx, withdrawCargoFromFleetIx];
