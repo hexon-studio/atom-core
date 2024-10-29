@@ -1,6 +1,6 @@
 import type { PublicKey } from "@solana/web3.js";
 import type { BN } from "@staratlas/anchor";
-import { CargoType } from "@staratlas/cargo";
+import { CargoPod, CargoType } from "@staratlas/cargo";
 import { stringToByteArray } from "@staratlas/data-source";
 import { ProfileFactionAccount } from "@staratlas/profile-faction";
 import {
@@ -50,6 +50,17 @@ export const getCargoTypeAddress = (
 				);
 
 				return cargoType;
+			}),
+		),
+	);
+
+export const getCargoPodAddress = (podSeeds: Buffer) =>
+	SagePrograms.pipe(
+		Effect.flatMap((programs) =>
+			Effect.try(() => {
+				const [cargoPod] = CargoPod.findAddress(programs.cargo, podSeeds);
+
+				return cargoPod;
 			}),
 		),
 	);
