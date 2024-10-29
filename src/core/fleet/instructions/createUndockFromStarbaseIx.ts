@@ -51,6 +51,6 @@ export const createUndockFromStarbaseIx = (fleetAccount: Fleet) =>
 			starbasePlayerKey,
 			context.gameInfo.game.key,
 			context.gameInfo.game.data.gameState,
-			1, // 0 - normal wallet, 1 - hot wallet
+			context.keyIndexes.sage,
 		);
 	});

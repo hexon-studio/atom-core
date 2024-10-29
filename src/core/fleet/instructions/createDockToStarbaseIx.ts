@@ -130,7 +130,7 @@ export const createDockToStarbaseIx = (fleetAccount: Fleet) =>
 			starbasePlayerAddress,
 			context.gameInfo.game.key,
 			context.gameInfo.game.data.gameState,
-			1,
+			context.keyIndexes.sage,
 		);
 
 		ixs.push(dockIx);
