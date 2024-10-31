@@ -113,7 +113,7 @@ describe("computeDepositAmout", () => {
 			expect(result2).toBe("0");
 		});
 
-		it("returns the missing quantity to reach the cap", async () => {
+		it("returns the missing quantity to reach the max", async () => {
 			const result = await Effect.runPromise(
 				compute({
 					mode: "max",
@@ -127,7 +127,7 @@ describe("computeDepositAmout", () => {
 			expect(result).toBe("50");
 		});
 
-		it("returns the starbase remaining quantity if less the needed quantity to reach the cap", async () => {
+		it("returns the starbase remaining quantity if less the needed quantity to reach the max", async () => {
 			const result = await Effect.runPromise(
 				compute({
 					mode: "max",
