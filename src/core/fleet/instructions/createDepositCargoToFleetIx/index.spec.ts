@@ -8,7 +8,7 @@ import mock from "mock-fs";
 import { createDepositCargoToFleetIx } from ".";
 import { resourceNameToMint } from "../../../../constants/resources";
 import { noopPublicKey } from "../../../../constants/tokens";
-import type { CargoPodKind } from "../../../../types";
+import type { CargoPodKind } from "../../../../decoders";
 import { type GameContext, GameService } from "../../../services/GameService";
 import { findFleets } from "../../../services/GameService/methods/findFleets";
 import { findGame } from "../../../services/GameService/methods/findGame";
@@ -104,10 +104,13 @@ describe("createDepositCargoToFleetIx", () => {
 		const mainLive = createMockServiceLive(signer);
 
 		const program = createDepositCargoToFleetIx({
-			amount: 0,
-			cargoPodKind: "ammo_bank",
+			item: {
+				mode: "fixed",
+				amount: 0,
+				cargoPodKind: "ammo_bank",
+				resourceMint: resourceNameToMint.Carbon,
+			},
 			fleetAddress: noopPublicKey,
-			resourceMint: resourceNameToMint.Carbon,
 		}).pipe(Effect.provide(mainLive));
 
 		const result = await Effect.runPromiseExit(program);
@@ -131,10 +134,13 @@ describe("createDepositCargoToFleetIx", () => {
 			const mainLive = createMockServiceLive(signer);
 
 			const program = createDepositCargoToFleetIx({
-				amount: 1,
-				cargoPodKind,
+				item: {
+					amount: 1,
+					cargoPodKind,
+					resourceMint: new PublicKey(resourceMint),
+					mode: "fixed",
+				},
 				fleetAddress: noopPublicKey,
-				resourceMint: new PublicKey(resourceMint),
 			}).pipe(Effect.provide(mainLive));
 
 			const result = await Effect.runPromiseExit(program);

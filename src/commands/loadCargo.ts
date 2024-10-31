@@ -2,17 +2,14 @@ import type { PublicKey } from "@solana/web3.js";
 import { Cause, Console, Effect, Exit, Option } from "effect";
 import { loadCargo } from "../core/actions/loadCargo";
 import { GameService } from "../core/services/GameService";
-import type { CargoPodKind, GlobalOptionsWithSupabase } from "../types";
+import type { LoadResourceInput } from "../decoders";
+import type { GlobalOptionsWithSupabase } from "../types";
 import { createMainLiveService } from "../utils/createLiveService";
 import { runBaseCommand } from "./baseCommand";
 
 type Param = GlobalOptionsWithSupabase & {
 	fleetNameOrAddress: string | PublicKey;
-	items: Array<{
-		resourceMint: PublicKey;
-		amount: "full" | number;
-		cargoPodKind: CargoPodKind;
-	}>;
+	items: Array<LoadResourceInput>;
 };
 
 export const runLoadCargo = async ({

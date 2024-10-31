@@ -8,7 +8,7 @@ import {
 	Match,
 	pipe,
 } from "effect";
-import type { CargoPodKind } from "../../types";
+import type { LoadResourceInput } from "../../decoders";
 import { isPublicKey } from "../../utils/public-key";
 import {
 	createDepositCargoToFleetIx,
@@ -37,11 +37,7 @@ export const loadCargo = ({
 	fleetNameOrAddress,
 }: {
 	fleetNameOrAddress: string | PublicKey;
-	items: Array<{
-		amount: "full" | number;
-		resourceMint: PublicKey;
-		cargoPodKind: CargoPodKind;
-	}>;
+	items: Array<LoadResourceInput>;
 }) =>
 	Effect.gen(function* () {
 		const fleetAddress = yield* isPublicKey(fleetNameOrAddress)
@@ -94,15 +90,19 @@ export const loadCargo = ({
 		ixs.push(...preIxs);
 
 		const loadCargoIxs = yield* Effect.all(
-			EffectArray.map(items, ({ amount, resourceMint, cargoPodKind }) =>
+			EffectArray.map(items, (item) =>
 				createDepositCargoToFleetIx({
-					amount,
 					fleetAddress,
-					resourceMint,
-					cargoPodKind,
+					item,
 				}),
 			),
 		).pipe(Effect.map(EffectArray.flatten));
+
+		if (!loadCargoIxs.length) {
+			yield* Console.log("Nothing to load. Skipping");
+
+			return [];
+		}
 
 		ixs.push(...loadCargoIxs);
 

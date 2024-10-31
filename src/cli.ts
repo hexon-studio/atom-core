@@ -1,31 +1,36 @@
 #!/usr/bin/env node
 
 import { PublicKey } from "@solana/web3.js";
-import { InvalidArgumentError, Option, program as commander } from "commander";
+import {
+	InvalidArgumentError,
+	InvalidOptionArgumentError,
+	Option,
+	program as commander,
+} from "commander";
 import Dotenv from "dotenv";
 import {
 	Array as EffectArray,
 	String as EffectString,
-	Match,
 	Tuple,
 	pipe,
 } from "effect";
 import { z } from "zod";
 import { runDock } from "./commands/dock";
 import { runFleetInfo } from "./commands/fleetInfo";
+import { runProfileInfo } from "./commands/profileInfo";
 import { runStartMining } from "./commands/startMining";
 import { runStopMining } from "./commands/stopMining";
 import { runSubwarp } from "./commands/subwarp";
 import { runUndock } from "./commands/undock";
 import { runUnloadCargo } from "./commands/unloadCargo";
 import { runWarp } from "./commands/warp";
-import { runLoadCargo } from "./main";
 import {
-	type CargoPodKind,
-	type GlobalOptions,
-	cargoPodKindDecoder,
 	cargoPodKinds,
-} from "./types";
+	loadResourceDecoder,
+	unloadResourceDecoder,
+} from "./decoders";
+import { runLoadCargo } from "./main";
+import type { GlobalOptions } from "./types";
 import { creactOptionsWithSupabase } from "./utils/creactOptionsWithSupabase";
 import { parseSecretKey } from "./utils/keypair";
 import { isPublicKey, parsePublicKey } from "./utils/public-key";
@@ -89,14 +94,6 @@ const main = async () => {
 		)
 		.option("--verbose", "Print additional logs", false);
 
-	const itemsDecoder = z.array(
-		z.object({
-			resourceMint: z.string().transform((value) => new PublicKey(value)),
-			amount: z.union([z.literal("full"), z.number()]),
-			cargoPodKind: cargoPodKindDecoder,
-		}),
-	);
-
 	program
 		.command("fleet-info <fleetNameOrAddress>")
 		.action(async (fleetNameOrAddress: string) => {
@@ -112,42 +109,60 @@ const main = async () => {
 			});
 		});
 
+	program.command("profile-info").action(async () => {
+		const globalOpts = creactOptionsWithSupabase(program.opts<GlobalOptions>());
+
+		return runProfileInfo(globalOpts);
+	});
+
 	program
 		.command("load-cargo <fleetNameOrAddress>")
-		.requiredOption("--mints <mints...>", "Resources to load")
-		.requiredOption("--amounts <amounts...>", "The amount of each resource")
-		.addOption(
-			new Option("--pods <pods...>", "Fleet cargo pods type")
-				.choices(cargoPodKinds)
-				.makeOptionMandatory(true),
+		.option(
+			"--resources <requiredResources...>",
+			[
+				"",
+				"Comma separated list of resources to load <resource_address,mode,amount,cargo_pod>",
+				"- resource_address: The mint of the resource",
+				"- mode: fixed, cap, floor or min-and-fill",
+				"	- fixed: The amount of the resource to load is fixed",
+				"	- cap: Add enough resource to reach the 'cap' value",
+				"	- floor: Add enough resource to reach the 'floor' value",
+				"	- min-and-fill: Add enough resource to reach the 'min' value and fill the cargo pod",
+				"- amount: number to be used as fixed amount or threshold",
+				`- cargo_pod: The type of cargo pod to use (${cargoPodKinds.join(", ")})`,
+			].join("\n"),
 		)
 		.action(
 			async (
 				fleetNameOrAddress: string,
 				options: {
-					mints: string[];
-					amounts: string[];
-					pods: CargoPodKind[];
+					resources: string[];
 				},
 			) => {
+				const resources = options.resources ?? [];
+
 				const globalOpts = creactOptionsWithSupabase(
 					program.opts<GlobalOptions>(),
 				);
 
 				const items = pipe(
-					options.mints,
-					EffectArray.zip(options.amounts),
-					EffectArray.zipWith(options.pods, ([mint, amount], cargoPodKind) => ({
-						resourceMint: mint,
-						amount: Match.value(amount).pipe(
-							Match.when("full", () => "full" as const),
-							Match.orElse(Number),
-						),
+					resources,
+					EffectArray.map(EffectString.split(",")),
+					EffectArray.map(([resourceMint, mode, amount, cargoPodKind]) => ({
+						amount: Number(amount),
 						cargoPodKind,
+						mode,
+						resourceMint,
 					})),
 				);
 
-				const parsedItems = itemsDecoder.parse(items);
+				if (items.length === 0) {
+					throw new InvalidOptionArgumentError(
+						"At least one item is required. Use option --requiredResources or --optionalResources",
+					);
+				}
+
+				const parsedItems = z.array(loadResourceDecoder).parse(items);
 
 				return runLoadCargo({
 					...globalOpts,
@@ -161,40 +176,50 @@ const main = async () => {
 
 	program
 		.command("unload-cargo <fleetNameOrAddress>")
-		.requiredOption("--mints <mints...>", "Resources to load") // pbk
-		.requiredOption("--amounts <amounts...>", "The amount of each resource") // pbk
-		.addOption(
-			new Option("--pods <pods...>", "Fleet cargo pods type")
-				.choices(cargoPodKinds)
-				.makeOptionMandatory(true),
+		.option(
+			"--resources <requiredResources...>",
+			[
+				"",
+				"Comma separated list of resources to load <resource_address,mode,amount,cargo_pod>",
+				"- resource_address: The mint of the resource",
+				"- mode: fixed, cap, floor or min-and-fill",
+				"	- fixed: The amount of the resource to load is fixed",
+				"	- cap: Add enough resource to reach the 'cap' value",
+				"- amount: number to be used as fixed amount or threshold",
+				`- cargo_pod: The type of cargo pod to use (${cargoPodKinds.join(", ")})`,
+			].join("\n"),
 		)
 		.action(
 			async (
 				fleetNameOrAddress: string,
 				options: {
-					mints: string[];
-					amounts: string[];
-					pods: CargoPodKind[];
+					resources: string[];
 				},
 			) => {
+				const resources = options.resources ?? [];
+
 				const globalOpts = creactOptionsWithSupabase(
 					program.opts<GlobalOptions>(),
 				);
 
 				const items = pipe(
-					options.mints,
-					EffectArray.zip(options.amounts),
-					EffectArray.zipWith(options.pods, ([mint, amount], cargoPodKind) => ({
-						resourceMint: mint,
-						amount: Match.value(amount).pipe(
-							Match.when("full", () => "full" as const),
-							Match.orElse(Number),
-						),
+					resources,
+					EffectArray.map(EffectString.split(",")),
+					EffectArray.map(([resourceMint, mode, amount, cargoPodKind]) => ({
+						amount: Number(amount),
 						cargoPodKind,
+						mode,
+						resourceMint,
 					})),
 				);
 
-				const parsedItems = itemsDecoder.parse(items);
+				if (items.length === 0) {
+					throw new InvalidOptionArgumentError(
+						"At least one item is required. Use option --requiredResources or --optionalResources",
+					);
+				}
+
+				const parsedItems = z.array(unloadResourceDecoder).parse(items);
 
 				return runUnloadCargo({
 					...globalOpts,
