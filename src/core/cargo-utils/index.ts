@@ -7,7 +7,7 @@ import {
 } from "@staratlas/sage";
 import BN from "bn.js";
 import { Data, Effect, Match } from "effect";
-import type { CargoPodKind } from "../../types";
+import type { CargoPodKind } from "../../decoders";
 import { SagePrograms } from "../programs";
 import { GameService } from "../services/GameService";
 import { getGameContext } from "../services/GameService/utils";
@@ -87,7 +87,7 @@ export const getFleetCargoPodInfoByType = ({
 			resources.push({
 				mint: cargoPodTokenAccount.mint,
 				amount: new BN(cargoPodTokenAccount.amount.toString()),
-				cargoUnitAmount: getCargoSpaceUsedByTokenAmount(
+				amountInCargoUnits: getCargoSpaceUsedByTokenAmount(
 					cargoType,
 					new BN(cargoPodTokenAccount.amount.toString()),
 				),
@@ -96,17 +96,17 @@ export const getFleetCargoPodInfoByType = ({
 			});
 		}
 
-		const loadedAmount = resources.reduce(
-			(acc, item) => acc.add(item.cargoUnitAmount),
+		const loadedAmountInCargoUnits = resources.reduce(
+			(acc, item) => acc.add(item.amountInCargoUnits),
 			new BN(0),
 		);
 
 		return yield* Effect.succeed({
 			key: cargoPod.key,
-			loadedAmount,
+			loadedAmountInCargoUnits,
 			resources,
 			maxCapacity: cargoPodMaxCapacity,
-			podIsFull: loadedAmount.eq(cargoPodMaxCapacity),
+			podIsFull: loadedAmountInCargoUnits.eq(cargoPodMaxCapacity),
 		});
 	});
 

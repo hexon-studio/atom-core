@@ -1,14 +1,9 @@
 import type { PublicKey } from "@solana/web3.js";
-import {
-	Fleet,
-	SAGE_CARGO_STAT_VALUE_INDEX,
-	getCargoSpaceUsedByTokenAmount,
-} from "@staratlas/sage";
+import { Fleet, SAGE_CARGO_STAT_VALUE_INDEX } from "@staratlas/sage";
 import BN from "bn.js";
-import { Effect, pipe } from "effect";
+import { Console, Effect, pipe } from "effect";
 import { isNone } from "effect/Option";
-import type { CargoPodKind } from "../../../../types";
-import { getAssociatedTokenAddress } from "../../../../utils/getAssociatedTokenAddress";
+import type { LoadResourceInput } from "../../../../decoders";
 import { isResourceAllowedForCargoPod } from "../../../../utils/resources/isResourceAllowedForCargoPod";
 import {
 	getCargoPodsByAuthority,
@@ -17,7 +12,6 @@ import {
 import { SagePrograms } from "../../../programs";
 import { GameService } from "../../../services/GameService";
 import { getGameContext } from "../../../services/GameService/utils";
-import { SolanaService } from "../../../services/SolanaService";
 import {
 	getCargoTypeAccount,
 	getFleetAccount,
@@ -31,28 +25,24 @@ import {
 	getStarbasePlayerAddress,
 } from "../../../utils/pdas";
 import {
-	FleetCargoPodFullError,
-	GetTokenBalanceError,
 	InvalidAmountError,
 	InvalidResourceForPodKind,
-	StarbaseCargoPodEmptyError,
 	StarbaseCargoPodTokenAccountNotFoundError,
 } from "../../errors";
 import { getCurrentFleetSectorCoordinates } from "../../utils/getCurrentFleetSectorCoordinates";
+import { computeDepositAmount } from "./computeDepositAmout";
 
 export const createDepositCargoToFleetIx = ({
-	amount,
+	item,
 	fleetAddress,
-	resourceMint,
-	cargoPodKind,
 }: {
-	amount: "full" | number;
+	item: LoadResourceInput;
 	fleetAddress: PublicKey;
-	resourceMint: PublicKey;
-	cargoPodKind: CargoPodKind;
 }) =>
 	Effect.gen(function* () {
-		if (amount !== "full" && amount <= 0) {
+		const { amount, cargoPodKind, mode, resourceMint } = item;
+
+		if (amount <= 0) {
 			return yield* Effect.fail(
 				new InvalidAmountError({ resourceMint, amount }),
 			);
@@ -149,57 +139,40 @@ export const createDepositCargoToFleetIx = ({
 
 		const cargoType = yield* getCargoTypeAccount(cargoTypeAddress);
 
-		const freeSpaceInCargoSpace = cargoPodInfo.loadedAmount.gt(new BN(0))
-			? cargoPodInfo.maxCapacity.sub(cargoPodInfo.loadedAmount)
-			: cargoPodInfo.maxCapacity;
-
-		const amountInCargoSpace =
-			amount === "full"
-				? freeSpaceInCargoSpace
-				: getCargoSpaceUsedByTokenAmount(cargoType, new BN(amount));
-
-		const amountToDepositInCargoSpace = BN.min(
-			amountInCargoSpace,
-			freeSpaceInCargoSpace,
-		);
-
 		const resourceSpaceMultiplier =
 			cargoType.stats[SAGE_CARGO_STAT_VALUE_INDEX] ?? new BN(0);
 
-		const amountToDepositInTokens = amountToDepositInCargoSpace.div(
+		const fleetMaxCapacityInTokens = cargoPodInfo.maxCapacity.div(
 			resourceSpaceMultiplier,
 		);
 
-		if (amountToDepositInTokens.lten(0)) {
-			return yield* Effect.fail(
-				new FleetCargoPodFullError({ podKind: cargoPodKind }),
-			);
-		}
+		const loadedAmountInTokens = cargoPodInfo.loadedAmountInCargoUnits.div(
+			resourceSpaceMultiplier,
+		);
 
-		const solanaService = yield* SolanaService;
-		const anchorProvider = yield* solanaService.anchorProvider;
+		const starbaseResourceAmountInTokens = new BN(
+			maybeTokenAccountFrom.value.amount.toString(),
+		);
 
-		const starbasePodMintAta = yield* getAssociatedTokenAddress(
+		const finalAmountToDeposit = yield* computeDepositAmount({
+			cargoPodKind,
 			resourceMint,
-			starbasePlayerCargoPodsPubkey,
-			true,
-		);
+			starbaseAddress: starbasePlayerCargoPodsPubkey,
+		})({
+			resourceFleetMaxCap: fleetMaxCapacityInTokens,
+			mode,
+			resourceAmountInFleet: loadedAmountInTokens,
+			resourceAmountInStarbase: starbaseResourceAmountInTokens,
+			value: new BN(amount),
+		});
 
-		const starbasePodMintAtaBalance = yield* Effect.tryPromise({
-			try: () =>
-				anchorProvider.connection.getTokenAccountBalance(starbasePodMintAta),
-			catch: (error) => new GetTokenBalanceError({ error }),
-		}).pipe(Effect.map((response) => new BN(response.value.uiAmount ?? 0)));
-
-		const amountToDepositAvailable = BN.min(
-			amountToDepositInTokens,
-			starbasePodMintAtaBalance,
-		);
-
-		if (amountToDepositAvailable.eq(new BN(0))) {
-			return yield* Effect.fail(
-				new StarbaseCargoPodEmptyError({ resourceMint }),
+		if (finalAmountToDeposit.lten(0)) {
+			yield* Console.log(
+				`Skip deposit of ${resourceMint.toString()}, computed amount is: ${finalAmountToDeposit.toString()}`,
 			);
+
+			// Skip deposit if less or equal than 0
+			return [];
 		}
 
 		const programs = yield* SagePrograms;
@@ -227,7 +200,7 @@ export const createDepositCargoToFleetIx = ({
 			resourceMint,
 			gameId,
 			gameState,
-			{ keyIndex: context.keyIndexes.sage, amount: amountToDepositAvailable },
+			{ keyIndex: context.keyIndexes.sage, amount: finalAmountToDeposit },
 		);
 
 		return [ix_0, ix_1];

@@ -55,7 +55,6 @@ export const runDock = async ({
 			},
 			onFailure: (cause) => {
 				console.log(`Transaction error: ${Cause.pretty(cause)}`);
-
 				const error = Cause.failureOption(cause).pipe(Option.getOrUndefined);
 
 				if (error) {

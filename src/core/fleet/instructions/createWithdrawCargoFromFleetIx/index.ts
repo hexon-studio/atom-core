@@ -1,15 +1,13 @@
-import { Keypair, type PublicKey } from "@solana/web3.js";
+import { Keypair } from "@solana/web3.js";
 import type { InstructionReturn } from "@staratlas/data-source";
 import {
 	Fleet,
 	SAGE_CARGO_STAT_VALUE_INDEX,
 	StarbasePlayer,
-	getCargoSpaceUsedByTokenAmount,
 } from "@staratlas/sage";
 import BN from "bn.js";
-import { Data, Effect, Option, pipe } from "effect";
-import { isSome } from "effect/Option";
-import type { CargoPodKind } from "../../../../types";
+import { Console, Data, Effect, Option, pipe } from "effect";
+import type { UnloadResourceInput } from "../../../../decoders";
 import { getAssociatedTokenAddress } from "../../../../utils/getAssociatedTokenAddress";
 import { isResourceAllowedForCargoPod } from "../../../../utils/resources/isResourceAllowedForCargoPod";
 import { getFleetCargoPodInfoByType } from "../../../cargo-utils";
@@ -31,24 +29,23 @@ import {
 import { InvalidAmountError, InvalidResourceForPodKind } from "../../errors";
 import { getCurrentFleetSectorCoordinates } from "../../utils/getCurrentFleetSectorCoordinates";
 import { getCargoPodsByAuthority } from "./../../../cargo-utils";
+import { computeWithdrawAmount } from "./computeWithdrawAmount";
 
 export class FleetCargoPodTokenAccountNotFoundError extends Data.TaggedError(
 	"FleetCargoPodTokenAccountNotFoundError",
 ) {}
 
 export const createWithdrawCargoFromFleetIx = ({
-	amount,
 	fleetAccount,
-	resourceMint,
-	cargoPodKind,
+	item,
 }: {
-	amount: "full" | number;
 	fleetAccount: Fleet;
-	resourceMint: PublicKey;
-	cargoPodKind: CargoPodKind;
+	item: UnloadResourceInput;
 }) =>
 	Effect.gen(function* () {
-		if (amount !== "full" && amount <= 0) {
+		const { mode, resourceMint, amount, cargoPodKind } = item;
+
+		if (amount <= 0) {
 			return yield* Effect.fail(
 				new InvalidAmountError({ resourceMint, amount }),
 			);
@@ -165,15 +162,6 @@ export const createWithdrawCargoFromFleetIx = ({
 
 		ixs.push(createStarbasePlayerResourceMintAtaIx);
 
-		const maybeTokenAccountFrom = yield* pipe(
-			gameService.utils.getParsedTokenAccountsByOwner(cargoPodInfo.key),
-			Effect.flatMap(
-				Effect.findFirst((account) =>
-					Effect.succeed(account.mint.toBase58() === resourceMint.toBase58()),
-				),
-			),
-		);
-
 		const cargoTypeAddress = yield* getCargoTypeAddress(
 			resourceMint,
 			context.gameInfo.cargoStatsDefinition.key,
@@ -182,22 +170,35 @@ export const createWithdrawCargoFromFleetIx = ({
 
 		const cargoType = yield* getCargoTypeAccount(cargoTypeAddress);
 
-		const amoutInCargoSpace =
-			amount === "full"
-				? cargoPodInfo.maxCapacity
-				: getCargoSpaceUsedByTokenAmount(cargoType, new BN(amount));
-
 		const resourceSpaceMultiplier =
 			cargoType.stats[SAGE_CARGO_STAT_VALUE_INDEX] ?? new BN(0);
 
-		const amoutInTokens = amoutInCargoSpace.div(resourceSpaceMultiplier);
+		const fleetMaxCapacityInTokens = cargoPodInfo.maxCapacity.div(
+			resourceSpaceMultiplier,
+		);
 
-		const maxAmountToWithdraw = isSome(maybeTokenAccountFrom)
-			? BN.min(
-					new BN(amoutInTokens),
-					new BN(maybeTokenAccountFrom.value.amount.toString()),
-				)
-			: new BN(amoutInTokens);
+		const loadedAmountInTokens = cargoPodInfo.loadedAmountInCargoUnits.div(
+			resourceSpaceMultiplier,
+		);
+
+		const unloadAmount = yield* computeWithdrawAmount({
+			fleetAddress: fleetAccount.key,
+			resourceMint,
+		})({
+			mode,
+			resourceAmountInFleet: loadedAmountInTokens,
+			resourceFleetMaxCap: fleetMaxCapacityInTokens,
+			value: new BN(amount),
+		});
+
+		if (unloadAmount.lten(0)) {
+			yield* Console.log(
+				`Skip unload of ${resourceMint.toString()}, computed amount is: ${unloadAmount.toString()}`,
+			);
+
+			// Skip unload if less or equal than 0
+			return [];
+		}
 
 		const withdrawCargoFromFleetIx = Fleet.withdrawCargoFromFleet(
 			programs.sage,
@@ -218,7 +219,7 @@ export const createWithdrawCargoFromFleetIx = ({
 			resourceMint,
 			gameId,
 			gameState,
-			{ keyIndex: context.keyIndexes.sage, amount: maxAmountToWithdraw },
+			{ keyIndex: context.keyIndexes.sage, amount: unloadAmount },
 		);
 
 		return [...ixs, withdrawCargoFromFleetIx];

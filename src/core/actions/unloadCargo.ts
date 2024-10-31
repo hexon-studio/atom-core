@@ -1,7 +1,7 @@
 import type { PublicKey } from "@solana/web3.js";
 import type { InstructionReturn } from "@staratlas/data-source";
 import { Console, Effect, Array as EffectArray, Match, pipe } from "effect";
-import type { CargoPodKind } from "../../types";
+import type { UnloadResourceInput } from "../../decoders";
 import { isPublicKey } from "../../utils/public-key";
 import {
 	createDockToStarbaseIx,
@@ -22,11 +22,7 @@ export const unloadCargo = ({
 	items,
 }: {
 	fleetNameOrAddress: string | PublicKey;
-	items: Array<{
-		amount: "full" | number;
-		resourceMint: PublicKey;
-		cargoPodKind: CargoPodKind;
-	}>;
+	items: Array<UnloadResourceInput>;
 }) =>
 	Effect.gen(function* () {
 		const fleetAddress = yield* isPublicKey(fleetNameOrAddress)
@@ -38,8 +34,6 @@ export const unloadCargo = ({
 		);
 
 		const fleetAccount = yield* getFleetAccount(fleetAddress);
-
-		// TODO: nothing to unload
 
 		const ixs: InstructionReturn[] = [];
 
@@ -81,15 +75,19 @@ export const unloadCargo = ({
 		ixs.push(...preIxs);
 
 		const unloadCargoIxs = yield* Effect.all(
-			EffectArray.map(items, ({ amount, cargoPodKind, resourceMint }) =>
+			EffectArray.map(items, (item) =>
 				createWithdrawCargoFromFleetIx({
-					amount,
 					fleetAccount,
-					resourceMint,
-					cargoPodKind,
+					item,
 				}),
 			),
 		).pipe(Effect.map(EffectArray.flatten));
+
+		if (!unloadCargoIxs.length) {
+			yield* Console.log("Nothing to unload. Skipping");
+
+			return [];
+		}
 
 		ixs.push(...unloadCargoIxs);
 

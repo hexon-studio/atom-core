@@ -1,26 +1,17 @@
-import type { PublicKey } from "@solana/web3.js";
 import { Cause, Console, Effect, Exit, Option } from "effect";
-import { unloadCargo } from "../core/actions/unloadCargo";
 import { GameService } from "../core/services/GameService";
-import type { UnloadResourceInput } from "../decoders";
+import { getGameContext } from "../core/services/GameService/utils";
 import type { GlobalOptionsWithSupabase } from "../types";
 import { createMainLiveService } from "../utils/createLiveService";
-import { runBaseCommand } from "./baseCommand";
 
-type Param = GlobalOptionsWithSupabase & {
-	fleetNameOrAddress: string | PublicKey;
-	items: Array<UnloadResourceInput>;
-};
-
-export const runUnloadCargo = async ({
-	fleetNameOrAddress,
-	items,
+export const runProfileInfo = async ({
 	keypair,
+	rpcUrl,
 	owner,
 	playerProfile,
-	rpcUrl,
 	supabaseArgs,
-}: Param) => {
+	verbose,
+}: GlobalOptionsWithSupabase) => {
 	const mainServiceLive = createMainLiveService({
 		keypair,
 		rpcUrl,
@@ -36,16 +27,9 @@ export const runUnloadCargo = async ({
 				contextRef: service.context,
 			}),
 		),
-		Effect.tap(() => Console.log("Game initialized.")),
-		Effect.flatMap(() =>
-			runBaseCommand({
-				self: unloadCargo({
-					fleetNameOrAddress,
-					items,
-				}),
-				mapError: (err) => ({ tag: err._tag, message: err.message }),
-			}),
-		),
+		Effect.tap(() => verbose && Console.log("Game initialized.")),
+		Effect.flatMap(getGameContext),
+		Effect.map((context) => context.playerProfile),
 		Effect.provide(mainServiceLive),
 	);
 
@@ -53,8 +37,8 @@ export const runUnloadCargo = async ({
 
 	exit.pipe(
 		Exit.match({
-			onSuccess: (txId) => {
-				console.log(`Transactions ${txId.join(",")} completed`);
+			onSuccess: (playerProfile) => {
+				console.log(JSON.stringify(playerProfile, null, 2));
 				process.exit(0);
 			},
 			onFailure: (cause) => {

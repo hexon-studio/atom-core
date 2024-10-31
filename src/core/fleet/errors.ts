@@ -6,11 +6,37 @@ import {
 	type ResourceMint,
 	resourceMintToName,
 } from "../../constants/resources";
-import type { CargoPodKind } from "../../types";
+import type { CargoPodKind } from "../../decoders";
 
 export class MissingInstructionsError extends Data.TaggedError(
 	"MissingInstructionsError",
 ) {}
+
+export class ResourceNotEnoughError extends Data.TaggedError(
+	"ResourceNotEnoughError",
+)<{
+	from: "starbase" | "fleet";
+	entity: PublicKey;
+	resourceMint: PublicKey;
+	amountAvailable: string;
+	amountAdded: string;
+}> {
+	override get message() {
+		return `Entity (${this.from} - ${this.entity.toString()}) does not have enough resources for ${resourceMintToName[this.resourceMint.toString() as ResourceMint]}: ${this.amountAvailable} < ${this.amountAdded}`;
+	}
+}
+
+export class FleetNotEnoughSpaceError extends Data.TaggedError(
+	"FleetNotEnoughSpaceError",
+)<{
+	cargoKind: CargoPodKind;
+	amountAvailable: string;
+	amountAdded: string;
+}> {
+	override get message() {
+		return `Fleet does not have enough space for ${this.cargoKind}: ${this.amountAvailable} < ${this.amountAdded}`;
+	}
+}
 
 export class FleetNotIdleError extends Data.TaggedError("FleetNotIdleError") {}
 
