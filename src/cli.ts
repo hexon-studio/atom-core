@@ -127,7 +127,7 @@ const main = async () => {
 				"	- fixed: The amount of the resource to load is fixed",
 				"	- max: Add enough resource to reach the 'max' value",
 				"	- min: Add enough resource to reach the 'min' value",
-				"	- min-and-fill: Add enough resource to reach the 'min' value and fill the cargo pod",
+				"	- min-and-fill: Add enough resource to reach the 'min' value and fill the cargo pod (only if less than threshold)",
 				"- amount: number to be used as fixed amount or threshold",
 				`- cargo_pod: The type of cargo pod to use (${cargoPodKinds.join(", ")})`,
 			].join("\n"),

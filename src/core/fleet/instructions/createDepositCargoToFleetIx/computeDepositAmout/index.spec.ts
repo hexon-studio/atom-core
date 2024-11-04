@@ -235,6 +235,32 @@ describe("computeDepositAmout", () => {
 			`);
 		});
 
+		it("returns 0 if have min quantity in fleet", async () => {
+			const result = await Effect.runPromise(
+				compute({
+					mode: "min-and-fill",
+					value: new BN(99),
+					resourceFleetMaxCap: new BN(1000),
+					resourceAmountInFleet: new BN(100),
+					resourceAmountInStarbase: new BN(1000),
+				}).pipe(Effect.map((x) => x.toString())),
+			);
+
+			expect(result).toBe("0");
+
+			const result2 = await Effect.runPromise(
+				compute({
+					mode: "min-and-fill",
+					value: new BN(100),
+					resourceFleetMaxCap: new BN(1000),
+					resourceAmountInFleet: new BN(100),
+					resourceAmountInStarbase: new BN(1000),
+				}).pipe(Effect.map((x) => x.toString())),
+			);
+
+			expect(result2).toBe("0");
+		});
+
 		it("returns the amount for filling the space if have enough resoruce in starbase", async () => {
 			const result = await Effect.runPromise(
 				compute({
