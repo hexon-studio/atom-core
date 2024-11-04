@@ -114,6 +114,10 @@ export const computeDepositAmount =
 					resourceAmountInStarbase,
 				}) =>
 					Effect.gen(function* () {
+						if (resourceAmountInFleet.gte(minFillThreshold)) {
+							return new BN(0);
+						}
+
 						const neededQtyInTokens = BN.max(
 							minFillThreshold.sub(resourceAmountInFleet),
 							new BN(0),
@@ -131,12 +135,7 @@ export const computeDepositAmount =
 							);
 						}
 
-						const quantityToDeposit = BN.min(
-							freeAmountInFleet,
-							resourceAmountInStarbase,
-						);
-
-						return quantityToDeposit;
+						return BN.min(freeAmountInFleet, resourceAmountInStarbase);
 					}),
 			),
 			Match.exhaustive,
