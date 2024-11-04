@@ -38,8 +38,6 @@ export class FleetNotEnoughSpaceError extends Data.TaggedError(
 	}
 }
 
-export class FleetNotIdleError extends Data.TaggedError("FleetNotIdleError") {}
-
 export class FleetNotInStarbaseError extends Data.TaggedError(
 	"FleetNotInStarbaseError",
 ) {}
@@ -54,10 +52,6 @@ export class PlanetNotFoundInSectorError extends Data.TaggedError(
 
 export class FleetNotEnoughFuelError extends Data.TaggedError(
 	"FuelNotEnoughError",
-) {}
-
-export class FleetNotMiningError extends Data.TaggedError(
-	"FleetNotMiningError",
 ) {}
 
 export class InvalidFleetStateError extends Data.TaggedError(
@@ -84,29 +78,3 @@ export class InvalidAmountError extends Data.TaggedError("InvalidAmountError")<{
 export class InvalidResourceForPodKind extends Data.TaggedError(
 	"InvalidResourceForPodKind",
 ) {}
-
-export class StarbaseCargoPodTokenAccountNotFoundError extends Data.TaggedError(
-	"StarbaseCargoPodTokenAccountNotFound",
-) {}
-
-export class FleetCargoPodFullError extends Data.TaggedError(
-	"FleetCargoPodFullError",
-)<{
-	podKind: CargoPodKind;
-}> {}
-
-export class GetTokenBalanceError extends Data.TaggedError(
-	"GetTokenBalanceError",
-)<{
-	error: unknown;
-}> {}
-
-export class StarbaseCargoPodEmptyError extends Data.TaggedError(
-	"StarbaseCargoPodEmptyError",
-)<{
-	resourceMint: PublicKey;
-}> {
-	override get message() {
-		return `Starbase cargo pod for ${resourceMintToName[this.resourceMint.toString() as ResourceMint]} is empty`;
-	}
-}
