@@ -2,8 +2,8 @@ import type { PublicKey } from "@solana/web3.js";
 import { Fleet, SAGE_CARGO_STAT_VALUE_INDEX } from "@staratlas/sage";
 import BN from "bn.js";
 import { Console, Effect, pipe } from "effect";
-import { isNone } from "effect/Option";
 import type { LoadResourceInput } from "../../../../decoders";
+import { getAssociatedTokenAddress } from "../../../../utils/getAssociatedTokenAddress";
 import { isResourceAllowedForCargoPod } from "../../../../utils/resources/isResourceAllowedForCargoPod";
 import {
 	getCargoPodsByAuthority,
@@ -12,6 +12,7 @@ import {
 import { SagePrograms } from "../../../programs";
 import { GameService } from "../../../services/GameService";
 import { getGameContext } from "../../../services/GameService/utils";
+import { SolanaService } from "../../../services/SolanaService";
 import {
 	getCargoTypeAccount,
 	getFleetAccount,
@@ -24,11 +25,7 @@ import {
 	getStarbaseAddressbyCoordinates,
 	getStarbasePlayerAddress,
 } from "../../../utils/pdas";
-import {
-	InvalidAmountError,
-	InvalidResourceForPodKind,
-	StarbaseCargoPodTokenAccountNotFoundError,
-} from "../../errors";
+import { InvalidAmountError, InvalidResourceForPodKind } from "../../errors";
 import { getCurrentFleetSectorCoordinates } from "../../utils/getCurrentFleetSectorCoordinates";
 import { computeDepositAmount } from "./computeDepositAmout";
 
@@ -101,35 +98,38 @@ export const createDepositCargoToFleetIx = ({
 
 		const starbasePlayerCargoPodsPubkey = starbasePlayerCargoPodsAccount.key;
 
-		const maybeTokenAccountFrom = yield* pipe(
-			gameService.utils.getParsedTokenAccountsByOwner(
-				starbasePlayerCargoPodsPubkey,
-			),
-			Effect.flatMap(
-				Effect.findFirst((account) =>
-					Effect.succeed(account.mint.toBase58() === resourceMint.toBase58()),
-				),
-			),
+		const starbaseResourceTokenAccount = yield* getAssociatedTokenAddress(
+			resourceMint,
+			starbasePlayerCargoPodsPubkey,
+			true,
 		);
 
-		if (isNone(maybeTokenAccountFrom)) {
-			return yield* Effect.fail(
-				new StarbaseCargoPodTokenAccountNotFoundError(),
-			);
-		}
+		const provider = yield* SolanaService.pipe(
+			Effect.flatMap((service) => service.anchorProvider),
+		);
 
-		const tokenAccountFromPubkey = maybeTokenAccountFrom.value.address;
+		const starbaseResourceAmountInTokens = yield* Effect.tryPromise(() =>
+			provider.connection.getTokenAccountBalance(
+				starbaseResourceTokenAccount,
+				"confirmed",
+			),
+		).pipe(
+			Effect.map((data) =>
+				data.value.uiAmount ? new BN(data.value.uiAmount) : new BN(0),
+			),
+			Effect.orElseSucceed(() => new BN(0)),
+		);
 
-		const tokenAccountToATA =
+		const targetTokenAccount =
 			yield* gameService.utils.createAssociatedTokenAccountIdempotent(
 				resourceMint,
 				cargoPodInfo.key,
 				true,
 			);
 
-		const tokenAccountToPubkey = tokenAccountToATA.address;
+		const tokenAccountToPubkey = targetTokenAccount.address;
 
-		const ix_0 = tokenAccountToATA.instructions;
+		const ix_0 = targetTokenAccount.instructions;
 
 		const cargoTypeAddress = yield* getCargoTypeAddress(
 			resourceMint,
@@ -148,10 +148,6 @@ export const createDepositCargoToFleetIx = ({
 
 		const loadedAmountInTokens = cargoPodInfo.loadedAmountInCargoUnits.div(
 			resourceSpaceMultiplier,
-		);
-
-		const starbaseResourceAmountInTokens = new BN(
-			maybeTokenAccountFrom.value.amount.toString(),
 		);
 
 		const finalAmountToDeposit = yield* computeDepositAmount({
@@ -195,7 +191,7 @@ export const createDepositCargoToFleetIx = ({
 			cargoPodInfo.key,
 			cargoType.key,
 			context.gameInfo.cargoStatsDefinition.key,
-			tokenAccountFromPubkey,
+			starbaseResourceTokenAccount,
 			tokenAccountToPubkey,
 			resourceMint,
 			gameId,
