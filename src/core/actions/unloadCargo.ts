@@ -37,6 +37,8 @@ export const unloadCargo = ({
 
 		const ixs: InstructionReturn[] = [];
 
+		const gameService = yield* GameService;
+
 		const preIxs = yield* Match.value(fleetAccount.state).pipe(
 			Match.whenOr(
 				{ Idle: Match.defined },
@@ -63,10 +65,25 @@ export const unloadCargo = ({
 							),
 						),
 						Effect.bind("dockIx", () => createDockToStarbaseIx(fleetAccount)),
-						Effect.map(({ stopMiningIx, dockIx }) => [
-							...stopMiningIx,
-							...dockIx,
-						]),
+						// Sending the transactions before doing the next step
+						Effect.flatMap(({ stopMiningIx, dockIx }) =>
+							gameService.utils.buildAndSignTransactionWithAtlasPrime([
+								...stopMiningIx,
+								...dockIx,
+							]),
+						),
+						Effect.flatMap((txs) =>
+							Effect.all(
+								txs.map((tx) => gameService.utils.sendTransaction(tx)),
+							),
+						),
+						Effect.tap((txs) =>
+							Console.log(
+								"Fleet stopped mining and docked to starbase. Txs: ",
+								txs.join(", "),
+							),
+						),
+						Effect.map(() => []),
 					),
 			),
 			Match.orElse(() => Effect.succeed([])),
@@ -74,10 +91,12 @@ export const unloadCargo = ({
 
 		ixs.push(...preIxs);
 
+		const freshFleetAccount = yield* getFleetAccount(fleetAddress);
+
 		const unloadCargoIxs = yield* Effect.all(
 			EffectArray.map(items, (item) =>
 				createWithdrawCargoFromFleetIx({
-					fleetAccount,
+					fleetAccount: freshFleetAccount,
 					item,
 				}),
 			),
@@ -90,8 +109,6 @@ export const unloadCargo = ({
 		}
 
 		ixs.push(...unloadCargoIxs);
-
-		const gameService = yield* GameService;
 
 		const drainVaultIx = yield* createDrainVaultIx(ixs);
 

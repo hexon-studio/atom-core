@@ -62,6 +62,7 @@ export const createWithdrawCargoFromFleetIx = ({
 
 		const gameService = yield* GameService;
 		const context = yield* getGameContext();
+		// const fleetAccount = yield* getFleetAccount(staleFleetAccount.key);
 
 		const playerProfilePubkey = fleetAccount.data.ownerProfile;
 
@@ -177,7 +178,18 @@ export const createWithdrawCargoFromFleetIx = ({
 			resourceSpaceMultiplier,
 		);
 
-		const loadedAmountInTokens = cargoPodInfo.loadedAmountInCargoUnits.div(
+		const loadedResourcesAmountInCargoUnits = cargoPodInfo.resources.reduce(
+			(acc, item) => {
+				if (item.mint.equals(resourceMint)) {
+					return acc.add(item.amountInCargoUnits);
+				}
+
+				return acc;
+			},
+			new BN(0),
+		);
+
+		const loadedResourcesAmountInTokens = loadedResourcesAmountInCargoUnits.div(
 			resourceSpaceMultiplier,
 		);
 
@@ -186,7 +198,7 @@ export const createWithdrawCargoFromFleetIx = ({
 			resourceMint,
 		})({
 			mode,
-			resourceAmountInFleet: loadedAmountInTokens,
+			resourceAmountInFleet: loadedResourcesAmountInTokens,
 			resourceFleetMaxCap: fleetMaxCapacityInTokens,
 			value: new BN(amount),
 		});
