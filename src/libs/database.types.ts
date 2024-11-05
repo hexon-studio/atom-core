@@ -12,29 +12,23 @@ export type Database = {
 			accounts: {
 				Row: {
 					created_at: string;
-					hot_wallet: boolean | null;
 					id: number;
 					last_login: string | null;
 					pbk: string;
-					secrets_id: string | null;
 					updated_at: string | null;
 				};
 				Insert: {
 					created_at?: string;
-					hot_wallet?: boolean | null;
 					id?: number;
 					last_login?: string | null;
 					pbk: string;
-					secrets_id?: string | null;
 					updated_at?: string | null;
 				};
 				Update: {
 					created_at?: string;
-					hot_wallet?: boolean | null;
 					id?: number;
 					last_login?: string | null;
 					pbk?: string;
-					secrets_id?: string | null;
 					updated_at?: string | null;
 				};
 				Relationships: [];
@@ -56,13 +50,15 @@ export type Database = {
 					position: number | null;
 					quantity: number | null;
 					rearm: boolean | null;
+					rearm_amount: number | null;
 					refood: boolean | null;
+					refood_amount: number | null;
 					refuel: boolean | null;
+					refuel_amount: number | null;
 					routes_id: number | null;
 					sector: string | null;
-					trip_count: number | null;
 					trip_data: Json | null;
-					updated_at: string | null;
+					updated_at: string;
 				};
 				Insert: {
 					action_type?: Database["public"]["Enums"]["action_types"] | null;
@@ -80,13 +76,15 @@ export type Database = {
 					position?: number | null;
 					quantity?: number | null;
 					rearm?: boolean | null;
+					rearm_amount?: number | null;
 					refood?: boolean | null;
+					refood_amount?: number | null;
 					refuel?: boolean | null;
+					refuel_amount?: number | null;
 					routes_id?: number | null;
 					sector?: string | null;
-					trip_count?: number | null;
 					trip_data?: Json | null;
-					updated_at?: string | null;
+					updated_at?: string;
 				};
 				Update: {
 					action_type?: Database["public"]["Enums"]["action_types"] | null;
@@ -104,13 +102,15 @@ export type Database = {
 					position?: number | null;
 					quantity?: number | null;
 					rearm?: boolean | null;
+					rearm_amount?: number | null;
 					refood?: boolean | null;
+					refood_amount?: number | null;
 					refuel?: boolean | null;
+					refuel_amount?: number | null;
 					routes_id?: number | null;
 					sector?: string | null;
-					trip_count?: number | null;
 					trip_data?: Json | null;
-					updated_at?: string | null;
+					updated_at?: string;
 				};
 				Relationships: [
 					{
@@ -132,6 +132,55 @@ export type Database = {
 						columns: ["routes_id"];
 						isOneToOne: false;
 						referencedRelation: "routes";
+						referencedColumns: ["id"];
+					},
+				];
+			};
+			connections: {
+				Row: {
+					created_at: string;
+					id: number;
+					routes_id: number | null;
+					source_actions_id: number | null;
+					target_actions_id: number | null;
+					updated_at: string;
+				};
+				Insert: {
+					created_at?: string;
+					id?: number;
+					routes_id?: number | null;
+					source_actions_id?: number | null;
+					target_actions_id?: number | null;
+					updated_at?: string;
+				};
+				Update: {
+					created_at?: string;
+					id?: number;
+					routes_id?: number | null;
+					source_actions_id?: number | null;
+					target_actions_id?: number | null;
+					updated_at?: string;
+				};
+				Relationships: [
+					{
+						foreignKeyName: "connections_routes_id_fkey";
+						columns: ["routes_id"];
+						isOneToOne: false;
+						referencedRelation: "routes";
+						referencedColumns: ["id"];
+					},
+					{
+						foreignKeyName: "connections_source_actions_id_fkey";
+						columns: ["source_actions_id"];
+						isOneToOne: false;
+						referencedRelation: "actions";
+						referencedColumns: ["id"];
+					},
+					{
+						foreignKeyName: "connections_target_actions_id_fkey";
+						columns: ["target_actions_id"];
+						isOneToOne: false;
+						referencedRelation: "actions";
 						referencedColumns: ["id"];
 					},
 				];
@@ -171,95 +220,73 @@ export type Database = {
 					},
 				];
 			};
-			logs: {
-				Row: {
-					accounts_id: number | null;
-					created_at: string;
-					id: number;
-					message: string | null;
-					plans_id: number | null;
-				};
-				Insert: {
-					accounts_id?: number | null;
-					created_at?: string;
-					id?: number;
-					message?: string | null;
-					plans_id?: number | null;
-				};
-				Update: {
-					accounts_id?: number | null;
-					created_at?: string;
-					id?: number;
-					message?: string | null;
-					plans_id?: number | null;
-				};
-				Relationships: [
-					{
-						foreignKeyName: "logs_accounts_id_fkey";
-						columns: ["accounts_id"];
-						isOneToOne: false;
-						referencedRelation: "accounts";
-						referencedColumns: ["id"];
-					},
-					{
-						foreignKeyName: "logs_plans_id_fkey";
-						columns: ["plans_id"];
-						isOneToOne: false;
-						referencedRelation: "plans";
-						referencedColumns: ["id"];
-					},
-				];
-			};
-			plans: {
+			hot_wallets: {
 				Row: {
 					created_at: string;
 					created_by: number | null;
-					cycles: number | null;
-					description: string | null;
-					fleet_pbk: string | null;
 					id: number;
-					routes_id: number | null;
-					title: string | null;
-					updated_at: string | null;
+					permissions: Json | null;
+					pubkey: string | null;
+					secrets_id: string | null;
+					setup_completed: boolean;
+					updated_at: string;
 				};
 				Insert: {
 					created_at?: string;
 					created_by?: number | null;
-					cycles?: number | null;
-					description?: string | null;
-					fleet_pbk?: string | null;
 					id?: number;
-					routes_id?: number | null;
-					title?: string | null;
-					updated_at?: string | null;
+					permissions?: Json | null;
+					pubkey?: string | null;
+					secrets_id?: string | null;
+					setup_completed?: boolean;
+					updated_at?: string;
 				};
 				Update: {
 					created_at?: string;
 					created_by?: number | null;
-					cycles?: number | null;
-					description?: string | null;
-					fleet_pbk?: string | null;
 					id?: number;
-					routes_id?: number | null;
-					title?: string | null;
-					updated_at?: string | null;
+					permissions?: Json | null;
+					pubkey?: string | null;
+					secrets_id?: string | null;
+					setup_completed?: boolean;
+					updated_at?: string;
 				};
 				Relationships: [
 					{
-						foreignKeyName: "plans_created_by_fkey";
+						foreignKeyName: "hot_wallets_created_by_fkey";
 						columns: ["created_by"];
 						isOneToOne: false;
 						referencedRelation: "accounts";
 						referencedColumns: ["id"];
 					},
-					{
-						foreignKeyName: "plans_routes_id_fkey";
-						columns: ["routes_id"];
-						isOneToOne: false;
-						referencedRelation: "routes";
-						referencedColumns: ["id"];
-					},
 				];
+			};
+			http_request_tracker: {
+				Row: {
+					body: Json | null;
+					headers: Json | null;
+					method: string | null;
+					params: Json | null;
+					request_id: number | null;
+					url: string | null;
+				};
+				Insert: {
+					body?: Json | null;
+					headers?: Json | null;
+					method?: string | null;
+					params?: Json | null;
+					request_id?: number | null;
+					url?: string | null;
+				};
+				Update: {
+					body?: Json | null;
+					headers?: Json | null;
+					method?: string | null;
+					params?: Json | null;
+					request_id?: number | null;
+					url?: string | null;
+				};
+				Relationships: [];
 			};
 			routes: {
 				Row: {
@@ -338,9 +365,13 @@ export type Database = {
 					executions_id: number | null;
 					id: number;
 					mining_data: Json | null;
+					rearm_amount: number | null;
+					refood_amount: number | null;
+					refuel_amount: number | null;
 					retry_attempts: number | null;
 					schedule_expire_at: string | null;
 					status: Database["public"]["Enums"]["task_status"] | null;
+					transactions: string | null;
 					trip_count: number | null;
 					trip_data: Json | null;
 					updated_at: string | null;
@@ -357,9 +388,13 @@ export type Database = {
 					executions_id?: number | null;
 					id?: number;
 					mining_data?: Json | null;
+					rearm_amount?: number | null;
+					refood_amount?: number | null;
+					refuel_amount?: number | null;
 					retry_attempts?: number | null;
 					schedule_expire_at?: string | null;
 					status?: Database["public"]["Enums"]["task_status"] | null;
+					transactions?: string | null;
 					trip_count?: number | null;
 					trip_data?: Json | null;
 					updated_at?: string | null;
@@ -376,9 +411,13 @@ export type Database = {
 					executions_id?: number | null;
 					id?: number;
 					mining_data?: Json | null;
+					rearm_amount?: number | null;
+					refood_amount?: number | null;
+					refuel_amount?: number | null;
 					retry_attempts?: number | null;
 					schedule_expire_at?: string | null;
 					status?: Database["public"]["Enums"]["task_status"] | null;
+					transactions?: string | null;
 					trip_count?: number | null;
 					trip_data?: Json | null;
 					updated_at?: string | null;
@@ -396,9 +435,123 @@ export type Database = {
 			};
 		};
 		Views: {
-			[_ in never]: never;
+			ordered_actions: {
+				Row: {
+					action_type: Database["public"]["Enums"]["action_types"] | null;
+					calc_position: number | null;
+					cargo_data: Json | null;
+					cargo_mint: string | null;
+					cargo_type: string | null;
+					created_at: string | null;
+					created_by: number | null;
+					destination_sector: string | null;
+					id: number | null;
+					mine_resource: string | null;
+					mining_data: Json | null;
+					movement_type: string | null;
+					parent: number | null;
+					quantity: number | null;
+					rearm: boolean | null;
+					rearm_amount: number | null;
+					refood: boolean | null;
+					refood_amount: number | null;
+					refuel: boolean | null;
+					refuel_amount: number | null;
+					routes_id: number | null;
+					sector: string | null;
+					trip_data: Json | null;
+					updated_at: string | null;
+				};
+				Relationships: [];
+			};
 		};
 		Functions: {
+			add_cargo_data_element: {
+				Args: {
+					p_id: number;
+					p_new_element: Json;
+				};
+				Returns: Json;
+			};
+			add_mining_data_element: {
+				Args: {
+					p_id: number;
+					p_new_element: Json;
+				};
+				Returns: Json;
+			};
+			delete_action: {
+				Args: {
+					p_routes_id: number;
+					p_action_id: number;
+				};
+				Returns: undefined;
+			};
+			delete_cargo_data_element: {
+				Args: {
+					p_id: number;
+					p_index: number;
+				};
+				Returns: Json;
+			};
+			delete_mining_data_element: {
+				Args: {
+					p_id: number;
+					p_index: number;
+				};
+				Returns: Json;
+			};
+			get_ordered_actions: {
+				Args: {
+					route_id: number;
+				};
+				Returns: {
+					id: number;
+					created_at: string;
+					cargo_type: string;
+					cargo_mint: string;
+					quantity: number;
+					movement_type: string;
+					destination_sector: string;
+					action_type: string;
+					created_by: number;
+					updated_at: string;
+					parent: number;
+					refuel: boolean;
+					rearm: boolean;
+					refood: boolean;
+					routes_id: number;
+					mine_resource: string;
+					sector: string;
+					cargo_data: Json;
+					trip_data: Json;
+					mining_data: Json;
+					refuel_amount: number;
+					rearm_amount: number;
+					refood_amount: number;
+					calc_position: number;
+				}[];
+			};
+			http_request_wrapper: {
+				Args: {
+					method: string;
+					url: string;
+					params?: Json;
+					body?: Json;
+					headers?: Json;
+				};
+				Returns: number;
+			};
+			insert_action: {
+				Args: {
+					p_created_by: number;
+					p_routes_id: number;
+					p_action_type: Database["public"]["Enums"]["action_types"];
+					p_previous_action_id?: number;
+					p_next_action_id?: number;
+				};
+				Returns: undefined;
+			};
 			log_rls_policy_auth: {
 				Args: {
 					pbk: string;
@@ -408,10 +561,82 @@ export type Database = {
 				};
 				Returns: undefined;
 			};
+			move_action: {
+				Args: {
+					p_routes_id: number;
+					p_action_id: number;
+					p_new_previous_action_id?: number;
+					p_new_next_action_id?: number;
+				};
+				Returns: undefined;
+			};
 			store_account_secret: {
 				Args: {
 					accounts_id: number;
 					private_key: string;
+				};
+				Returns: Json;
+			};
+			store_hot_wallet: {
+				Args: {
+					accounts_id: number;
+					public_key: string;
+					secret_key: string;
+					permissions: Json;
+				};
+				Returns: Json;
+			};
+			update_action_sector: {
+				Args: {
+					route_id: number;
+				};
+				Returns: undefined;
+			};
+			update_cargo_data_element: {
+				Args: {
+					p_id: number;
+					p_index: number;
+					p_attributes_to_update: Json;
+				};
+				Returns: Json;
+			};
+			update_json_array_field: {
+				Args: {
+					table_to_update: string;
+					record_id: number;
+					json_field: string;
+					array_id: string;
+					key: string;
+					new_value: Json;
+				};
+				Returns: Json;
+			};
+			update_json_object_field: {
+				Args: {
+					table_name: string;
+					record_id: number;
+					json_field_name: string;
+					key: string;
+					new_value: Json;
+				};
+				Returns: Json;
+			};
+			update_mining_data_element: {
+				Args: {
+					p_id: number;
+					p_index: number;
+					p_attributes_to_update: Json;
+				};
+				Returns: Json;
+			};
+			update_multiple_json_keys: {
+				Args: {
+					table_to_update: string;
+					record_id: number;
+					json_field: string;
+					array_id: string;
+					keys: string[];
+					new_values: Json[];
 				};
 				Returns: Json;
 			};

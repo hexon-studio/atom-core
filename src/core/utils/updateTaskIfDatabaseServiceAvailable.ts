@@ -2,13 +2,15 @@ import { Console, Effect, Option } from "effect";
 import { DatabaseService } from "../services/DatabaseService";
 
 export const updateTaskIfDatabaseServiceAvailable = ({
-	newStatus,
 	errorTag,
 	errorMessage,
+	newStatus,
+	txIds,
 }: {
-	newStatus: "running" | "success" | "error";
 	errorTag?: string;
 	errorMessage?: string;
+	newStatus: "running" | "success" | "error";
+	txIds?: string[];
 }) =>
 	Effect.serviceOption(DatabaseService).pipe(
 		Effect.map(Option.getOrNull),
@@ -16,6 +18,8 @@ export const updateTaskIfDatabaseServiceAvailable = ({
 			service
 				? service.updateTaskStatus({
 						newStatus,
+						transactions:
+							newStatus === "success" ? txIds?.join(",") || null : null,
 						errorTag: newStatus === "error" ? errorTag : undefined,
 						errorMessage: newStatus === "error" ? errorMessage : undefined,
 					})

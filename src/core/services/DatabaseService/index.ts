@@ -10,11 +10,13 @@ import type { SupabaseOptions } from "../../../types";
 const createUpdateTaskStatus =
 	(client: SupabaseClient<Database>, taskId: string) =>
 	({
-		newStatus,
 		errorTag,
 		errorMessage,
+		newStatus,
+		transactions,
 	}: {
 		newStatus: "running" | "success" | "error";
+		transactions: string | null;
 		errorTag?: string;
 		errorMessage?: string;
 	}) => {
@@ -28,7 +30,7 @@ const createUpdateTaskStatus =
 			})),
 			Match.when("success", (status) => ({
 				whereStatus: "running" as const,
-				payload: { status },
+				payload: { status, transactions },
 			})),
 			Match.when("error", (status) => ({
 				whereStatus: "running" as const,

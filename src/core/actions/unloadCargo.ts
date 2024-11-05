@@ -39,12 +39,17 @@ export const unloadCargo = ({
 
 		const gameService = yield* GameService;
 
-		const preIxs = yield* Match.value(fleetAccount.state).pipe(
+		const { ixs: preIxs, txIds: stopMiningTxsIds } = yield* Match.value(
+			fleetAccount.state,
+		).pipe(
 			Match.whenOr(
 				{ Idle: Match.defined },
 				{ MoveWarp: Match.defined },
 				{ MoveSubwarp: Match.defined },
-				() => createDockToStarbaseIx(fleetAccount),
+				() =>
+					createDockToStarbaseIx(fleetAccount).pipe(
+						Effect.map((ixs) => ({ txIds: [] as string[], ixs })),
+					),
 			),
 			Match.when(
 				{ MineAsteroid: Match.defined },
@@ -83,10 +88,10 @@ export const unloadCargo = ({
 								txs.join(", "),
 							),
 						),
-						Effect.map(() => []),
+						Effect.map((txIds) => ({ txIds, ixs: [] })),
 					),
 			),
-			Match.orElse(() => Effect.succeed([])),
+			Match.orElse(() => Effect.succeed({ txIds: [] as string[], ixs: [] })),
 		);
 
 		ixs.push(...preIxs);
@@ -123,5 +128,5 @@ export const unloadCargo = ({
 
 		console.log("Fleet cargo unloaded!");
 
-		return txIds;
+		return [...stopMiningTxsIds, ...txIds];
 	});
