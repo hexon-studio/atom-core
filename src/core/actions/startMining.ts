@@ -29,17 +29,17 @@ export const startMining = ({
 
 		// TODO: Not enough resources to star mining (fuel, ammo, food)
 
+		if (fleetAccount.state.MineAsteroid) {
+			console.log(
+				`Fleet is already mining on asteroid (${fleetAccount.state.MineAsteroid.asteroid}). Skipping...`,
+			);
+
+			return [];
+		}
+
 		const ixs: InstructionReturn[] = [];
 
 		const preIxs = yield* Match.value(fleetAccount.state).pipe(
-			Match.when(
-				{ MineAsteroid: Match.defined },
-				({ MineAsteroid: { asteroid } }) => {
-					console.log(`Fleet is already mining on asteroid (${asteroid})`);
-
-					return Effect.succeed([]);
-				},
-			),
 			Match.when({ StarbaseLoadingBay: Match.defined }, () =>
 				createUndockFromStarbaseIx(fleetAccount).pipe(Effect.map((ix) => [ix])),
 			),
