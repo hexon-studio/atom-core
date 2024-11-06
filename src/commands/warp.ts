@@ -38,11 +38,17 @@ export const runWarp = async ({
 		Effect.tap(() => Console.log("Game initialized.")),
 		Effect.flatMap(() =>
 			runBaseCommand({
-				self: warpToSector({
-					fleetNameOrAddress,
-					targetSector,
+				self: () =>
+					warpToSector({
+						fleetNameOrAddress,
+						targetSector,
+					}),
+				mapError: (err) => ({
+					tag: err._tag,
+					message: err.message,
+					signature:
+						err._tag === "TransactionFailedError" ? err.signature : undefined,
 				}),
-				mapError: (err) => ({ tag: err._tag, message: err.message }),
 			}),
 		),
 		Effect.provide(mainServiceLive),
