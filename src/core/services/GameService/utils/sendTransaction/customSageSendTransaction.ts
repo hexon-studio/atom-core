@@ -7,7 +7,7 @@ import {
 	isVersionedTransaction,
 	verifySignatures,
 } from "@staratlas/data-source";
-import { Data, Effect } from "effect";
+import { Console, Data, Effect } from "effect";
 
 export class SendRawTransactionError extends Data.TaggedError(
 	"SendRawTransactionError",
@@ -35,11 +35,16 @@ export const customSageSendTransaction = (
 
 		const commitment = options?.commitment || "confirmed";
 
-		const signature = yield* Effect.tryPromise({
-			try: () =>
-				connection.sendRawTransaction(rawTransaction, options?.sendOptions),
-			catch: (error) => new SendRawTransactionError({ error }),
-		});
+		const signature = yield* Console.log("Sending transaction").pipe(
+			Effect.flatMap(() =>
+				Effect.tryPromise({
+					try: () =>
+						connection.sendRawTransaction(rawTransaction, options?.sendOptions),
+					catch: (error) => new SendRawTransactionError({ error }),
+				}),
+			),
+			Effect.retry({ times: 5 }),
+		);
 
 		const result = yield* Effect.tryPromise({
 			try: () =>

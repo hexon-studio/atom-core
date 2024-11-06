@@ -18,8 +18,7 @@ export const updateTaskIfDatabaseServiceAvailable = ({
 			service
 				? service.updateTaskStatus({
 						newStatus,
-						transactions:
-							newStatus === "success" ? txIds?.join(",") || null : null,
+						transactions: txIds?.join(",") ?? null,
 						errorTag: newStatus === "error" ? errorTag : undefined,
 						errorMessage: newStatus === "error" ? errorMessage : undefined,
 					})
