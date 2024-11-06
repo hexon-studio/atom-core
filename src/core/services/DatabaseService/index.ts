@@ -34,7 +34,12 @@ const createUpdateTaskStatus =
 			})),
 			Match.when("error", (status) => ({
 				whereStatus: "running" as const,
-				payload: { status, error_tag: errorTag, error_message: errorMessage },
+				payload: {
+					status,
+					transactions,
+					error_tag: errorTag,
+					error_message: errorMessage,
+				},
 			})),
 			Match.exhaustive,
 		);
