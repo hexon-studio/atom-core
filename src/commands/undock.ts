@@ -36,10 +36,16 @@ export const runUndock = async ({
 		Effect.tap(() => Console.log("Game initialized.")),
 		Effect.flatMap(() =>
 			runBaseCommand({
-				self: undockFromStarbase({
-					fleetNameOrAddress,
+				self: () =>
+					undockFromStarbase({
+						fleetNameOrAddress,
+					}),
+				mapError: (err) => ({
+					tag: err._tag,
+					message: err.message,
+					signature:
+						err._tag === "TransactionFailedError" ? err.signature : undefined,
 				}),
-				mapError: (err) => ({ tag: err._tag, message: err.message }),
 			}),
 		),
 		Effect.provide(mainServiceLive),

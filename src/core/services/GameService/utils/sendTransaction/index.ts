@@ -1,16 +1,8 @@
 import type { SendOptions } from "@solana/web3.js";
-import {
-	type TransactionReturn,
-	sendTransaction as sageSendTransaction,
-} from "@staratlas/data-source";
-import { Console, Data, Effect } from "effect";
+import type { TransactionReturn } from "@staratlas/data-source";
+import { Console, Effect } from "effect";
 import { SolanaService } from "../../../SolanaService";
-
-export class SendTransactionError extends Data.TaggedError(
-	"SendTransactionError",
-)<{
-	readonly error: unknown;
-}> {}
+import { customSageSendTransaction } from "./customSageSendTransaction";
 
 export const sendTransaction = (
 	tx: TransactionReturn,
@@ -22,22 +14,12 @@ export const sendTransaction = (
 			Effect.retry(
 				Console.log("Sending transaction").pipe(
 					Effect.flatMap(() =>
-						Effect.tryPromise({
-							try: () =>
-								sageSendTransaction(tx, provider.connection, {
-									commitment: "confirmed",
-									sendOptions,
-								}),
-							catch: (error) => new SendTransactionError({ error }),
+						customSageSendTransaction(tx, provider.connection, {
+							commitment: "confirmed",
+							sendOptions,
 						}),
 					),
-					Effect.flatMap((result) =>
-						result.value.isOk()
-							? Effect.succeed(result.value.value)
-							: Effect.fail(
-									new SendTransactionError({ error: result.value.error }),
-								),
-					),
+					Effect.map((tx) => tx.signature),
 				),
 				{ times: 5 },
 			),
