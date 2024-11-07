@@ -43,7 +43,7 @@ export const runStopMining = async ({
 						fleetNameOrAddress,
 						resourceMint,
 					}),
-				mapError: (err) => ({
+				normalizeError: (err) => ({
 					tag: err._tag,
 					message: err.message,
 					signature:

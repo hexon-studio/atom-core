@@ -8,8 +8,8 @@ import {
 } from "../../constants/resources";
 import type { CargoPodKind } from "../../decoders";
 
-export class MissingInstructionsError extends Data.TaggedError(
-	"MissingInstructionsError",
+export class FleetInTargetSectorError extends Data.TaggedError(
+	"FleetInTargetSectorError",
 ) {}
 
 export class ResourceNotEnoughError extends Data.TaggedError(

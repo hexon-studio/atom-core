@@ -7,40 +7,51 @@ import {
 } from "../../../libs/supabase";
 import type { SupabaseOptions } from "../../../types";
 
+export type UpdateTaskParams =
+	| {
+			newStatus: "running";
+	  }
+	| {
+			newStatus: "success";
+			signatures: string[];
+	  }
+	| {
+			newStatus: "error";
+			tag: string;
+			message: string;
+			signatures: string[];
+	  };
+
 const createUpdateTaskStatus =
 	(client: SupabaseClient<Database>, taskId: string) =>
-	({
-		errorTag,
-		errorMessage,
-		newStatus,
-		transactions,
-	}: {
-		newStatus: "running" | "success" | "error";
-		transactions: string | null;
-		errorTag?: string;
-		errorMessage?: string;
-	}) => {
-		const { whereStatus, payload } = Match.value(newStatus).pipe(
-			Match.when("running", (status) => ({
+	(param: UpdateTaskParams) => {
+		const { whereStatus, payload } = Match.value(param).pipe(
+			Match.when({ newStatus: "running" }, ({ newStatus: status }) => ({
 				whereStatus: "scheduled" as const,
 				payload: {
 					status,
 					schedule_expire_at: null,
 				},
 			})),
-			Match.when("success", (status) => ({
-				whereStatus: "running" as const,
-				payload: { status, transactions },
-			})),
-			Match.when("error", (status) => ({
-				whereStatus: "running" as const,
-				payload: {
-					status,
-					transactions,
-					error_tag: errorTag,
-					error_message: errorMessage,
-				},
-			})),
+			Match.when(
+				{ newStatus: "success" },
+				({ newStatus: status, signatures }) => ({
+					whereStatus: "running" as const,
+					payload: { status, transactions: signatures.join(",") },
+				}),
+			),
+			Match.when(
+				{ newStatus: "error" },
+				({ newStatus: status, message, tag, signatures }) => ({
+					whereStatus: "running" as const,
+					payload: {
+						status,
+						transactions: signatures.join(","),
+						error_tag: tag,
+						error_message: message,
+					},
+				}),
+			),
 			Match.exhaustive,
 		);
 

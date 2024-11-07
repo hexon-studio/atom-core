@@ -32,10 +32,6 @@ export const warpToSector = ({
 		console.log("Start warp...");
 		const fleetAccount = yield* getFleetAccount(fleetAddress);
 
-		// TODO: check valid coords
-
-		// TODO: Not enough fuel to start warp
-
 		const ixs: InstructionReturn[] = [];
 
 		const preIxs = yield* Match.value(fleetAccount.state).pipe(
@@ -70,11 +66,11 @@ export const warpToSector = ({
 
 		ixs.push(...warpIxs);
 
-		const gameService = yield* GameService;
-
 		const drainVaultIx = yield* createDrainVaultIx(ixs);
 
-		ixs.push(drainVaultIx);
+		ixs.push(...drainVaultIx);
+
+		const gameService = yield* GameService;
 
 		const txs =
 			yield* gameService.utils.buildAndSignTransactionWithAtlasPrime(ixs);

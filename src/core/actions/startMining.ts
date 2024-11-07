@@ -59,7 +59,7 @@ export const startMining = ({
 
 		const drainVaultIx = yield* createDrainVaultIx(ixs, resourceMint);
 
-		ixs.push(drainVaultIx);
+		ixs.push(...drainVaultIx);
 
 		const txs =
 			yield* gameService.utils.buildAndSignTransactionWithAtlasPrime(ixs);

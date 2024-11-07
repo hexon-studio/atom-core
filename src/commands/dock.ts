@@ -40,7 +40,7 @@ export const runDock = async ({
 					dockToStarbase({
 						fleetNameOrAddress,
 					}),
-				mapError: (err) => ({
+				normalizeError: (err) => ({
 					tag: err._tag,
 					message: err.message,
 					signature:

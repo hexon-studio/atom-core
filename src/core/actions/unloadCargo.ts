@@ -117,7 +117,7 @@ export const unloadCargo = ({
 
 		const drainVaultIx = yield* createDrainVaultIx(ixs);
 
-		ixs.push(drainVaultIx);
+		ixs.push(...drainVaultIx);
 
 		const txs =
 			yield* gameService.utils.buildAndSignTransactionWithAtlasPrime(ixs);

@@ -5,7 +5,7 @@ import { ProfileVault } from "@staratlas/profile-vault";
 import { BN } from "bn.js";
 import { Effect } from "effect";
 import { ATLAS_DECIMALS, tokenMints } from "../../../constants/tokens";
-import { MissingInstructionsError } from "../../fleet/errors";
+
 import { SagePrograms } from "../../programs";
 import { GameService } from "../../services/GameService";
 import { getGameContext } from "../../services/GameService/utils";
@@ -16,7 +16,7 @@ export const createDrainVaultIx = (
 ) =>
 	Effect.gen(function* () {
 		if (!ixs.length) {
-			return yield* Effect.fail(new MissingInstructionsError());
+			return [];
 		}
 
 		const programs = yield* SagePrograms;
@@ -57,17 +57,19 @@ export const createDrainVaultIx = (
 			true,
 		);
 
-		return ProfileVault.drainVault(
-			programs.profileVaultProgram,
-			vault,
-			vaultAuthority,
-			atlasTokenAccount,
-			new BN(totalFee),
-			{
-				playerProfileProgram: programs.playerProfile,
-				key: signer,
-				profileKey: context.playerProfile.key,
-				keyIndex: context.keyIndexes.profileVault,
-			},
-		);
+		return [
+			ProfileVault.drainVault(
+				programs.profileVaultProgram,
+				vault,
+				vaultAuthority,
+				atlasTokenAccount,
+				new BN(totalFee),
+				{
+					playerProfileProgram: programs.playerProfile,
+					key: signer,
+					profileKey: context.playerProfile.key,
+					keyIndex: context.keyIndexes.profileVault,
+				},
+			),
+		];
 	});

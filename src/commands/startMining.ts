@@ -43,7 +43,7 @@ export const runStartMining = async ({
 						fleetNameOrAddress,
 						resourceMint,
 					}),
-				mapError: (err) => ({
+				normalizeError: (err) => ({
 					tag: err._tag,
 					message: err.message,
 					signature:

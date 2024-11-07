@@ -44,7 +44,7 @@ export const runUnloadCargo = async ({
 						fleetNameOrAddress,
 						items,
 					}),
-				mapError: (err) => ({
+				normalizeError: (err) => ({
 					tag: err._tag,
 					message: err.message,
 					signature:

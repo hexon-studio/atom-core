@@ -1,31 +1,16 @@
-import { Console, Effect, Option } from "effect";
-import { DatabaseService } from "../services/DatabaseService";
+import { Console, Effect, identity } from "effect";
+import { constNull } from "effect/Function";
+import {
+	DatabaseService,
+	type UpdateTaskParams,
+} from "../services/DatabaseService";
 
-export const updateTaskIfDatabaseServiceAvailable = ({
-	errorTag,
-	errorMessage,
-	newStatus,
-	txIds,
-}: {
-	errorTag?: string;
-	errorMessage?: string;
-	newStatus: "running" | "success" | "error";
-	txIds?: string[];
-}) =>
+export const updateTaskIfDatabaseServiceAvailable = (param: UpdateTaskParams) =>
 	Effect.serviceOption(DatabaseService).pipe(
-		Effect.map(Option.getOrNull),
-		Effect.flatMap((service) =>
-			service
-				? service.updateTaskStatus({
-						newStatus,
-						transactions: txIds?.join(",") ?? null,
-						errorTag: newStatus === "error" ? errorTag : undefined,
-						errorMessage: newStatus === "error" ? errorMessage : undefined,
-					})
-				: Effect.succeed(null),
+		Effect.flatMap(identity),
+		Effect.flatMap((service) => service.updateTaskStatus(param)),
+		Effect.tapErrorTag("UpdateTaskStatusError", (error) =>
+			Console.log("Error updating task", error),
 		),
-		Effect.tapError((error) =>
-			Console.log("Error updating task status", error),
-		),
-		Effect.orElseSucceed(() => null),
+		Effect.orElseSucceed(constNull),
 	);
