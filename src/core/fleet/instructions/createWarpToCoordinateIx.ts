@@ -10,6 +10,7 @@ import {
 	getCargoTypeAddress,
 	getProfileFactionAddress,
 } from "../../utils/pdas";
+import { FleetInTargetSectorError } from "../errors";
 import { getCurrentFleetSectorCoordinates } from "../utils/getCurrentFleetSectorCoordinates";
 import { createMovementHandlerIx } from "./createMovementHandlerIx";
 
@@ -30,8 +31,7 @@ export const createWarpToCoordinateIx = ({
 			actualFleetSectorX.eq(targetSectorX) &&
 			actualFleetSectorY.eq(targetSectorY)
 		) {
-			console.log("Fleet is already in target sector, skipping...");
-			return [];
+			return yield* Effect.fail(new FleetInTargetSectorError());
 		}
 
 		const programs = yield* SagePrograms;

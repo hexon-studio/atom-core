@@ -43,7 +43,7 @@ export const runSubwarp = async ({
 						fleetNameOrAddress,
 						targetSector,
 					}),
-				mapError: (err) => ({
+				normalizeError: (err) => ({
 					tag: err._tag,
 					message: err.message,
 					signature:

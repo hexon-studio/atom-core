@@ -1,0 +1,39 @@
+name: ci
+'on':
+  pull_request:
+
+jobs:
+  checks:
+    name: CI Checks
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: pnpm/action-setup@v4
+        name: Install pnpm
+        with:
+          run_install: false
+
+      - name: setup node
+        uses: actions/setup-node@v4
+        with:
+          cache: 'pnpm'
+          node-version-file: '.nvmrc'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Typecheck
+        run: pnpm run typecheck
+      
+      - name: Lint
+        run: pnpm run lint
+      
+      - name: Test
+        run: pnpm run test
+      
+      - name: Build
+        run: pnpm run build

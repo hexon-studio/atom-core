@@ -3,10 +3,10 @@ import { updateTaskIfDatabaseServiceAvailable } from "../core/utils/updateTaskIf
 
 export const runBaseCommand = <E, R>({
 	self,
-	mapError,
+	normalizeError,
 }: {
 	self: () => Effect.Effect<string[], E, R>;
-	mapError: (error: E) => {
+	normalizeError: (error: E) => {
 		tag: string;
 		message: string;
 		signature?: string;
@@ -16,16 +16,19 @@ export const runBaseCommand = <E, R>({
 		Effect.flatMap(self),
 		Effect.tapBoth({
 			onFailure: (error) => {
-				const { message, tag, signature } = mapError(error);
+				const { message, tag, signature } = normalizeError(error);
 
 				return updateTaskIfDatabaseServiceAvailable({
 					newStatus: "error",
-					errorTag: tag,
-					errorMessage: message,
-					txIds: signature ? [signature] : undefined,
+					tag,
+					message,
+					signatures: signature ? [signature] : [],
 				});
 			},
-			onSuccess: (txIds) =>
-				updateTaskIfDatabaseServiceAvailable({ newStatus: "success", txIds }),
+			onSuccess: (signatures) =>
+				updateTaskIfDatabaseServiceAvailable({
+					newStatus: "success",
+					signatures,
+				}),
 		}),
 	);

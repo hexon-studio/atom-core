@@ -108,7 +108,7 @@ export const loadCargo = ({
 
 		const drainVaultIx = yield* createDrainVaultIx(ixs);
 
-		ixs.push(drainVaultIx);
+		ixs.push(...drainVaultIx);
 
 		const gameService = yield* GameService;
 
