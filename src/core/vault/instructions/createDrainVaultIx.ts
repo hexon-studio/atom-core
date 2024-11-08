@@ -10,6 +10,8 @@ import { SagePrograms } from "../../programs";
 import { GameService } from "../../services/GameService";
 import { getGameContext } from "../../services/GameService/utils";
 
+const minimumFee = 10 * ATLAS_DECIMALS;
+
 export const createDrainVaultIx = (
 	ixs: InstructionReturn[],
 	resourceMint?: PublicKey,
@@ -23,9 +25,9 @@ export const createDrainVaultIx = (
 
 		const context = yield* getGameContext();
 
-		const signer = yield* GameService.pipe(
-			Effect.flatMap((service) => service.signer),
-		);
+		if (!context.fees.feeAddress) {
+			return [];
+		}
 
 		const ixsFee = context.fees.defaultFee * ixs.length * ATLAS_DECIMALS;
 
@@ -37,7 +39,11 @@ export const createDrainVaultIx = (
 
 		const estimatedFee = ixsFee + miningFee;
 
-		const totalFee = estimatedFee < 10 * ATLAS_DECIMALS ? estimatedFee : 0;
+		if (estimatedFee <= 0) {
+			return [];
+		}
+
+		const totalFee = estimatedFee < minimumFee ? estimatedFee : 0;
 
 		const [vaultAuthority] = ProfileVault.findVaultSigner(
 			programs.profileVaultProgram,
@@ -55,6 +61,10 @@ export const createDrainVaultIx = (
 			tokenMints.atlas,
 			context.fees.feeAddress,
 			true,
+		);
+
+		const signer = yield* GameService.pipe(
+			Effect.flatMap((service) => service.signer),
 		);
 
 		return [
