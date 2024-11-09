@@ -1,5 +1,9 @@
-import { Effect } from "effect";
-import { updateTaskIfDatabaseServiceAvailable } from "../core/utils/updateTaskIfDatabaseServiceAvailable";
+import { Effect, Option } from "effect";
+import { getGameContext } from "../core/services/GameService/utils";
+import {
+	updateCreditsIfDatabaseServiceAvailable,
+	updateTaskIfDatabaseServiceAvailable,
+} from "../core/utils/updateTaskIfDatabaseServiceAvailable";
 
 export const runBaseCommand = <E, R>({
 	self,
@@ -26,9 +30,20 @@ export const runBaseCommand = <E, R>({
 				});
 			},
 			onSuccess: (signatures) =>
-				updateTaskIfDatabaseServiceAvailable({
-					newStatus: "success",
-					signatures,
-				}),
+				getGameContext().pipe(
+					Effect.flatMap((context) =>
+						Option.fromNullable(context.fees.feeAddress).pipe(
+							Effect.tapErrorTag("NoSuchElementException", () =>
+								updateCreditsIfDatabaseServiceAvailable(context.owner),
+							),
+							Effect.tap(() =>
+								updateTaskIfDatabaseServiceAvailable({
+									newStatus: "success",
+									signatures,
+								}),
+							),
+						),
+					),
+				),
 		}),
 	);
