@@ -88,6 +88,14 @@ const main = async () => {
 		)
 		.addOption(
 			new Option(
+				"-at, --accessToken <accessToken>",
+				"The supabase account access token",
+			)
+				.env("ATOM_SUPABASE_ACCESS_TOKEN")
+				.makeOptionMandatory(false),
+		)
+		.addOption(
+			new Option(
 				"-t, --taskId <taskId>",
 				"The task to update",
 			).makeOptionMandatory(false),

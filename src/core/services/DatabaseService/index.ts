@@ -68,8 +68,8 @@ const createUpdateTaskStatus =
 	};
 
 const removeUserCredit =
-	(client: SupabaseClient<Database>) => (pbk: PublicKey) => {
-		return Effect.tryPromise(() =>
+	(client: SupabaseClient<Database>) => (pbk: PublicKey) =>
+		Effect.tryPromise(() =>
 			client
 				.from("accounts")
 				.select("id,credits")
@@ -82,14 +82,13 @@ const removeUserCredit =
 						client
 							.from("accounts")
 							.update({
-								credits: resp.data?.credits ? resp.data?.credits - 1 : 0,
+								credits: resp.data?.credits ? resp.data.credits - 1 : 0,
 							})
 							.eq("pbk", pbk.toString()),
 					catch: (error) => new UpdateCreditsFieldError({ error }),
 				}),
 			),
 		);
-	};
 
 export class DatabaseService extends Context.Tag("app/DatabaseService")<
 	DatabaseService,
@@ -111,9 +110,14 @@ export class UpdateCreditsFieldError extends Data.TaggedError(
 export const createDatabaseServiceLive = ({
 	supabaseUrl,
 	supabaseKey,
+	accessToken,
 	taskId,
 }: SupabaseOptions) => {
-	const client = createSupabaseClient({ supabaseKey, supabaseUrl });
+	const client = createSupabaseClient({
+		supabaseKey,
+		supabaseUrl,
+		accessToken,
+	});
 
 	return Layer.succeed(
 		DatabaseService,
