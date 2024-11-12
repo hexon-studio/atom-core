@@ -79,6 +79,9 @@ export const runBaseCommand = <E, R>({
 			onSuccess: (signatures) =>
 				getGameContext().pipe(
 					Effect.tap((context) =>
+						Console.log({ feeAddress: context.fees.feeAddress }),
+					),
+					Effect.tap((context) =>
 						Option.fromNullable(context.fees.feeAddress).pipe(
 							Option.match({
 								onNone: () =>
