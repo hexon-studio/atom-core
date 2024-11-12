@@ -18,7 +18,10 @@ const mintFeeSchema = z.object({
 
 const decoder = z.object({
 	data: z.object({
-		feeAddress: z.string().transform((value) => new PublicKey(value)),
+		feeAddress: z
+			.string()
+			.transform((value) => new PublicKey(value))
+			.nullable(),
 		defaultFee: z.number(),
 		mintFees: z.array(mintFeeSchema),
 	}),
@@ -26,11 +29,12 @@ const decoder = z.object({
 
 export type Fees = z.infer<typeof decoder>["data"];
 
-export const fetchFees = (): Effect.Effect<
-	Fees,
-	FetchFeesError | FeesDecodeError
-> => {
-	const url = "https://n8n.staratlasitalia.com/webhook/getFees";
+export const fetchFees = (
+	owner: PublicKey,
+): Effect.Effect<Fees, FetchFeesError | FeesDecodeError> => {
+	const url = new URL("https://n8n.staratlasitalia.com/webhook/v1/getFees");
+
+	url.searchParams.set("pbk", owner.toString());
 
 	return Effect.tryPromise({
 		try: () => fetch(url).then((res) => res.json()),
