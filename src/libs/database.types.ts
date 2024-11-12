@@ -396,15 +396,18 @@ export type Database = {
 				Row: {
 					action_position: number | null;
 					action_type: Database["public"]["Enums"]["action_types"] | null;
+					atom_fee: number | null;
 					cargo_data: Json | null;
 					created_at: string;
 					duration: number | null;
 					error_message: string | null;
 					error_tag: string | null;
+					estimated_duration: number | null;
 					executions_id: number | null;
 					handle_check_at: string | null;
 					id: number;
 					mining_data: Json | null;
+					prime_fee: number | null;
 					rearm_amount: number | null;
 					refood_amount: number | null;
 					refuel_amount: number | null;
@@ -421,15 +424,18 @@ export type Database = {
 				Insert: {
 					action_position?: number | null;
 					action_type?: Database["public"]["Enums"]["action_types"] | null;
+					atom_fee?: number | null;
 					cargo_data?: Json | null;
 					created_at?: string;
 					duration?: number | null;
 					error_message?: string | null;
 					error_tag?: string | null;
+					estimated_duration?: number | null;
 					executions_id?: number | null;
 					handle_check_at?: string | null;
 					id?: number;
 					mining_data?: Json | null;
+					prime_fee?: number | null;
 					rearm_amount?: number | null;
 					refood_amount?: number | null;
 					refuel_amount?: number | null;
@@ -446,15 +452,18 @@ export type Database = {
 				Update: {
 					action_position?: number | null;
 					action_type?: Database["public"]["Enums"]["action_types"] | null;
+					atom_fee?: number | null;
 					cargo_data?: Json | null;
 					created_at?: string;
 					duration?: number | null;
 					error_message?: string | null;
 					error_tag?: string | null;
+					estimated_duration?: number | null;
 					executions_id?: number | null;
 					handle_check_at?: string | null;
 					id?: number;
 					mining_data?: Json | null;
+					prime_fee?: number | null;
 					rearm_amount?: number | null;
 					refood_amount?: number | null;
 					refuel_amount?: number | null;
@@ -708,7 +717,8 @@ export type Database = {
 				| "waiting"
 				| "success"
 				| "error"
-				| "done";
+				| "done"
+				| "failed";
 			trigger_types: "instant" | "schedule";
 		};
 		CompositeTypes: {
