@@ -110,9 +110,14 @@ export class UpdateCreditsFieldError extends Data.TaggedError(
 export const createDatabaseServiceLive = ({
 	supabaseUrl,
 	supabaseKey,
+	accessToken,
 	taskId,
 }: SupabaseOptions) => {
-	const client = createSupabaseClient({ supabaseKey, supabaseUrl });
+	const client = createSupabaseClient({
+		supabaseKey,
+		supabaseUrl,
+		accessToken,
+	});
 
 	return Layer.succeed(
 		DatabaseService,

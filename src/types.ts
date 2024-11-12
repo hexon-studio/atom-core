@@ -3,12 +3,13 @@ import type { Keypair, PublicKey } from "@solana/web3.js";
 export type SupabaseOptions = {
 	supabaseKey: string;
 	supabaseUrl: string;
+	accessToken: string;
 	taskId: string;
 };
 
 export type GlobalOptionsWithSupabase = Omit<
 	GlobalOptions,
-	"supabaseKey" | "supabaseUrl" | "taskId"
+	"supabaseKey" | "supabaseUrl" | "accessToken" | "taskId"
 > & {
 	supabaseArgs?: SupabaseOptions;
 };
@@ -20,6 +21,7 @@ export type GlobalOptions = {
 	rpcUrl: string;
 	supabaseKey?: string;
 	supabaseUrl?: string;
+	accessToken?: string;
 	taskId?: string;
 	verbose: boolean;
 };
