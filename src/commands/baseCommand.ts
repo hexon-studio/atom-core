@@ -1,12 +1,15 @@
 import { getAssociatedTokenAddressSync } from "@solana/spl-token";
 import { ProfileVault } from "@staratlas/profile-vault";
-import { Console, Effect, unsafeCoerce } from "effect";
+import { Console, Effect, Option, unsafeCoerce } from "effect";
 import { MIN_ATLAS_QTY, tokenMints } from "../constants/tokens";
 import { SagePrograms } from "../core/programs";
 import { AtlasNotEnoughError } from "../core/services/GameService/methods/initGame";
 import { getGameContext } from "../core/services/GameService/utils";
 import { SolanaService } from "../core/services/SolanaService";
-import { updateTaskIfDatabaseServiceAvailable } from "../core/utils/updateTaskIfDatabaseServiceAvailable";
+import {
+	updateCreditsIfDatabaseServiceAvailable,
+	updateTaskIfDatabaseServiceAvailable,
+} from "../core/utils/updateTaskIfDatabaseServiceAvailable";
 
 export const runBaseCommand = <E, R>({
 	self,
@@ -76,9 +79,20 @@ export const runBaseCommand = <E, R>({
 				});
 			},
 			onSuccess: (signatures) =>
-				updateTaskIfDatabaseServiceAvailable({
-					newStatus: "success",
-					signatures,
-				}),
+				getGameContext().pipe(
+					Effect.flatMap((context) =>
+						Option.fromNullable(context.fees.feeAddress).pipe(
+							Effect.tapErrorTag("NoSuchElementException", () =>
+								updateCreditsIfDatabaseServiceAvailable(context.owner),
+							),
+							Effect.tap(() =>
+								updateTaskIfDatabaseServiceAvailable({
+									newStatus: "success",
+									signatures,
+								}),
+							),
+						),
+					),
+				),
 		}),
 	);

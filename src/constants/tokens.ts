@@ -7,6 +7,5 @@ export const tokenMints = {
 
 export const noopPublicKey = new PublicKey("11111111111111111111111111111111");
 
-export const ATLAS_DECIMALS = 100_000_000;
-
 export const MIN_ATLAS_QTY = 100;
+export const ATLAS_DECIMALS = 10 ** 8;

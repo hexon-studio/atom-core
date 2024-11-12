@@ -36,7 +36,7 @@ export const initGame = ({
 			[
 				getPlayerProfileAccout(playerProfileAddress),
 				fetchGameInfoOrAccounts(),
-				fetchFees(),
+				fetchFees(owner),
 			],
 			{ concurrency: "unbounded" },
 		);

@@ -12,6 +12,7 @@ export type Database = {
 			accounts: {
 				Row: {
 					created_at: string;
+					credits: number | null;
 					id: number;
 					last_login: string | null;
 					pbk: string;
@@ -19,6 +20,7 @@ export type Database = {
 				};
 				Insert: {
 					created_at?: string;
+					credits?: number | null;
 					id?: number;
 					last_login?: string | null;
 					pbk: string;
@@ -26,6 +28,7 @@ export type Database = {
 				};
 				Update: {
 					created_at?: string;
+					credits?: number | null;
 					id?: number;
 					last_login?: string | null;
 					pbk?: string;
@@ -220,6 +223,42 @@ export type Database = {
 					},
 				];
 			};
+			fees_history: {
+				Row: {
+					atom_fees: number | null;
+					crafting_fees: number | null;
+					created_at: string;
+					id: number;
+					player_profile: string | null;
+					profile_name: string | null;
+					sol_fees: number | null;
+					starbased_fees: number | null;
+					tx_count: number | null;
+				};
+				Insert: {
+					atom_fees?: number | null;
+					crafting_fees?: number | null;
+					created_at?: string;
+					id?: number;
+					player_profile?: string | null;
+					profile_name?: string | null;
+					sol_fees?: number | null;
+					starbased_fees?: number | null;
+					tx_count?: number | null;
+				};
+				Update: {
+					atom_fees?: number | null;
+					crafting_fees?: number | null;
+					created_at?: string;
+					id?: number;
+					player_profile?: string | null;
+					profile_name?: string | null;
+					sol_fees?: number | null;
+					starbased_fees?: number | null;
+					tx_count?: number | null;
+				};
+				Relationships: [];
+			};
 			hot_wallets: {
 				Row: {
 					created_at: string;
@@ -363,11 +402,13 @@ export type Database = {
 					error_message: string | null;
 					error_tag: string | null;
 					executions_id: number | null;
+					handle_check_at: string | null;
 					id: number;
 					mining_data: Json | null;
 					rearm_amount: number | null;
 					refood_amount: number | null;
 					refuel_amount: number | null;
+					retry_at: string | null;
 					retry_attempts: number | null;
 					schedule_expire_at: string | null;
 					status: Database["public"]["Enums"]["task_status"] | null;
@@ -386,11 +427,13 @@ export type Database = {
 					error_message?: string | null;
 					error_tag?: string | null;
 					executions_id?: number | null;
+					handle_check_at?: string | null;
 					id?: number;
 					mining_data?: Json | null;
 					rearm_amount?: number | null;
 					refood_amount?: number | null;
 					refuel_amount?: number | null;
+					retry_at?: string | null;
 					retry_attempts?: number | null;
 					schedule_expire_at?: string | null;
 					status?: Database["public"]["Enums"]["task_status"] | null;
@@ -409,11 +452,13 @@ export type Database = {
 					error_message?: string | null;
 					error_tag?: string | null;
 					executions_id?: number | null;
+					handle_check_at?: string | null;
 					id?: number;
 					mining_data?: Json | null;
 					rearm_amount?: number | null;
 					refood_amount?: number | null;
 					refuel_amount?: number | null;
+					retry_at?: string | null;
 					retry_attempts?: number | null;
 					schedule_expire_at?: string | null;
 					status?: Database["public"]["Enums"]["task_status"] | null;
@@ -500,6 +545,12 @@ export type Database = {
 					p_index: number;
 				};
 				Returns: Json;
+			};
+			duplicate_route: {
+				Args: {
+					original_route_id: number;
+				};
+				Returns: number;
 			};
 			get_ordered_actions: {
 				Args: {
