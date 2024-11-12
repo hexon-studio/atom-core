@@ -10,6 +10,10 @@ export class GameAlreadyInitializedError extends Data.TaggedError(
 	"GameAlreadyInitializedError",
 ) {}
 
+export class AtlasNotEnoughError extends Data.TaggedError(
+	"AtlasNotEnoughError",
+) {}
+
 export const initGame = ({
 	owner,
 	playerProfile: playerProfileAddress,

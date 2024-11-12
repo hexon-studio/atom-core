@@ -44,7 +44,10 @@ export const runUndock = async ({
 					tag: err._tag,
 					message: err.message,
 					signature:
-						err._tag === "TransactionFailedError" ? err.signature : undefined,
+						err._tag === "TransactionFailedError" ||
+						err._tag === "ConfirmTransactionError"
+							? err.signature
+							: undefined,
 				}),
 			}),
 		),

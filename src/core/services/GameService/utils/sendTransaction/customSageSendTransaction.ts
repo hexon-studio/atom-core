@@ -11,15 +11,31 @@ import { Console, Data, Effect } from "effect";
 
 export class SendRawTransactionError extends Data.TaggedError(
 	"SendRawTransactionError",
-)<{ error: unknown }> {}
+)<{ error: unknown }> {
+	override get message() {
+		return this.error instanceof Error
+			? this.error.message
+			: String(this.error);
+	}
+}
 
 export class ConfirmTransactionError extends Data.TaggedError(
 	"ConfirmTransactionError",
-)<{ error: unknown }> {}
+)<{ error: unknown; signature: string }> {
+	override get message() {
+		return this.error instanceof Error
+			? this.error.message
+			: String(this.error);
+	}
+}
 
 export class TransactionFailedError extends Data.TaggedError(
 	"TransactionFailedError",
-)<{ error: TransactionError; signature: string }> {}
+)<{ error: TransactionError; signature: string }> {
+	override get message() {
+		return String(this.error);
+	}
+}
 
 export const customSageSendTransaction = (
 	transaction: TransactionReturn<AnyTransaction>,
@@ -52,8 +68,8 @@ export const customSageSendTransaction = (
 					{ signature, ...transaction.rbh },
 					commitment,
 				),
-			catch: (error) => new ConfirmTransactionError({ error }),
-		});
+			catch: (error) => new ConfirmTransactionError({ error, signature }),
+		}).pipe(Effect.retry({ times: 5 }));
 
 		if (result.value.err !== null) {
 			return yield* Effect.fail(
