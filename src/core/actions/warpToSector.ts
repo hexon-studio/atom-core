@@ -30,7 +30,7 @@ export const warpToSector = ({
 			: getFleetAddressByName(fleetNameOrAddress);
 
 		console.log("Start warp...");
-		const fleetAccount = yield* getFleetAccount(fleetAddress);
+		let fleetAccount = yield* getFleetAccount(fleetAddress);
 
 		const ixs: InstructionReturn[] = [];
 
@@ -56,6 +56,11 @@ export const warpToSector = ({
 			),
 			Match.orElse(() => Effect.succeed([] as InstructionReturn[])),
 		);
+
+		if (preIxs.length) {
+			// NOTE: get a fresh fleet account
+			fleetAccount = yield* getFleetAccount(fleetAddress);
+		}
 
 		ixs.push(...preIxs);
 

@@ -31,11 +31,7 @@ export const subwarpToSector = ({
 
 		console.log("Start subwarp...");
 
-		const fleetAccount = yield* getFleetAccount(fleetAddress);
-
-		// TODO: check valid coords
-
-		// TODO: Not enough fuel to start subwarp
+		let fleetAccount = yield* getFleetAccount(fleetAddress);
 
 		const ixs: InstructionReturn[] = [];
 
@@ -61,6 +57,11 @@ export const subwarpToSector = ({
 			),
 			Match.orElse(() => Effect.succeed([] as InstructionReturn[])),
 		);
+
+		if (preIxs.length) {
+			// NOTE: get a fresh fleet account
+			fleetAccount = yield* getFleetAccount(fleetAddress);
+		}
 
 		ixs.push(...preIxs);
 
