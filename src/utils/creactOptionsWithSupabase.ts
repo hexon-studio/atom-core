@@ -8,7 +8,7 @@ export const creactOptionsWithSupabase = (
 	return {
 		...rest,
 		supabaseArgs:
-			supabaseKey && supabaseUrl && accessToken && taskId
+			supabaseKey && supabaseUrl && taskId
 				? {
 						supabaseKey,
 						supabaseUrl,

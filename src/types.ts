@@ -3,7 +3,7 @@ import type { Keypair, PublicKey } from "@solana/web3.js";
 export type SupabaseOptions = {
 	supabaseKey: string;
 	supabaseUrl: string;
-	accessToken: string;
+	accessToken?: string;
 	taskId: string;
 };
 

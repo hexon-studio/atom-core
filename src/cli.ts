@@ -91,7 +91,7 @@ const main = async () => {
 				"-at, --accessToken <accessToken>",
 				"The supabase account access token",
 			)
-				.env("ATOM_ACCESS_TOKEN")
+				.env("ATOM_SUPABASE_ACCESS_TOKEN")
 				.makeOptionMandatory(false),
 		)
 		.addOption(
