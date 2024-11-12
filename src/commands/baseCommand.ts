@@ -78,18 +78,20 @@ export const runBaseCommand = <E, R>({
 			},
 			onSuccess: (signatures) =>
 				getGameContext().pipe(
-					Effect.flatMap((context) =>
+					Effect.tap((context) =>
 						Option.fromNullable(context.fees.feeAddress).pipe(
 							Option.match({
 								onNone: () =>
 									updateCreditsIfDatabaseServiceAvailable(context.owner),
-								onSome: () =>
-									updateTaskIfDatabaseServiceAvailable({
-										newStatus: "success",
-										signatures,
-									}),
+								onSome: () => Effect.succeed(null),
 							}),
 						),
+					),
+					Effect.tap(() =>
+						updateTaskIfDatabaseServiceAvailable({
+							newStatus: "success",
+							signatures,
+						}),
 					),
 				),
 		}),
