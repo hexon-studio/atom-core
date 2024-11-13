@@ -57,7 +57,7 @@ export const buildAndSignTransactionWithAtlasPrime = (
 		Effect.flatMap(([solanaService, gameService]) =>
 			Effect.all([
 				SagePrograms,
-				solanaService.anchorProvider,
+				solanaService.secondaryAnchorProvider,
 				gameService.signer,
 				getGameContext(),
 			]),
