@@ -19,6 +19,7 @@ export type GlobalOptions = {
 	owner: PublicKey;
 	playerProfile: PublicKey;
 	rpcUrl: string;
+	secondaryRpcUrl?: string;
 	supabaseKey?: string;
 	supabaseUrl?: string;
 	accessToken?: string;

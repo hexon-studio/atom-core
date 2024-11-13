@@ -65,6 +65,11 @@ const main = async () => {
 				.makeOptionMandatory(true),
 		)
 		.addOption(
+			new Option("-sr, --secondaryRpcUrl <rpcUrl>", "The solona rpc url")
+				.env("ATOM_SECONDARY_RPC_URL")
+				.makeOptionMandatory(false),
+		)
+		.addOption(
 			new Option(
 				"-k, --keypair <secretKey>",
 				"The secret key of the hot wallet as a base58 string",

@@ -18,11 +18,13 @@ export const runStartMining = async ({
 	owner,
 	playerProfile,
 	rpcUrl,
+	secondaryRpcUrl,
 	supabaseArgs,
 }: Param) => {
 	const mainServiceLive = createMainLiveService({
 		keypair,
 		rpcUrl,
+		secondaryRpcUrl,
 		supabaseArgs,
 	});
 

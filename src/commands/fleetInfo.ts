@@ -15,6 +15,7 @@ export const runFleetInfo = async ({
 	fleetNameOrAddress,
 	keypair,
 	rpcUrl,
+	secondaryRpcUrl,
 	owner,
 	playerProfile,
 	supabaseArgs,
@@ -23,6 +24,7 @@ export const runFleetInfo = async ({
 	const mainServiceLive = createMainLiveService({
 		keypair,
 		rpcUrl,
+		secondaryRpcUrl,
 		supabaseArgs,
 	});
 

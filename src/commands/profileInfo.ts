@@ -7,6 +7,7 @@ import { createMainLiveService } from "../utils/createLiveService";
 export const runProfileInfo = async ({
 	keypair,
 	rpcUrl,
+	secondaryRpcUrl,
 	owner,
 	playerProfile,
 	supabaseArgs,
@@ -15,6 +16,7 @@ export const runProfileInfo = async ({
 	const mainServiceLive = createMainLiveService({
 		keypair,
 		rpcUrl,
+		secondaryRpcUrl,
 		supabaseArgs,
 	});
 

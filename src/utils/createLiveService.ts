@@ -9,12 +9,18 @@ export const createMainLiveService = ({
 	keypair,
 	rpcUrl,
 	supabaseArgs,
+	secondaryRpcUrl,
 }: {
 	rpcUrl: string;
+	secondaryRpcUrl?: string;
 	keypair: Keypair;
 	supabaseArgs?: SupabaseOptions;
 }) => {
-	const SolanaServiceLive = createSolanaServiceLive({ rpcUrl, keypair });
+	const SolanaServiceLive = createSolanaServiceLive({
+		rpcUrl,
+		secondaryRpcUrl,
+		keypair,
+	});
 
 	const DatabaseServiceLive = supabaseArgs
 		? createDatabaseServiceLive(supabaseArgs)

@@ -19,11 +19,13 @@ export const runUnloadCargo = async ({
 	owner,
 	playerProfile,
 	rpcUrl,
+	secondaryRpcUrl,
 	supabaseArgs,
 }: Param) => {
 	const mainServiceLive = createMainLiveService({
 		keypair,
 		rpcUrl,
+		secondaryRpcUrl,
 		supabaseArgs,
 	});
 

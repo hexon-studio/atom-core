@@ -9,7 +9,7 @@ export const sendTransaction = (
 	sendOptions?: SendOptions,
 ) =>
 	SolanaService.pipe(
-		Effect.flatMap((solanaService) => solanaService.anchorProvider),
+		Effect.flatMap((solanaService) => solanaService.secondaryAnchorProvider),
 		Effect.flatMap((provider) =>
 			customSageSendTransaction(tx, provider.connection, {
 				commitment: "confirmed",
