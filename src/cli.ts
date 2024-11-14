@@ -66,6 +66,20 @@ const main = async () => {
 		)
 		.addOption(
 			new Option(
+				"-hr, --hellomoonRpc <rpcUrl>",
+				"Hellomoon rpc used to calculate fees",
+			)
+				.env("ATOM_HELLOMOON_RPC_URL")
+				.makeOptionMandatory(false),
+		)
+		.addOption(
+			new Option("--feeMode <feeMode>", "Hellomoon rpc used to calculate fees")
+				.choices(["low", "medium", "high"])
+				.default("low")
+				.makeOptionMandatory(false),
+		)
+		.addOption(
+			new Option(
 				"-k, --keypair <secretKey>",
 				"The secret key of the hot wallet as a base58 string",
 			)
@@ -110,7 +124,7 @@ const main = async () => {
 			);
 
 			return runFleetInfo({
-				...globalOpts,
+				globalOpts,
 				fleetNameOrAddress: isPublicKey(fleetNameOrAddress)
 					? new PublicKey(fleetNameOrAddress)
 					: fleetNameOrAddress,
@@ -173,7 +187,7 @@ const main = async () => {
 				const parsedItems = z.array(loadResourceDecoder).parse(items);
 
 				return runLoadCargo({
-					...globalOpts,
+					globalOpts,
 					fleetNameOrAddress: isPublicKey(fleetNameOrAddress)
 						? new PublicKey(fleetNameOrAddress)
 						: fleetNameOrAddress,
@@ -230,7 +244,7 @@ const main = async () => {
 				const parsedItems = z.array(unloadResourceDecoder).parse(items);
 
 				return runUnloadCargo({
-					...globalOpts,
+					globalOpts,
 					fleetNameOrAddress: isPublicKey(fleetNameOrAddress)
 						? new PublicKey(fleetNameOrAddress)
 						: fleetNameOrAddress,
@@ -247,7 +261,7 @@ const main = async () => {
 			);
 
 			return runDock({
-				...globalOpts,
+				globalOpts,
 				fleetNameOrAddress: isPublicKey(fleetNameOrAddress)
 					? new PublicKey(fleetNameOrAddress)
 					: fleetNameOrAddress,
@@ -262,7 +276,7 @@ const main = async () => {
 			);
 
 			return runUndock({
-				...globalOpts,
+				globalOpts,
 				fleetNameOrAddress: isPublicKey(fleetNameOrAddress)
 					? new PublicKey(fleetNameOrAddress)
 					: fleetNameOrAddress,
@@ -283,7 +297,7 @@ const main = async () => {
 			);
 
 			return runStartMining({
-				...globalOpts,
+				globalOpts,
 				resourceMint,
 				fleetNameOrAddress: isPublicKey(fleetNameOrAddress)
 					? new PublicKey(fleetNameOrAddress)
@@ -305,7 +319,7 @@ const main = async () => {
 			);
 
 			return runStopMining({
-				...globalOpts,
+				globalOpts,
 				resourceMint,
 				fleetNameOrAddress: isPublicKey(fleetNameOrAddress)
 					? new PublicKey(fleetNameOrAddress)
@@ -334,7 +348,7 @@ const main = async () => {
 			});
 
 			return runWarp({
-				...globalOpts,
+				globalOpts,
 				targetSector,
 				fleetNameOrAddress: isPublicKey(fleetNameOrAddress)
 					? new PublicKey(fleetNameOrAddress)
@@ -363,7 +377,7 @@ const main = async () => {
 			});
 
 			return runSubwarp({
-				...globalOpts,
+				globalOpts,
 				targetSector: targetSector.map(Number) as [number, number],
 				fleetNameOrAddress: isPublicKey(fleetNameOrAddress)
 					? new PublicKey(fleetNameOrAddress)

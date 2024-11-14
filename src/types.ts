@@ -14,11 +14,15 @@ export type GlobalOptionsWithSupabase = Omit<
 	supabaseArgs?: SupabaseOptions;
 };
 
+export type FeeMode = "low" | "medium" | "high";
+
 export type GlobalOptions = {
 	keypair: Keypair;
 	owner: PublicKey;
 	playerProfile: PublicKey;
 	rpcUrl: string;
+	feeMode: FeeMode;
+	hellomoonRpc?: string;
 	supabaseKey?: string;
 	supabaseUrl?: string;
 	accessToken?: string;
