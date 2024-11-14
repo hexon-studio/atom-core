@@ -6,7 +6,7 @@ import type {
 	TransactionReturn,
 } from "@staratlas/data-source";
 import { ProfileVault } from "@staratlas/profile-vault";
-import { Data, Effect, Array as EffectArray } from "effect";
+import { Data, Effect, Array as EffectArray, Option } from "effect";
 import type { Result } from "neverthrow";
 import { type GameNotInitializedError, getGameContext } from "..";
 import { GameService } from "../..";
@@ -19,6 +19,7 @@ import {
 	type CreateProviderError,
 	SolanaService,
 } from "../../../SolanaService";
+import { getEstimatedTransactionFee } from "./getEstimatedTransactionFee";
 
 export class BuildAndSignTransactionWithAtlasPrimeError extends Data.TaggedError(
 	"BuildAndSignTransactionWithAtlasPrimeError",
@@ -57,12 +58,13 @@ export const buildAndSignTransactionWithAtlasPrime = (
 		Effect.flatMap(([solanaService, gameService]) =>
 			Effect.all([
 				SagePrograms,
+				solanaService.hellomoon,
 				solanaService.secondaryAnchorProvider,
 				gameService.signer,
 				getGameContext(),
 			]),
 		),
-		Effect.flatMap(([programs, provider, signer, context]) =>
+		Effect.flatMap(([programs, hellomoon, provider, signer, context]) =>
 			Effect.tryPromise({
 				try: async () => {
 					const [vaultAuthority] = ProfileVault.findVaultSigner(
@@ -81,6 +83,21 @@ export const buildAndSignTransactionWithAtlasPrime = (
 						connection: provider.connection,
 						commitment: "confirmed",
 						lookupTables: lookupTable.value ? [lookupTable.value] : undefined,
+						getFee: hellomoon.pipe(
+							Option.map(
+								({ rpc: hellomoonRpcUrl, feeMode }) =>
+									async (writableAccounts: PublicKey[]) => {
+										const { microLamports } = await getEstimatedTransactionFee({
+											feeMode,
+											hellomoonRpcUrl,
+											writableAccounts,
+										});
+
+										return microLamports;
+									},
+							),
+							Option.getOrUndefined,
+						),
 						postArgs: {
 							vault: {
 								funderVaultAuthority: vaultAuthority,

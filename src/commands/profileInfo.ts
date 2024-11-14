@@ -4,21 +4,10 @@ import { getGameContext } from "../core/services/GameService/utils";
 import type { GlobalOptionsWithSupabase } from "../types";
 import { createMainLiveService } from "../utils/createLiveService";
 
-export const runProfileInfo = async ({
-	keypair,
-	rpcUrl,
-	secondaryRpcUrl,
-	owner,
-	playerProfile,
-	supabaseArgs,
-	verbose,
-}: GlobalOptionsWithSupabase) => {
-	const mainServiceLive = createMainLiveService({
-		keypair,
-		rpcUrl,
-		secondaryRpcUrl,
-		supabaseArgs,
-	});
+export const runProfileInfo = async (globalOpts: GlobalOptionsWithSupabase) => {
+	const { keypair, owner, playerProfile, verbose } = globalOpts;
+
+	const mainServiceLive = createMainLiveService(globalOpts);
 
 	const program = GameService.pipe(
 		Effect.tap((service) =>

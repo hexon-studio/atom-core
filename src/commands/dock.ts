@@ -6,25 +6,15 @@ import type { GlobalOptionsWithSupabase } from "../types";
 import { createMainLiveService } from "../utils/createLiveService";
 import { runBaseCommand } from "./baseCommand";
 
-type Param = GlobalOptionsWithSupabase & {
+type Param = {
 	fleetNameOrAddress: string | PublicKey;
+	globalOpts: GlobalOptionsWithSupabase;
 };
 
-export const runDock = async ({
-	fleetNameOrAddress,
-	keypair,
-	owner,
-	playerProfile,
-	rpcUrl,
-	secondaryRpcUrl,
-	supabaseArgs,
-}: Param) => {
-	const mainServiceLive = createMainLiveService({
-		keypair,
-		rpcUrl,
-		secondaryRpcUrl,
-		supabaseArgs,
-	});
+export const runDock = async ({ fleetNameOrAddress, globalOpts }: Param) => {
+	const { owner, playerProfile, keypair } = globalOpts;
+
+	const mainServiceLive = createMainLiveService(globalOpts);
 
 	const program = GameService.pipe(
 		Effect.tap((service) =>
