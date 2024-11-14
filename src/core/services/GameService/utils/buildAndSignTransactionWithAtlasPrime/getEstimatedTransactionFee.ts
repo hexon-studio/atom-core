@@ -46,12 +46,12 @@ export const getEstimatedTransactionFee = async ({
 				}>,
 		);
 
-		console.log("Get fee response", response.result.percentileToFee);
-
 		const percentileSettings = percentilesSettings[feeMode];
 
 		const microLamports =
 			response.result.percentileToFee[percentileSettings.name];
+
+		console.log("Using estimated fee", microLamports, "microlamports");
 
 		return {
 			microLamports: Math.min(
