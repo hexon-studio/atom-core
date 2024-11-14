@@ -39,6 +39,7 @@ const createMockedSolanaService = (signer: Keypair) =>
 	Layer.succeed(
 		SolanaService,
 		SolanaService.of({
+			hellomoon: Effect.succeed(Option.none()),
 			anchorProvider: Effect.succeed(AnchorProvider.env()),
 			signer,
 		}),
