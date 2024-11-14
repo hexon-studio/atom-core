@@ -21,8 +21,9 @@ export type GlobalOptions = {
 	owner: PublicKey;
 	playerProfile: PublicKey;
 	rpcUrl: string;
-	feeMode: FeeMode;
+	secondaryRpcUrl?: string;
 	hellomoonRpc?: string;
+	feeMode: FeeMode;
 	supabaseKey?: string;
 	supabaseUrl?: string;
 	accessToken?: string;

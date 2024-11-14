@@ -10,9 +10,9 @@ export const creactOptionsWithSupabase = (
 		supabaseArgs:
 			supabaseKey && supabaseUrl && taskId
 				? {
+						accessToken,
 						supabaseKey,
 						supabaseUrl,
-						accessToken,
 						taskId,
 					}
 				: undefined,

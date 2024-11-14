@@ -40,6 +40,7 @@ const createMockedSolanaService = (signer: Keypair) =>
 		SolanaService,
 		SolanaService.of({
 			hellomoon: Effect.succeed(Option.none()),
+			secondaryAnchorProvider: Effect.succeed(AnchorProvider.env()),
 			anchorProvider: Effect.succeed(AnchorProvider.env()),
 			signer,
 		}),

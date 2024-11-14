@@ -59,7 +59,7 @@ export const buildAndSignTransactionWithAtlasPrime = (
 			Effect.all([
 				SagePrograms,
 				solanaService.hellomoon,
-				solanaService.anchorProvider,
+				solanaService.secondaryAnchorProvider,
 				gameService.signer,
 				getGameContext(),
 			]),

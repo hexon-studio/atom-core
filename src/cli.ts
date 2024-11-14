@@ -60,9 +60,17 @@ const main = async () => {
 				.makeOptionMandatory(true),
 		)
 		.addOption(
-			new Option("-r, --rpcUrl <rpcUrl>", "The solona rpc url")
+			new Option("-r, --rpcUrl <rpcUrl>", "The primary solona rpc url")
 				.env("ATOM_RPC_URL")
 				.makeOptionMandatory(true),
+		)
+		.addOption(
+			new Option(
+				"-sr, --secondaryRpcUrl <rpcUrl>",
+				"The secondary solona rpc url (used to build and send tx only)",
+			)
+				.env("ATOM_SECONDARY_RPC_URL")
+				.makeOptionMandatory(false),
 		)
 		.addOption(
 			new Option(
