@@ -1,5 +1,5 @@
 import { getAssociatedTokenAddressSync } from "@solana/spl-token";
-import { PublicKey } from "@solana/web3.js";
+import { type Connection, PublicKey } from "@solana/web3.js";
 import { AtlasPrimeTransactionBuilder } from "@staratlas/atlas-prime";
 import type {
 	InstructionReturn,
@@ -81,6 +81,21 @@ export const buildAndSignTransactionWithAtlasPrime = (
 						connection: provider.connection,
 						commitment: "confirmed",
 						lookupTables: lookupTable.value ? [lookupTable.value] : undefined,
+						getFee: async (
+							writableAccounts: PublicKey[],
+							connection: Connection,
+						) => {
+							try {
+								const fees = await connection.getRecentPrioritizationFees({
+									lockedWritableAccounts: writableAccounts,
+								});
+
+								return Math.max(...fees.map((fee) => fee.prioritizationFee));
+							} catch {
+								// Default value 1 micro-lamports per unit
+								return 1;
+							}
+						},
 						postArgs: {
 							vault: {
 								funderVaultAuthority: vaultAuthority,
