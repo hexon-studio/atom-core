@@ -1,15 +1,13 @@
 import { getAssociatedTokenAddressSync } from "@solana/spl-token";
 import { ProfileVault } from "@staratlas/profile-vault";
-import { Console, Effect, Option, unsafeCoerce } from "effect";
+import { Console, Effect, unsafeCoerce } from "effect";
+import { constVoid, constant } from "effect/Function";
 import { MIN_ATLAS_QTY, tokenMints } from "../constants/tokens";
 import { SagePrograms } from "../core/programs";
 import { AtlasNotEnoughError } from "../core/services/GameService/methods/initGame";
 import { getGameContext } from "../core/services/GameService/utils";
 import { SolanaService } from "../core/services/SolanaService";
-import {
-	updateCreditsIfDatabaseServiceAvailable,
-	updateTaskIfDatabaseServiceAvailable,
-} from "../core/utils/updateTaskIfDatabaseServiceAvailable";
+import { fireWebhookEvent } from "../utils/fireWebhookEvent";
 
 const checkAtlasBalance = () =>
 	Effect.gen(function* () {
@@ -38,7 +36,7 @@ const checkAtlasBalance = () =>
 		).pipe(
 			Effect.tapError((error) => Console.log("Cannot get atlas amount", error)),
 			Effect.map((resp) => resp.value.uiAmount ?? 0),
-			Effect.orElseSucceed(() => -1),
+			Effect.orElseSucceed(constant(-1)),
 		);
 
 		if (
@@ -62,35 +60,44 @@ export const runBaseCommand = <E, R>({
 		signature?: string;
 	};
 }) =>
-	updateTaskIfDatabaseServiceAvailable({ newStatus: "running" }).pipe(
+	fireWebhookEvent({ type: "start" }).pipe(
 		Effect.flatMap(checkAtlasBalance),
+		Effect.tap((balance) =>
+			fireWebhookEvent({ type: "atlas-balance", payload: { balance } }),
+		),
 		Effect.flatMap(self),
 		Effect.tapBoth({
 			onFailure: (error) => {
 				const { message, tag, signature } = normalizeError(unsafeCoerce(error));
 
-				return updateTaskIfDatabaseServiceAvailable({
-					newStatus: "error",
-					tag,
-					message,
-					signatures: signature ? [signature] : [],
+				return fireWebhookEvent({
+					type: "error",
+					payload: {
+						tag,
+						message,
+						signatures: signature ? [signature] : [],
+					},
 				});
 			},
 			onSuccess: (signatures) =>
 				getGameContext().pipe(
 					Effect.tap((context) =>
-						Option.fromNullable(context.fees.feeAddress).pipe(
-							Option.match({
-								onNone: () =>
-									updateCreditsIfDatabaseServiceAvailable(context.owner),
-								onSome: () => Effect.succeed(null),
-							}),
+						Effect.fromNullable(context.fees.feeAddress).pipe(
+							Effect.orElseSucceed(constVoid),
+							Effect.flatMap(() =>
+								fireWebhookEvent({
+									type: "remove-credit",
+									payload: { owner: context.owner.toString() },
+								}),
+							),
 						),
 					),
 					Effect.tap(() =>
-						updateTaskIfDatabaseServiceAvailable({
-							newStatus: "success",
-							signatures,
+						fireWebhookEvent({
+							type: "success",
+							payload: {
+								signatures,
+							},
 						}),
 					),
 				),

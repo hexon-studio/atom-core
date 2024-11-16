@@ -1,10 +1,10 @@
 import { Cause, Console, Effect, Exit, Option } from "effect";
 import { GameService } from "../core/services/GameService";
 import { getGameContext } from "../core/services/GameService/utils";
-import type { GlobalOptionsWithSupabase } from "../types";
+import type { GlobalOptionsWithWebhook } from "../types";
 import { createMainLiveService } from "../utils/createLiveService";
 
-export const runProfileInfo = async (globalOpts: GlobalOptionsWithSupabase) => {
+export const runProfileInfo = async (globalOpts: GlobalOptionsWithWebhook) => {
 	const { keypair, owner, playerProfile, verbose } = globalOpts;
 
 	const mainServiceLive = createMainLiveService(globalOpts);

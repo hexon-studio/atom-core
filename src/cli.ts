@@ -31,7 +31,7 @@ import {
 } from "./decoders";
 import { runLoadCargo } from "./main";
 import type { GlobalOptions } from "./types";
-import { creactOptionsWithSupabase } from "./utils/creactOptionsWithSupabase";
+import { creactOptionsWithWebhook } from "./utils/creactOptionsWithWebhook";
 import { parseSecretKey } from "./utils/keypair";
 import { isPublicKey, parsePublicKey } from "./utils/public-key";
 
@@ -96,24 +96,13 @@ const main = async () => {
 				.makeOptionMandatory(true),
 		)
 		.addOption(
-			new Option(
-				"-su, --supabaseUrl <supabaseUrl>",
-				"The supabase database url",
-			)
-				.env("ATOM_SUPABASE_URL")
+			new Option("-w, --webhookUrl <webhookUrl>", "The webhook url")
+				.env("ATOM_WEBHOOK_URL")
 				.makeOptionMandatory(false),
 		)
 		.addOption(
-			new Option("-sk, --supabaseKey <supabaseKey>", "The supabase anon key")
-				.env("ATOM_SUPABASE_KEY")
-				.makeOptionMandatory(false),
-		)
-		.addOption(
-			new Option(
-				"-at, --accessToken <accessToken>",
-				"The supabase account access token",
-			)
-				.env("ATOM_SUPABASE_ACCESS_TOKEN")
+			new Option("-ws, --webhookSecret <webhookSecret>", "The webhook secret")
+				.env("ATOM_WEBHOOK_SECRET")
 				.makeOptionMandatory(false),
 		)
 		.addOption(
@@ -127,7 +116,7 @@ const main = async () => {
 	program
 		.command("fleet-info <fleetNameOrAddress>")
 		.action(async (fleetNameOrAddress: string) => {
-			const globalOpts = creactOptionsWithSupabase(
+			const globalOpts = creactOptionsWithWebhook(
 				program.opts<GlobalOptions>(),
 			);
 
@@ -140,7 +129,7 @@ const main = async () => {
 		});
 
 	program.command("profile-info").action(async () => {
-		const globalOpts = creactOptionsWithSupabase(program.opts<GlobalOptions>());
+		const globalOpts = creactOptionsWithWebhook(program.opts<GlobalOptions>());
 
 		return runProfileInfo(globalOpts);
 	});
@@ -171,7 +160,7 @@ const main = async () => {
 			) => {
 				const resources = options.resources ?? [];
 
-				const globalOpts = creactOptionsWithSupabase(
+				const globalOpts = creactOptionsWithWebhook(
 					program.opts<GlobalOptions>(),
 				);
 
@@ -228,7 +217,7 @@ const main = async () => {
 			) => {
 				const resources = options.resources ?? [];
 
-				const globalOpts = creactOptionsWithSupabase(
+				const globalOpts = creactOptionsWithWebhook(
 					program.opts<GlobalOptions>(),
 				);
 
@@ -264,7 +253,7 @@ const main = async () => {
 	program
 		.command("dock <fleetNameOrAddress>")
 		.action(async (fleetNameOrAddress: string) => {
-			const globalOpts = creactOptionsWithSupabase(
+			const globalOpts = creactOptionsWithWebhook(
 				program.opts<GlobalOptions>(),
 			);
 
@@ -279,7 +268,7 @@ const main = async () => {
 	program
 		.command("undock <fleetNameOrAddress>")
 		.action(async (fleetNameOrAddress: string) => {
-			const globalOpts = creactOptionsWithSupabase(
+			const globalOpts = creactOptionsWithWebhook(
 				program.opts<GlobalOptions>(),
 			);
 
@@ -300,7 +289,7 @@ const main = async () => {
 			parsePublicKey,
 		)
 		.action(async (fleetNameOrAddress: string, resourceMint: PublicKey) => {
-			const globalOpts = creactOptionsWithSupabase(
+			const globalOpts = creactOptionsWithWebhook(
 				program.opts<GlobalOptions>(),
 			);
 
@@ -322,7 +311,7 @@ const main = async () => {
 			parsePublicKey,
 		)
 		.action(async (fleetNameOrAddress: string, resourceMint: PublicKey) => {
-			const globalOpts = creactOptionsWithSupabase(
+			const globalOpts = creactOptionsWithWebhook(
 				program.opts<GlobalOptions>(),
 			);
 
@@ -340,7 +329,7 @@ const main = async () => {
 		.argument("<fleetNameOrAddress>", "The fleet to stop mining")
 		.argument("<targetSector>", "Rhe coordinates of the target sector")
 		.action(async (fleetNameOrAddress: string, targetSectorArg: string) => {
-			const globalOpts = creactOptionsWithSupabase(
+			const globalOpts = creactOptionsWithWebhook(
 				program.opts<GlobalOptions>(),
 			);
 
@@ -369,7 +358,7 @@ const main = async () => {
 		.argument("<fleetNameOrAddress>", "The fleet to stop mining")
 		.argument("<targetSector>", "Rhe coordinates of the target sector")
 		.action(async (fleetNameOrAddress: string, targetSectorArg: string) => {
-			const globalOpts = creactOptionsWithSupabase(
+			const globalOpts = creactOptionsWithWebhook(
 				program.opts<GlobalOptions>(),
 			);
 

@@ -1,7 +1,7 @@
 import { Connection, type Keypair } from "@solana/web3.js";
 import { AnchorProvider, Wallet } from "@staratlas/anchor";
 import { Context, Data, Effect, Layer, Option } from "effect";
-import type { FeeMode, GlobalOptionsWithSupabase } from "../../../types";
+import type { FeeMode, GlobalOptionsWithWebhook } from "../../../types";
 
 export class SolanaService extends Context.Tag("app/SolanaService")<
 	SolanaService,
@@ -46,7 +46,7 @@ export const createSolanaServiceLive = ({
 	secondaryRpcUrl,
 	hellomoonRpc,
 	feeMode,
-}: GlobalOptionsWithSupabase) =>
+}: GlobalOptionsWithWebhook) =>
 	Layer.succeed(
 		SolanaService,
 		SolanaService.of({

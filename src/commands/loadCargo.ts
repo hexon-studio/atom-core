@@ -3,14 +3,14 @@ import { Cause, Console, Effect, Exit, Option } from "effect";
 import { loadCargo } from "../core/actions/loadCargo";
 import { GameService } from "../core/services/GameService";
 import type { LoadResourceInput } from "../decoders";
-import type { GlobalOptionsWithSupabase } from "../types";
+import type { GlobalOptionsWithWebhook } from "../types";
 import { createMainLiveService } from "../utils/createLiveService";
 import { runBaseCommand } from "./baseCommand";
 
 type Param = {
 	fleetNameOrAddress: string | PublicKey;
 	items: Array<LoadResourceInput>;
-	globalOpts: GlobalOptionsWithSupabase;
+	globalOpts: GlobalOptionsWithWebhook;
 };
 
 export const runLoadCargo = async ({
