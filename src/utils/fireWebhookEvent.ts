@@ -7,7 +7,10 @@ import {
 
 export const fireWebhookEvent = (param: WebhookEvent) =>
 	Effect.serviceOptional(WebhookService).pipe(
-		Effect.tapError(() => Console.log("WebhookService not found, skipping")),
+		Effect.tapBoth({
+			onFailure: () => Console.log("WebhookService not found, skipping"),
+			onSuccess: () => Console.log(`Firing ${param.type} event`),
+		}),
 		Effect.flatMap((service) => service.fireWebhookEvent(param)),
 		Effect.orElseSucceed(constNull),
 	);

@@ -37,27 +37,30 @@ export class FireWebhookEventError extends Data.TaggedError(
 const fireWebhookEvent =
 	({ taskId, webhookSecret, webhookUrl }: WebhookOptions) =>
 	(event: WebhookEvent) =>
-		Effect.tryPromise({
-			try: async (): Promise<{ success: boolean }> => {
-				const response = await fetch(webhookUrl, {
-					method: "POST",
-					headers: {
-						"Content-Type": "application/json",
-						Authorization: webhookSecret,
-					},
-					body: JSON.stringify({ ...event, taskId }),
-				});
+		Effect.retry(
+			Effect.tryPromise({
+				try: async (): Promise<{ success: boolean }> => {
+					const response = await fetch(webhookUrl, {
+						method: "POST",
+						headers: {
+							"Content-Type": "application/json",
+							Authorization: webhookSecret,
+						},
+						body: JSON.stringify({ ...event, taskId }),
+					});
 
-				if (!response.ok) {
-					throw new Error(
-						`Fail to send webhook event: ${event.type}, status: ${response.status}`,
-					);
-				}
+					if (!response.ok) {
+						throw new Error(
+							`Fail to send webhook event: ${event.type}, status: ${response.status}`,
+						);
+					}
 
-				return response.json() as Promise<{ success: boolean }>;
-			},
-			catch: (error) => new FireWebhookEventError({ error }),
-		});
+					return response.json() as Promise<{ success: boolean }>;
+				},
+				catch: (error) => new FireWebhookEventError({ error }),
+			}),
+			{ times: 3 },
+		);
 
 export class WebhookService extends Context.Tag("app/WebhookService")<
 	WebhookService,
