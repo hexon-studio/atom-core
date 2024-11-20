@@ -68,7 +68,7 @@ export const fetchGameInfo = (): Effect.Effect<
 	GameInfo,
 	FetchGameInfoError | GameInfoDecodeError
 > => {
-	const url = "https://n8n.staratlasitalia.com/webhook/v1/initGame";
+	const url = "https://api.hexon.tools/webhook/v1/initGame";
 
 	return Effect.tryPromise({
 		try: () => fetch(url).then((res) => res.json()),
