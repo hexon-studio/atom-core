@@ -3,13 +3,13 @@ import { Cause, Console, Effect, Exit, Option } from "effect";
 import { GameService } from "../core/services/GameService";
 import { getFleetAccount } from "../core/utils/accounts";
 import { getFleetAddressByName } from "../core/utils/pdas";
-import type { GlobalOptionsWithSupabase } from "../types";
+import type { GlobalOptionsWithWebhook } from "../types";
 import { createMainLiveService } from "../utils/createLiveService";
 import { isPublicKey } from "../utils/public-key";
 
 type Param = {
 	fleetNameOrAddress: string | PublicKey;
-	globalOpts: GlobalOptionsWithSupabase;
+	globalOpts: GlobalOptionsWithWebhook;
 };
 
 export const runFleetInfo = async ({

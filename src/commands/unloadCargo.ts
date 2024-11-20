@@ -3,14 +3,14 @@ import { Cause, Console, Effect, Exit, Option } from "effect";
 import { unloadCargo } from "../core/actions/unloadCargo";
 import { GameService } from "../core/services/GameService";
 import type { UnloadResourceInput } from "../decoders";
-import type { GlobalOptionsWithSupabase } from "../types";
+import type { GlobalOptionsWithWebhook } from "../types";
 import { createMainLiveService } from "../utils/createLiveService";
 import { runBaseCommand } from "./baseCommand";
 
 type Param = {
 	fleetNameOrAddress: string | PublicKey;
 	items: Array<UnloadResourceInput>;
-	globalOpts: GlobalOptionsWithSupabase;
+	globalOpts: GlobalOptionsWithWebhook;
 };
 
 export const runUnloadCargo = async ({
@@ -18,7 +18,7 @@ export const runUnloadCargo = async ({
 	items,
 	globalOpts,
 }: Param) => {
-	const { keypair, owner, playerProfile, rpcUrl, supabaseArgs } = globalOpts;
+	const { keypair, owner, playerProfile } = globalOpts;
 
 	const mainServiceLive = createMainLiveService(globalOpts);
 

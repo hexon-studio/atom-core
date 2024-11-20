@@ -1,17 +1,14 @@
 import type { Keypair, PublicKey } from "@solana/web3.js";
 
-export type SupabaseOptions = {
-	supabaseKey: string;
-	supabaseUrl: string;
-	accessToken?: string;
-	taskId: string;
-};
+export type WebhookOptions = Required<
+	Pick<GlobalOptions, "webhookSecret" | "webhookUrl" | "taskId">
+>;
 
-export type GlobalOptionsWithSupabase = Omit<
+export type GlobalOptionsWithWebhook = Omit<
 	GlobalOptions,
-	"supabaseKey" | "supabaseUrl" | "accessToken" | "taskId"
+	"webhookSecret" | "webhookUrl" | "taskId"
 > & {
-	supabaseArgs?: SupabaseOptions;
+	webhookArgs?: WebhookOptions;
 };
 
 export type FeeMode = "low" | "medium" | "high";
@@ -24,9 +21,8 @@ export type GlobalOptions = {
 	secondaryRpcUrl?: string;
 	hellomoonRpc?: string;
 	feeMode: FeeMode;
-	supabaseKey?: string;
-	supabaseUrl?: string;
-	accessToken?: string;
+	webhookSecret?: string;
+	webhookUrl?: string;
 	taskId?: string;
 	verbose: boolean;
 };

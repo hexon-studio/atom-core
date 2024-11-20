@@ -2,14 +2,14 @@ import type { PublicKey } from "@solana/web3.js";
 import { Cause, Console, Effect, Exit, Option } from "effect";
 import { warpToSector } from "../core/actions/warpToSector";
 import { GameService } from "../core/services/GameService";
-import type { GlobalOptionsWithSupabase } from "../types";
+import type { GlobalOptionsWithWebhook } from "../types";
 import { createMainLiveService } from "../utils/createLiveService";
 import { runBaseCommand } from "./baseCommand";
 
 type Param = {
 	fleetNameOrAddress: string | PublicKey;
 	targetSector: [number, number];
-	globalOpts: GlobalOptionsWithSupabase;
+	globalOpts: GlobalOptionsWithWebhook;
 };
 
 export const runWarp = async ({
