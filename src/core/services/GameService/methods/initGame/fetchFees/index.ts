@@ -32,7 +32,7 @@ export type Fees = z.infer<typeof decoder>["data"];
 export const fetchFees = (
 	owner: PublicKey,
 ): Effect.Effect<Fees, FetchFeesError | FeesDecodeError> => {
-	const url = new URL("https://api.hexon.tools/webhook/v1/getFees");
+	const url = new URL("https://n8n.staratlasitalia.com/webhook/v1/getFees");
 
 	url.searchParams.set("pbk", owner.toString());
 
