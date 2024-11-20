@@ -1,7 +1,7 @@
 import { getAssociatedTokenAddressSync } from "@solana/spl-token";
 import { ProfileVault } from "@staratlas/profile-vault";
 import { Console, Effect, unsafeCoerce } from "effect";
-import { constVoid, constant } from "effect/Function";
+import { constant } from "effect/Function";
 import { MIN_ATLAS_QTY, tokenMints } from "../constants/tokens";
 import { SagePrograms } from "../core/programs";
 import { AtlasNotEnoughError } from "../core/services/GameService/methods/initGame";
@@ -82,21 +82,11 @@ export const runBaseCommand = <E, R>({
 			onSuccess: (signatures) =>
 				getGameContext().pipe(
 					Effect.tap((context) =>
-						Effect.fromNullable(context.fees.feeAddress).pipe(
-							Effect.orElseSucceed(constVoid),
-							Effect.flatMap(() =>
-								fireWebhookEvent({
-									type: "remove-credit",
-									payload: { owner: context.owner.toString() },
-								}),
-							),
-						),
-					),
-					Effect.tap(() =>
 						fireWebhookEvent({
 							type: "success",
 							payload: {
 								signatures,
+								removeCredit: !context.fees.feeAddress,
 							},
 						}),
 					),

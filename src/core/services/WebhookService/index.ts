@@ -1,5 +1,6 @@
 import { Context, Data, Effect, Layer } from "effect";
 import type { WebhookOptions } from "../../../types";
+import { getGameContext } from "../GameService/utils";
 
 export type WebhookEvent =
 	| {
@@ -10,12 +11,8 @@ export type WebhookEvent =
 			payload: { balance: number };
 	  }
 	| {
-			type: "remove-credit";
-			payload: { owner: string };
-	  }
-	| {
 			type: "success";
-			payload: { signatures: string[] };
+			payload: { signatures: string[]; removeCredit: boolean };
 	  }
 	| {
 			type: "error";
@@ -37,29 +34,38 @@ export class FireWebhookEventError extends Data.TaggedError(
 const fireWebhookEvent =
 	({ taskId, webhookSecret, webhookUrl }: WebhookOptions) =>
 	(event: WebhookEvent) =>
-		Effect.retry(
-			Effect.tryPromise({
-				try: async (): Promise<{ success: boolean }> => {
-					const response = await fetch(webhookUrl, {
-						method: "POST",
-						headers: {
-							"Content-Type": "application/json",
-							Authorization: webhookSecret,
+		getGameContext().pipe(
+			Effect.flatMap(({ owner, playerProfile }) =>
+				Effect.retry(
+					Effect.tryPromise({
+						try: async (): Promise<{ success: boolean }> => {
+							const response = await fetch(webhookUrl, {
+								method: "POST",
+								headers: {
+									"Content-Type": "application/json",
+									Authorization: webhookSecret,
+								},
+								body: JSON.stringify({
+									...event,
+									owner: owner.toString(),
+									playerProfile: playerProfile.key.toString(),
+									taskId,
+								}),
+							});
+
+							if (!response.ok) {
+								throw new Error(
+									`Fail to send webhook event: ${event.type}, status: ${response.status}`,
+								);
+							}
+
+							return response.json() as Promise<{ success: boolean }>;
 						},
-						body: JSON.stringify({ ...event, taskId }),
-					});
-
-					if (!response.ok) {
-						throw new Error(
-							`Fail to send webhook event: ${event.type}, status: ${response.status}`,
-						);
-					}
-
-					return response.json() as Promise<{ success: boolean }>;
-				},
-				catch: (error) => new FireWebhookEventError({ error }),
-			}),
-			{ times: 3 },
+						catch: (error) => new FireWebhookEventError({ error }),
+					}),
+					{ times: 3 },
+				),
+			),
 		);
 
 export class WebhookService extends Context.Tag("app/WebhookService")<
