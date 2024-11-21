@@ -6,7 +6,7 @@ name: Tag atom version
       - main
 
 permissions:
-  contents: read
+  contents: write
   actions: write
 
 jobs:
