@@ -86,7 +86,7 @@ export const runBaseCommand = <E, R>({
 							type: "success",
 							payload: {
 								signatures,
-								removeCredit: !context.fees.feeAddress,
+								removeCredit: !context.fees.feeAddress && signatures.length > 0,
 							},
 						}),
 					),
