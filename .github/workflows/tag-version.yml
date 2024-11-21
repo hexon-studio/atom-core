@@ -15,6 +15,9 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Setup git user
+        uses: fregante/setup-git-user@v2
+
       - uses: pnpm/action-setup@v4
         name: Install pnpm
         with:
