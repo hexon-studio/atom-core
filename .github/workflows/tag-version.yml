@@ -5,6 +5,10 @@ name: Tag atom version
     branches:
       - main
 
+permissions:
+  contents: read
+  actions: write
+
 jobs:
   tag-version:
     if: ${{ github.event.pull_request.merged }}
