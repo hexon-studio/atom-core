@@ -1,8 +1,8 @@
-name: docker-release
+name: docker-deploy
 'on':
   push:
     tags:
-      - 'v*'
+      - 'v*.*.*'
 
 jobs:
   docker-deploy:
