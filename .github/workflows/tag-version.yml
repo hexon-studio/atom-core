@@ -15,8 +15,8 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Setup git user
-        uses: fregante/setup-git-user@v2
+      - run: git config --global user.email "13602797+emberist@users.noreply.github.com"
+      - run: git config --global user.name "Emberist"
 
       - uses: pnpm/action-setup@v4
         name: Install pnpm
