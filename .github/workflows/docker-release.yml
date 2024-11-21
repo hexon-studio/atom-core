@@ -1,13 +1,11 @@
 name: docker-release
 'on':
-  pull_request:
-    types: [closed]
-    branches:
-      - main
+  push:
+    tags:
+      - 'v*.*.*'
 
 jobs:
   docker-deploy:
-    if: ${{ github.event.pull_request.merged }}
     runs-on: ubuntu-latest
     permissions:
       actions: 'read'
