@@ -1,8 +1,7 @@
 name: docker-release
 'on':
-  push:
-    tags:
-      - 'v*'
+  release:
+    types: [published]
 
 jobs:
   docker-stable-release:
