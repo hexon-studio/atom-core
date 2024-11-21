@@ -3,4 +3,3 @@
 ## Actions
 
 ![actions schema](./docs/schema.png)
-
