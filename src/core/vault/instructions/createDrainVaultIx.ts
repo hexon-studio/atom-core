@@ -25,7 +25,7 @@ export const createDrainVaultIx = (
 
 		const context = yield* getGameContext();
 
-		if (!context.fees.feeAddress) {
+		if (!context.fees?.feeAddress) {
 			return [];
 		}
 

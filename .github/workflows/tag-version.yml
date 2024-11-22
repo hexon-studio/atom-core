@@ -18,6 +18,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          persist-credentials: false
 
       - run: git config --global user.email "13602797+emberist@users.noreply.github.com"
       - run: git config --global user.name "Emberist"
