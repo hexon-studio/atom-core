@@ -1,5 +1,6 @@
 import type { PublicKey } from "@solana/web3.js";
 import { Data, Effect, Option, Ref } from "effect";
+import { constNull } from "effect/Function";
 import type { GameContext } from "../..";
 import { programIds } from "../../../../programs";
 import { getPlayerProfileAccout } from "../../../../utils/accounts";
@@ -19,10 +20,12 @@ export const initGame = ({
 	playerProfile: playerProfileAddress,
 	signerAddress,
 	contextRef,
+	feeUrl,
 }: {
 	owner: PublicKey;
 	playerProfile: PublicKey;
 	signerAddress: PublicKey;
+	feeUrl?: string;
 	contextRef: Ref.Ref<Option.Option<GameContext>>;
 }) =>
 	Effect.gen(function* () {
@@ -36,7 +39,10 @@ export const initGame = ({
 			[
 				getPlayerProfileAccout(playerProfileAddress),
 				fetchGameInfoOrAccounts(),
-				fetchFees(owner),
+				Effect.fromNullable(feeUrl).pipe(
+					Effect.flatMap((feeUrl) => fetchFees({ feeUrl, owner })),
+					Effect.orElseSucceed(constNull),
+				),
 			],
 			{ concurrency: "unbounded" },
 		);

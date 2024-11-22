@@ -36,7 +36,7 @@ export interface GameContext {
 		points: number;
 		profileVault: number;
 	};
-	fees: Fees;
+	fees: Fees | null;
 }
 
 export class GameService extends Context.Tag("app/GameService")<

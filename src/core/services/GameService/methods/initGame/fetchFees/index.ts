@@ -29,15 +29,21 @@ const decoder = z.object({
 
 export type Fees = z.infer<typeof decoder>["data"];
 
-export const fetchFees = (
-	owner: PublicKey,
-): Effect.Effect<Fees, FetchFeesError | FeesDecodeError> => {
-	const url = new URL("https://api.hexon.tools/webhook/v1/getFees");
+export const fetchFees = ({
+	feeUrl,
+	owner,
+}: { feeUrl: string; owner: PublicKey }): Effect.Effect<
+	Fees,
+	FetchFeesError | FeesDecodeError
+> =>
+	Effect.tryPromise({
+		try: () => {
+			const url = new URL(feeUrl);
 
-	url.searchParams.set("pbk", owner.toString());
+			url.searchParams.set("pbk", owner.toString());
 
-	return Effect.tryPromise({
-		try: () => fetch(url).then((res) => res.json()),
+			return fetch(url).then((res) => res.json());
+		},
 		catch: (error) => new FetchFeesError({ error }),
 	}).pipe(
 		Effect.map(decoder.safeParse),
@@ -48,4 +54,3 @@ export const fetchFees = (
 		),
 		Effect.map(({ data }) => data),
 	);
-};

@@ -106,6 +106,11 @@ const main = async () => {
 				.makeOptionMandatory(false),
 		)
 		.addOption(
+			new Option("-fu, --feeUrl <feeUrl>", "The fee url").makeOptionMandatory(
+				false,
+			),
+		)
+		.addOption(
 			new Option(
 				"-t, --taskId <taskId>",
 				"The task to update",
