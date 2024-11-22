@@ -1,5 +1,7 @@
 
 
+## [1.2.1](https://github.com/hexon-studio/atom-core/compare/v1.2.0...v1.2.1) (2024-11-22)
+
 # [1.2.0](https://github.com/hexon-studio/atom-core/compare/v1.1.6...v1.2.0) (2024-11-22)
 
 
