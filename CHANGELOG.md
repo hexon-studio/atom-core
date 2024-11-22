@@ -1,5 +1,13 @@
 
 
+# [1.2.0](https://github.com/hexon-studio/atom-core/compare/v1.1.6...v1.2.0) (2024-11-22)
+
+
+### Features
+
+* add fee url ([5670ec8](https://github.com/hexon-studio/atom-core/commit/5670ec86557422e9fbf66411c79a4152cad49b1d))
+* add pat checkout token ([4785c74](https://github.com/hexon-studio/atom-core/commit/4785c741a15f0c1e13caa33bc75fdaffc2be41cf))
+
 ## [1.1.6](https://github.com/hexon-studio/atom-core/compare/v1.1.5...v1.1.6) (2024-11-21)
 
 ## [1.1.5](https://github.com/hexon-studio/atom-core/compare/v1.1.4...v1.1.5) (2024-11-21)
