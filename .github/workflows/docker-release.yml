@@ -47,7 +47,10 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           push: true
-          tags: ${{ secrets.DOCKER_HUB_USERNAME }}/atom-core:${{ github.sha }},${{ secrets.DOCKER_HUB_USERNAME }}/atom-core:latest
+          tags: |
+            ${{ secrets.DOCKER_HUB_USERNAME }}/atom-core:${{ github.sha }}
+            ${{ secrets.DOCKER_HUB_USERNAME }}/atom-core:${{ github.ref_name }}
+            ${{ secrets.DOCKER_HUB_USERNAME }}/atom-core:latest
           platforms: linux/amd64,linux/arm64
 
       - name: Image digest
