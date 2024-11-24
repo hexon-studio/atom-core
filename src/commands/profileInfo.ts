@@ -5,7 +5,7 @@ import type { GlobalOptionsWithWebhook } from "../types";
 import { createMainLiveService } from "../utils/createLiveService";
 
 export const runProfileInfo = async (globalOpts: GlobalOptionsWithWebhook) => {
-	const { keypair, owner, playerProfile, verbose } = globalOpts;
+	const { keypair, owner, playerProfile, verbose, feeUrl } = globalOpts;
 
 	const mainServiceLive = createMainLiveService(globalOpts);
 
@@ -16,6 +16,7 @@ export const runProfileInfo = async (globalOpts: GlobalOptionsWithWebhook) => {
 				playerProfile,
 				signerAddress: keypair.publicKey,
 				contextRef: service.context,
+				feeUrl,
 			}),
 		),
 		Effect.tap(() => verbose && Console.log("Game initialized.")),

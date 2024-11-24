@@ -18,7 +18,7 @@ export const runLoadCargo = async ({
 	items,
 	globalOpts,
 }: Param) => {
-	const { keypair, owner, playerProfile } = globalOpts;
+	const { keypair, owner, playerProfile, feeUrl } = globalOpts;
 
 	const mainServiceLive = createMainLiveService(globalOpts);
 
@@ -29,6 +29,7 @@ export const runLoadCargo = async ({
 				playerProfile,
 				signerAddress: keypair.publicKey,
 				contextRef: service.context,
+				feeUrl,
 			}),
 		),
 		Effect.tap(() => Console.log("Game initialized.")),

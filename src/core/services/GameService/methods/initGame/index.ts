@@ -39,10 +39,7 @@ export const initGame = ({
 			[
 				getPlayerProfileAccout(playerProfileAddress),
 				fetchGameInfoOrAccounts(),
-				Effect.fromNullable(feeUrl).pipe(
-					Effect.flatMap((feeUrl) => fetchFees({ feeUrl, owner })),
-					Effect.orElseSucceed(constNull),
-				),
+				feeUrl ? fetchFees({ feeUrl, owner }) : Effect.sync(constNull),
 			],
 			{ concurrency: "unbounded" },
 		);
