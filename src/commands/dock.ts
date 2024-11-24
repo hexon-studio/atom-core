@@ -12,7 +12,7 @@ type Param = {
 };
 
 export const runDock = async ({ fleetNameOrAddress, globalOpts }: Param) => {
-	const { owner, playerProfile, keypair } = globalOpts;
+	const { owner, playerProfile, keypair, feeUrl } = globalOpts;
 
 	const mainServiceLive = createMainLiveService(globalOpts);
 
@@ -23,6 +23,7 @@ export const runDock = async ({ fleetNameOrAddress, globalOpts }: Param) => {
 				playerProfile,
 				signerAddress: keypair.publicKey,
 				contextRef: service.context,
+				feeUrl,
 			}),
 		),
 		Effect.tap(() => Console.log("Game initialized.")),

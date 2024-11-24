@@ -16,7 +16,7 @@ export const runFleetInfo = async ({
 	fleetNameOrAddress,
 	globalOpts,
 }: Param) => {
-	const { keypair, owner, playerProfile, verbose } = globalOpts;
+	const { keypair, owner, playerProfile, verbose, feeUrl } = globalOpts;
 
 	const mainServiceLive = createMainLiveService(globalOpts);
 
@@ -27,6 +27,7 @@ export const runFleetInfo = async ({
 				playerProfile,
 				signerAddress: keypair.publicKey,
 				contextRef: service.context,
+				feeUrl,
 			}),
 		),
 		Effect.tap(() => verbose && Console.log("Game initialized.")),
