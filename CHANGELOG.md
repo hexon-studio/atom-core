@@ -1,5 +1,12 @@
 
 
+## [1.2.2](https://github.com/hexon-studio/atom-core/compare/v1.2.1...v1.2.2) (2024-11-24)
+
+
+### Bug Fixes
+
+* missing passing feeUrl on initGame fn ([2b261eb](https://github.com/hexon-studio/atom-core/commit/2b261ebc996485d85a4960f7485c03cfef87dfb0))
+
 ## [1.2.1](https://github.com/hexon-studio/atom-core/compare/v1.2.0...v1.2.1) (2024-11-22)
 
 # [1.2.0](https://github.com/hexon-studio/atom-core/compare/v1.1.6...v1.2.0) (2024-11-22)
