@@ -10,7 +10,6 @@ import {
 	getCargoTypeAddress,
 	getProfileFactionAddress,
 } from "../../utils/pdas";
-import { FleetInTargetSectorError } from "../errors";
 import { getCurrentFleetSectorCoordinates } from "../utils/getCurrentFleetSectorCoordinates";
 import { createMovementHandlerIx } from "./createMovementHandlerIx";
 
@@ -31,7 +30,7 @@ export const createWarpToCoordinateIx = ({
 			actualFleetSectorX.eq(targetSectorX) &&
 			actualFleetSectorY.eq(targetSectorY)
 		) {
-			return yield* Effect.fail(new FleetInTargetSectorError());
+			return [];
 		}
 
 		const programs = yield* SagePrograms;
