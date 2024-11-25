@@ -1,5 +1,12 @@
 
 
+# [1.3.0](https://github.com/hexon-studio/atom-core/compare/v1.2.3...v1.3.0) (2024-11-25)
+
+
+### Features
+
+* remove FleetInTargetSectorError ([ff4637d](https://github.com/hexon-studio/atom-core/commit/ff4637df293f29eefb920a311168ffb63fe1fd64))
+
 ## [1.2.3](https://github.com/hexon-studio/atom-core/compare/v1.2.2...v1.2.3) (2024-11-25)
 
 
