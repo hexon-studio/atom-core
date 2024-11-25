@@ -1,5 +1,12 @@
 
 
+## [1.2.3](https://github.com/hexon-studio/atom-core/compare/v1.2.2...v1.2.3) (2024-11-25)
+
+
+### Bug Fixes
+
+* add helius priority fees ([0b311ef](https://github.com/hexon-studio/atom-core/commit/0b311ef0a28ba63d4d05ed98fae493e49d8a9bae))
+
 ## [1.2.2](https://github.com/hexon-studio/atom-core/compare/v1.2.1...v1.2.2) (2024-11-24)
 
 
