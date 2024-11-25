@@ -9,7 +9,7 @@ export class SolanaService extends Context.Tag("app/SolanaService")<
 		signer: Keypair;
 		anchorProvider: Effect.Effect<AnchorProvider, CreateProviderError>;
 		secondaryAnchorProvider: Effect.Effect<AnchorProvider, CreateProviderError>;
-		hellomoon: Effect.Effect<Option.Option<{ rpc: string; feeMode: FeeMode }>>;
+		helius: Effect.Effect<Option.Option<{ rpc: string; feeMode: FeeMode }>>;
 	}
 >() {}
 
@@ -44,7 +44,7 @@ export const createSolanaServiceLive = ({
 	keypair,
 	rpcUrl,
 	secondaryRpcUrl,
-	hellomoonRpc,
+	heliusRpcUrl,
 	feeMode,
 }: GlobalOptionsWithWebhook) =>
 	Layer.succeed(
@@ -59,7 +59,7 @@ export const createSolanaServiceLive = ({
 						createAnchorProvider({ rpcUrl: secondaryRpcUrl, keypair }),
 				}),
 			),
-			hellomoon: Effect.fromNullable(hellomoonRpc).pipe(
+			helius: Effect.fromNullable(heliusRpcUrl).pipe(
 				Effect.map((rpc) => ({ rpc, feeMode })),
 				Effect.option,
 			),

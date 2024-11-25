@@ -31,7 +31,7 @@ import {
 } from "./decoders";
 import { runLoadCargo } from "./main";
 import type { GlobalOptions } from "./types";
-import { creactOptionsWithWebhook } from "./utils/creactOptionsWithWebhook";
+import { createOptionsWithWebhook } from "./utils/creactOptionsWithWebhook";
 import { parseSecretKey } from "./utils/keypair";
 import { isPublicKey, parsePublicKey } from "./utils/public-key";
 
@@ -74,14 +74,14 @@ const main = async () => {
 		)
 		.addOption(
 			new Option(
-				"-hr, --hellomoonRpc <rpcUrl>",
-				"Hellomoon rpc used to calculate fees",
+				"-hr, --heliusRpcUrl <heliusRpc>",
+				"Helius rpc url (used to calculate priority fees)",
 			)
-				.env("ATOM_HELLOMOON_RPC_URL")
+				.env("ATOM_HELIUS_RPC_URL")
 				.makeOptionMandatory(false),
 		)
 		.addOption(
-			new Option("--feeMode <feeMode>", "Hellomoon rpc used to calculate fees")
+			new Option("--feeMode <feeMode>", "Helius rpc used to calculate fees")
 				.choices(["low", "medium", "high"])
 				.default("low")
 				.makeOptionMandatory(false),
@@ -121,7 +121,7 @@ const main = async () => {
 	program
 		.command("fleet-info <fleetNameOrAddress>")
 		.action(async (fleetNameOrAddress: string) => {
-			const globalOpts = creactOptionsWithWebhook(
+			const globalOpts = createOptionsWithWebhook(
 				program.opts<GlobalOptions>(),
 			);
 
@@ -134,7 +134,7 @@ const main = async () => {
 		});
 
 	program.command("profile-info").action(async () => {
-		const globalOpts = creactOptionsWithWebhook(program.opts<GlobalOptions>());
+		const globalOpts = createOptionsWithWebhook(program.opts<GlobalOptions>());
 
 		return runProfileInfo(globalOpts);
 	});
@@ -165,7 +165,7 @@ const main = async () => {
 			) => {
 				const resources = options.resources ?? [];
 
-				const globalOpts = creactOptionsWithWebhook(
+				const globalOpts = createOptionsWithWebhook(
 					program.opts<GlobalOptions>(),
 				);
 
@@ -222,7 +222,7 @@ const main = async () => {
 			) => {
 				const resources = options.resources ?? [];
 
-				const globalOpts = creactOptionsWithWebhook(
+				const globalOpts = createOptionsWithWebhook(
 					program.opts<GlobalOptions>(),
 				);
 
@@ -258,7 +258,7 @@ const main = async () => {
 	program
 		.command("dock <fleetNameOrAddress>")
 		.action(async (fleetNameOrAddress: string) => {
-			const globalOpts = creactOptionsWithWebhook(
+			const globalOpts = createOptionsWithWebhook(
 				program.opts<GlobalOptions>(),
 			);
 
@@ -273,7 +273,7 @@ const main = async () => {
 	program
 		.command("undock <fleetNameOrAddress>")
 		.action(async (fleetNameOrAddress: string) => {
-			const globalOpts = creactOptionsWithWebhook(
+			const globalOpts = createOptionsWithWebhook(
 				program.opts<GlobalOptions>(),
 			);
 
@@ -294,7 +294,7 @@ const main = async () => {
 			parsePublicKey,
 		)
 		.action(async (fleetNameOrAddress: string, resourceMint: PublicKey) => {
-			const globalOpts = creactOptionsWithWebhook(
+			const globalOpts = createOptionsWithWebhook(
 				program.opts<GlobalOptions>(),
 			);
 
@@ -316,7 +316,7 @@ const main = async () => {
 			parsePublicKey,
 		)
 		.action(async (fleetNameOrAddress: string, resourceMint: PublicKey) => {
-			const globalOpts = creactOptionsWithWebhook(
+			const globalOpts = createOptionsWithWebhook(
 				program.opts<GlobalOptions>(),
 			);
 
@@ -334,7 +334,7 @@ const main = async () => {
 		.argument("<fleetNameOrAddress>", "The fleet to stop mining")
 		.argument("<targetSector>", "Rhe coordinates of the target sector")
 		.action(async (fleetNameOrAddress: string, targetSectorArg: string) => {
-			const globalOpts = creactOptionsWithWebhook(
+			const globalOpts = createOptionsWithWebhook(
 				program.opts<GlobalOptions>(),
 			);
 
@@ -363,7 +363,7 @@ const main = async () => {
 		.argument("<fleetNameOrAddress>", "The fleet to stop mining")
 		.argument("<targetSector>", "Rhe coordinates of the target sector")
 		.action(async (fleetNameOrAddress: string, targetSectorArg: string) => {
-			const globalOpts = creactOptionsWithWebhook(
+			const globalOpts = createOptionsWithWebhook(
 				program.opts<GlobalOptions>(),
 			);
 
