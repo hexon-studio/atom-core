@@ -1,7 +1,7 @@
 import type { PublicKey } from "@solana/web3.js";
 import type { InstructionReturn } from "@staratlas/data-source";
 import BN from "bn.js";
-import { Effect, Match, pipe } from "effect";
+import { Console, Effect, Match, pipe } from "effect";
 import { isPublicKey } from "../../utils/public-key";
 import {
 	createStopMiningIx,
@@ -69,6 +69,12 @@ export const subwarpToSector = ({
 			fleetAccount,
 			targetSector: [new BN(targetSectorX), new BN(targetSectorY)],
 		});
+
+		if (!subwarpIxs.length) {
+			yield* Console.log("Fleet already in target sector. Skipping");
+
+			return [];
+		}
 
 		ixs.push(...subwarpIxs);
 
