@@ -19,7 +19,7 @@ import {
 	type CreateProviderError,
 	SolanaService,
 } from "../../../SolanaService";
-import { getEstimatedTransactionFee } from "./getEstimatedTransactionFee";
+import { getHeliusEstimatedTransactionFee } from "./getHeliusEstimatedTransactionFee";
 
 export class BuildAndSignTransactionWithAtlasPrimeError extends Data.TaggedError(
 	"BuildAndSignTransactionWithAtlasPrimeError",
@@ -58,13 +58,13 @@ export const buildAndSignTransactionWithAtlasPrime = (
 		Effect.flatMap(([solanaService, gameService]) =>
 			Effect.all([
 				SagePrograms,
-				solanaService.hellomoon,
+				solanaService.helius,
 				solanaService.secondaryAnchorProvider,
 				gameService.signer,
 				getGameContext(),
 			]),
 		),
-		Effect.flatMap(([programs, hellomoon, provider, signer, context]) =>
+		Effect.flatMap(([programs, helius, provider, signer, context]) =>
 			Effect.tryPromise({
 				try: async () => {
 					const [vaultAuthority] = ProfileVault.findVaultSigner(
@@ -83,16 +83,18 @@ export const buildAndSignTransactionWithAtlasPrime = (
 						connection: provider.connection,
 						commitment: "confirmed",
 						lookupTables: lookupTable.value ? [lookupTable.value] : undefined,
-						getFee: hellomoon.pipe(
+						getFee: helius.pipe(
 							Option.map(
-								({ rpc: hellomoonRpcUrl, feeMode }) =>
+								({ rpc: heliusRpcUrl, feeMode }) =>
 									async (writableAccounts: PublicKey[]) => {
-										const { microLamports } = await getEstimatedTransactionFee({
-											feeMode,
-											hellomoonRpcUrl,
-											writableAccounts,
-										});
+										const microLamports =
+											await getHeliusEstimatedTransactionFee({
+												heliusRpcUrl,
+												writableAccounts,
+												feeMode,
+											});
 
+										console.log({ microLamports });
 										return microLamports;
 									},
 							),

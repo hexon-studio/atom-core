@@ -20,7 +20,7 @@ export type GlobalOptions = {
 	rpcUrl: string;
 	feeUrl?: string;
 	secondaryRpcUrl?: string;
-	hellomoonRpc?: string;
+	heliusRpcUrl?: string;
 	feeMode: FeeMode;
 	webhookSecret?: string;
 	webhookUrl?: string;
