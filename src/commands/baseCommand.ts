@@ -1,6 +1,6 @@
 import { getAssociatedTokenAddressSync } from "@solana/spl-token";
 import { ProfileVault } from "@staratlas/profile-vault";
-import { Console, Effect, unsafeCoerce } from "effect";
+import { Effect, unsafeCoerce } from "effect";
 import { constant } from "effect/Function";
 import { MIN_ATLAS_QTY, tokenMints } from "../constants/tokens";
 import { SagePrograms } from "../core/programs";
@@ -34,7 +34,11 @@ const checkAtlasBalance = () =>
 		const atlasBalance = yield* Effect.tryPromise(() =>
 			provider.connection.getTokenAccountBalance(funderVault, "confirmed"),
 		).pipe(
-			Effect.tapError((error) => Console.log("Cannot get atlas amount", error)),
+			Effect.tapError((error) =>
+				Effect.logError("Cannot get atlas amount").pipe(
+					Effect.annotateLogs({ error }),
+				),
+			),
 			Effect.map((resp) => resp.value.uiAmount ?? 0),
 			Effect.orElseSucceed(constant(-1)),
 		);

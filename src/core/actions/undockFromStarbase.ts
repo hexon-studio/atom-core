@@ -19,13 +19,14 @@ export const undockFromStarbase = ({
 		const fleetAccount = yield* getFleetAccount(fleetAddress);
 
 		if (!fleetAccount.state.StarbaseLoadingBay) {
-			console.log("Fleet can't be undocked from starbase");
+			yield* Effect.log("Fleet can't be undocked from starbase");
+
 			return [];
 		}
 
 		const ixs: InstructionReturn[] = [];
 
-		console.log("Undocking from starbase...");
+		yield* Effect.log("Undocking from starbase...");
 
 		const ix = yield* createUndockFromStarbaseIx(fleetAccount);
 
@@ -45,7 +46,7 @@ export const undockFromStarbase = ({
 			txs.map((tx) => gameService.utils.sendTransaction(tx)),
 		);
 
-		console.log("Fleet undocked!");
+		yield* Effect.log("Fleet undocked!");
 
 		return txIds;
 	});

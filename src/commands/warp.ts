@@ -1,5 +1,5 @@
 import type { PublicKey } from "@solana/web3.js";
-import { Cause, Console, Effect, Exit, Option } from "effect";
+import { Cause, Effect, Exit, LogLevel, Logger, Option } from "effect";
 import { warpToSector } from "../core/actions/warpToSector";
 import { GameService } from "../core/services/GameService";
 import type { GlobalOptionsWithWebhook } from "../types";
@@ -31,7 +31,7 @@ export const runWarp = async ({
 				feeUrl,
 			}),
 		),
-		Effect.tap(() => Console.log("Game initialized.")),
+		Effect.tap(() => Effect.log("Game initialized.")),
 		Effect.flatMap(() =>
 			runBaseCommand({
 				self: () =>
@@ -50,6 +50,15 @@ export const runWarp = async ({
 				}),
 			}),
 		),
+		Effect.tapBoth({
+			onSuccess: (txIds) =>
+				Effect.log("Warp done").pipe(Effect.annotateLogs({ txIds })),
+			onFailure: (error) =>
+				Effect.logError(`[${error._tag}] ${error.message}`).pipe(
+					Effect.annotateLogs({ error }),
+				),
+		}),
+		Logger.withMinimumLogLevel(LogLevel.Debug),
 		Effect.provide(mainServiceLive),
 	);
 
@@ -57,8 +66,7 @@ export const runWarp = async ({
 
 	exit.pipe(
 		Exit.match({
-			onSuccess: (txId) => {
-				console.log(`Transactions ${txId.join(",")} completed`);
+			onSuccess: () => {
 				process.exit(0);
 			},
 			onFailure: (cause) => {

@@ -1,15 +1,7 @@
 import type { PublicKey } from "@solana/web3.js";
 import type { InstructionReturn } from "@staratlas/data-source";
-import {
-	Console,
-	Data,
-	Effect,
-	Array as EffectArray,
-	Match,
-	pipe,
-} from "effect";
+import { Data, Effect, Array as EffectArray, Match, pipe } from "effect";
 import type { LoadResourceInput } from "../../decoders";
-import { isPublicKey } from "../../utils/public-key";
 import {
 	createDepositCargoToFleetIx,
 	createDockToStarbaseIx,
@@ -17,11 +9,10 @@ import {
 } from "../fleet/instructions";
 import { GameService } from "../services/GameService";
 import {
-	getFleetAccount,
+	getFleetAccountByNameOrAddress,
 	getMineItemAccount,
 	getResourceAccount,
 } from "../utils/accounts";
-import { getFleetAddressByName } from "../utils/pdas";
 import { createDrainVaultIx } from "../vault/instructions/createDrainVaultIx";
 
 export class BuildOptinalTxError extends Data.TaggedError(
@@ -40,15 +31,10 @@ export const loadCargo = ({
 	items: Array<LoadResourceInput>;
 }) =>
 	Effect.gen(function* () {
-		const fleetAddress = yield* isPublicKey(fleetNameOrAddress)
-			? Effect.succeed(fleetNameOrAddress)
-			: getFleetAddressByName(fleetNameOrAddress);
+		const fleetAccount =
+			yield* getFleetAccountByNameOrAddress(fleetNameOrAddress);
 
-		yield* Console.log(
-			`Loading cargo to fleet ${fleetNameOrAddress.toString()}`,
-		);
-
-		const fleetAccount = yield* getFleetAccount(fleetAddress);
+		yield* Effect.log(`Loading cargo to fleet ${fleetAccount.key.toString()}`);
 
 		const ixs: InstructionReturn[] = [];
 
@@ -92,14 +78,14 @@ export const loadCargo = ({
 		const loadCargoIxs = yield* Effect.all(
 			EffectArray.map(items, (item) =>
 				createDepositCargoToFleetIx({
-					fleetAddress,
+					fleetAddress: fleetAccount.key,
 					item,
 				}),
 			),
 		).pipe(Effect.map(EffectArray.flatten));
 
 		if (!loadCargoIxs.length) {
-			yield* Console.log("Nothing to load. Skipping");
+			yield* Effect.log("Nothing to load. Skipping");
 
 			return [];
 		}
@@ -118,8 +104,6 @@ export const loadCargo = ({
 		const txIds = yield* Effect.all(
 			txs.map((tx) => gameService.utils.sendTransaction(tx)),
 		);
-
-		yield* Console.log("Fleet cargo loaded!");
 
 		return txIds;
 	});

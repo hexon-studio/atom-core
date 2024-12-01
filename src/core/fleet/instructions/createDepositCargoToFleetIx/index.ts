@@ -1,7 +1,7 @@
 import type { PublicKey } from "@solana/web3.js";
 import { Fleet, SAGE_CARGO_STAT_VALUE_INDEX } from "@staratlas/sage";
 import BN from "bn.js";
-import { Console, Effect, pipe } from "effect";
+import { Effect, pipe } from "effect";
 import type { LoadResourceInput } from "../../../../decoders";
 import { getAssociatedTokenAddress } from "../../../../utils/getAssociatedTokenAddress";
 import { isResourceAllowedForCargoPod } from "../../../../utils/resources/isResourceAllowedForCargoPod";
@@ -163,7 +163,7 @@ export const createDepositCargoToFleetIx = ({
 		});
 
 		if (finalAmountToDeposit.lten(0)) {
-			yield* Console.log(
+			yield* Effect.log(
 				`Skip deposit of ${resourceMint.toString()}, computed amount is: ${finalAmountToDeposit.toString()}`,
 			);
 

@@ -19,7 +19,9 @@ import {
 	StarbasePlayer,
 } from "@staratlas/sage";
 import { Data, Effect } from "effect";
+import { isPublicKey } from "../../../utils/public-key";
 import { SagePrograms } from "../../programs";
+import { getFleetAddressByName } from "../pdas";
 
 export class ReadFromRPCError extends Data.TaggedError("ReadFromRPCError")<{
 	readonly error: unknown;
@@ -79,10 +81,22 @@ export const getCargoStatsDefinitionAccount = (
 		),
 	);
 
+export const getFleetAccountByNameOrAddress = (
+	fleetNameOrAddress: string | PublicKey,
+) =>
+	(isPublicKey(fleetNameOrAddress)
+		? Effect.succeed(fleetNameOrAddress)
+		: getFleetAddressByName(fleetNameOrAddress)
+	).pipe(Effect.flatMap(getFleetAccount));
+
 export const getFleetAccount = (fleetPubkey: PublicKey) =>
 	SagePrograms.pipe(
 		Effect.flatMap((programs) =>
 			readFromSage(programs.sage, fleetPubkey, Fleet),
+		),
+	).pipe(
+		Effect.tap((fleet) =>
+			Effect.log("Fleet fetched.").pipe(Effect.annotateLogs({ fleet })),
 		),
 	);
 

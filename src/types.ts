@@ -25,5 +25,5 @@ export type GlobalOptions = {
 	webhookSecret?: string;
 	webhookUrl?: string;
 	taskId?: string;
-	verbose: boolean;
+	loggingToken?: string;
 };

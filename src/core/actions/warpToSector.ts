@@ -1,7 +1,7 @@
 import type { PublicKey } from "@solana/web3.js";
 import type { InstructionReturn } from "@staratlas/data-source";
 import BN from "bn.js";
-import { Console, Effect, Match, pipe } from "effect";
+import { Effect, Match, pipe } from "effect";
 import { isPublicKey } from "../../utils/public-key";
 import {
 	createStopMiningIx,
@@ -29,7 +29,8 @@ export const warpToSector = ({
 			? Effect.succeed(fleetNameOrAddress)
 			: getFleetAddressByName(fleetNameOrAddress);
 
-		console.log("Start warp...");
+		yield* Effect.log("Start warp...");
+
 		let fleetAccount = yield* getFleetAccount(fleetAddress);
 
 		const ixs: InstructionReturn[] = [];
@@ -70,7 +71,7 @@ export const warpToSector = ({
 		});
 
 		if (!warpIxs.length) {
-			yield* Console.log("Fleet already in target sector. Skipping");
+			yield* Effect.log("Fleet already in target sector. Skipping");
 
 			return [];
 		}
@@ -90,7 +91,7 @@ export const warpToSector = ({
 			txs.map((tx) => gameService.utils.sendTransaction(tx)),
 		);
 
-		console.log(`Warping to - X: ${targetSectorX} | Y: ${targetSectorY}`);
+		yield* Effect.log(`Warping to - X: ${targetSectorX} | Y: ${targetSectorY}`);
 
 		return txId;
 	});

@@ -94,7 +94,6 @@ export const buildAndSignTransactionWithAtlasPrime = (
 												feeMode,
 											});
 
-										console.log({ microLamports });
 										return microLamports;
 									},
 							),

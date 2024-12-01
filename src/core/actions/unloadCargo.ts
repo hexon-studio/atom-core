@@ -1,6 +1,6 @@
 import type { PublicKey } from "@solana/web3.js";
 import type { InstructionReturn } from "@staratlas/data-source";
-import { Console, Effect, Array as EffectArray, Match, pipe } from "effect";
+import { Effect, Array as EffectArray, Match, pipe } from "effect";
 import type { UnloadResourceInput } from "../../decoders";
 import { isPublicKey } from "../../utils/public-key";
 import {
@@ -29,7 +29,7 @@ export const unloadCargo = ({
 			? Effect.succeed(fleetNameOrAddress)
 			: getFleetAddressByName(fleetNameOrAddress);
 
-		yield* Console.log(
+		yield* Effect.log(
 			`Unloading cargo from fleet ${fleetNameOrAddress.toString()}`,
 		);
 
@@ -83,7 +83,7 @@ export const unloadCargo = ({
 							),
 						),
 						Effect.tap((txs) =>
-							Console.log(
+							Effect.log(
 								"Fleet stopped mining and docked to starbase. Txs: ",
 								txs.join(", "),
 							),
@@ -108,7 +108,7 @@ export const unloadCargo = ({
 		).pipe(Effect.map(EffectArray.flatten));
 
 		if (!unloadCargoIxs.length) {
-			yield* Console.log("Nothing to unload. Skipping");
+			yield* Effect.log("Nothing to unload. Skipping");
 
 			return [];
 		}
@@ -125,8 +125,6 @@ export const unloadCargo = ({
 		const txIds = yield* Effect.all(
 			txs.map((tx) => gameService.utils.sendTransaction(tx)),
 		);
-
-		console.log("Fleet cargo unloaded!");
 
 		return [...stopMiningTxsIds, ...txIds];
 	});

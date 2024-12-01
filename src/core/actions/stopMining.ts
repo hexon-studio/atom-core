@@ -22,11 +22,12 @@ export const stopMining = ({
 		const fleetAccount = yield* getFleetAccount(fleetAddress);
 
 		if (!fleetAccount.state.MineAsteroid) {
-			console.log("Fleet is not mining on asteroid");
+			yield* Effect.log("Fleet is not mining on asteroid");
+
 			return [];
 		}
 
-		console.log(`Stop mining ${resourceMint}...`);
+		yield* Effect.log(`Stop mining ${resourceMint}...`);
 
 		const ixs = yield* createStopMiningIx({
 			fleetAccount,
@@ -46,7 +47,7 @@ export const stopMining = ({
 			txs.map((tx) => gameService.utils.sendTransaction(tx)),
 		);
 
-		console.log("Mining stopped!");
+		yield* Effect.log("Mining stopped!");
 
 		return txIds;
 	});

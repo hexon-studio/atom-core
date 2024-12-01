@@ -2,9 +2,9 @@ import type { PublicKey } from "@solana/web3.js";
 import type { FeeMode } from "../../../../../types";
 
 const feeModeToHeliusFeeMode = {
-	low: "Medium",
-	medium: "High",
-	high: "VeryHigh",
+	low: "Low",
+	medium: "Medium",
+	high: "High",
 } as const;
 
 export const getHeliusEstimatedTransactionFee = async ({
