@@ -1,5 +1,12 @@
 
 
+# [1.4.0](https://github.com/hexon-studio/atom-core/compare/v1.3.1...v1.4.0) (2024-12-01)
+
+
+### Features
+
+* add logging ([af37974](https://github.com/hexon-studio/atom-core/commit/af379746ecbaffce8ae8de8567302772794a7deb))
+
 ## [1.3.1](https://github.com/hexon-studio/atom-core/compare/v1.3.0...v1.3.1) (2024-12-01)
 
 
