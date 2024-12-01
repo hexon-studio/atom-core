@@ -1,5 +1,12 @@
 
 
+## [1.3.1](https://github.com/hexon-studio/atom-core/compare/v1.3.0...v1.3.1) (2024-12-01)
+
+
+### Bug Fixes
+
+* commitment changed ([4021dad](https://github.com/hexon-studio/atom-core/commit/4021dad3ef39ab7f10f3998f6c1eea81a07a4907))
+
 # [1.3.0](https://github.com/hexon-studio/atom-core/compare/v1.2.3...v1.3.0) (2024-11-25)
 
 
