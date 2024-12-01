@@ -23,14 +23,14 @@ export const startMining = ({
 			? Effect.succeed(fleetNameOrAddress)
 			: getFleetAddressByName(fleetNameOrAddress);
 
-		console.log(`Start mining ${resourceMint}...`);
+		yield* Effect.log(`Start mining ${resourceMint}...`);
 
 		const fleetAccount = yield* getFleetAccount(fleetAddress);
 
 		// TODO: Not enough resources to star mining (fuel, ammo, food)
 
 		if (fleetAccount.state.MineAsteroid) {
-			console.log(
+			yield* Effect.log(
 				`Fleet is already mining on asteroid (${fleetAccount.state.MineAsteroid.asteroid}). Skipping...`,
 			);
 
@@ -70,7 +70,7 @@ export const startMining = ({
 			),
 		);
 
-		console.log("Mining started!");
+		yield* Effect.log("Mining started!");
 
 		return txIds;
 	});

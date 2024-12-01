@@ -1,11 +1,11 @@
-import { Cause, Console, Effect, Exit, Option } from "effect";
+import { Cause, Effect, Exit, LogLevel, Logger, Option } from "effect";
 import { GameService } from "../core/services/GameService";
 import { getGameContext } from "../core/services/GameService/utils";
 import type { GlobalOptionsWithWebhook } from "../types";
 import { createMainLiveService } from "../utils/createLiveService";
 
 export const runProfileInfo = async (globalOpts: GlobalOptionsWithWebhook) => {
-	const { keypair, owner, playerProfile, verbose, feeUrl } = globalOpts;
+	const { keypair, owner, playerProfile, feeUrl } = globalOpts;
 
 	const mainServiceLive = createMainLiveService(globalOpts);
 
@@ -19,9 +19,13 @@ export const runProfileInfo = async (globalOpts: GlobalOptionsWithWebhook) => {
 				feeUrl,
 			}),
 		),
-		Effect.tap(() => verbose && Console.log("Game initialized.")),
+		Effect.tap(() => Effect.log("Game initialized.")),
 		Effect.flatMap(getGameContext),
 		Effect.map((context) => context.playerProfile),
+		Effect.tap((profile) =>
+			Effect.log("Profile fetched.").pipe(Effect.annotateLogs({ profile })),
+		),
+		Logger.withMinimumLogLevel(LogLevel.Debug),
 		Effect.provide(mainServiceLive),
 	);
 
@@ -29,8 +33,7 @@ export const runProfileInfo = async (globalOpts: GlobalOptionsWithWebhook) => {
 
 	exit.pipe(
 		Exit.match({
-			onSuccess: (playerProfile) => {
-				console.log(JSON.stringify(playerProfile, null, 2));
+			onSuccess: () => {
 				process.exit(0);
 			},
 			onFailure: (cause) => {

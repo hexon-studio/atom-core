@@ -106,6 +106,11 @@ const main = async () => {
 				.makeOptionMandatory(false),
 		)
 		.addOption(
+			new Option("--loggingToken <token>", "The cloud logging service token")
+				.env("ATOM_LOGGING_TOKEN")
+				.makeOptionMandatory(false),
+		)
+		.addOption(
 			new Option("-fu, --feeUrl <feeUrl>", "The fee url").makeOptionMandatory(
 				false,
 			),
@@ -115,8 +120,7 @@ const main = async () => {
 				"-t, --taskId <taskId>",
 				"The task to update",
 			).makeOptionMandatory(false),
-		)
-		.option("--verbose", "Print additional logs", false);
+		);
 
 	program
 		.command("fleet-info <fleetNameOrAddress>")

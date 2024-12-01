@@ -1,5 +1,5 @@
 import type { PublicKey } from "@solana/web3.js";
-import { Cause, Console, Effect, Exit, Option } from "effect";
+import { Cause, Effect, Exit, LogLevel, Logger, Option } from "effect";
 import { dockToStarbase } from "../core/actions/dockToStarbase";
 import { GameService } from "../core/services/GameService";
 import type { GlobalOptionsWithWebhook } from "../types";
@@ -26,7 +26,7 @@ export const runDock = async ({ fleetNameOrAddress, globalOpts }: Param) => {
 				feeUrl,
 			}),
 		),
-		Effect.tap(() => Console.log("Game initialized.")),
+		Effect.tap(() => Effect.log("Game initialized.")),
 		Effect.flatMap(() =>
 			runBaseCommand({
 				self: () =>
@@ -44,6 +44,15 @@ export const runDock = async ({ fleetNameOrAddress, globalOpts }: Param) => {
 				}),
 			}),
 		),
+		Effect.tapBoth({
+			onSuccess: (txIds) =>
+				Effect.log("Dock done").pipe(Effect.annotateLogs({ txIds })),
+			onFailure: (error) =>
+				Effect.logError(`[${error._tag}] ${error.message}`).pipe(
+					Effect.annotateLogs({ error }),
+				),
+		}),
+		Logger.withMinimumLogLevel(LogLevel.Debug),
 		Effect.provide(mainServiceLive),
 	);
 
@@ -51,8 +60,7 @@ export const runDock = async ({ fleetNameOrAddress, globalOpts }: Param) => {
 
 	exit.pipe(
 		Exit.match({
-			onSuccess: (txId) => {
-				console.log(`Transactions ${txId.join(",")} completed`);
+			onSuccess: () => {
 				process.exit(0);
 			},
 			onFailure: (cause) => {

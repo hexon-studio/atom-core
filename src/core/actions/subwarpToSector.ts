@@ -1,7 +1,7 @@
 import type { PublicKey } from "@solana/web3.js";
 import type { InstructionReturn } from "@staratlas/data-source";
 import BN from "bn.js";
-import { Console, Effect, Match, pipe } from "effect";
+import { Effect, Match, pipe } from "effect";
 import { isPublicKey } from "../../utils/public-key";
 import {
 	createStopMiningIx,
@@ -29,7 +29,7 @@ export const subwarpToSector = ({
 			? Effect.succeed(fleetNameOrAddress)
 			: getFleetAddressByName(fleetNameOrAddress);
 
-		console.log("Start subwarp...");
+		yield* Effect.log("Start subwarp...");
 
 		let fleetAccount = yield* getFleetAccount(fleetAddress);
 
@@ -71,7 +71,7 @@ export const subwarpToSector = ({
 		});
 
 		if (!subwarpIxs.length) {
-			yield* Console.log("Fleet already in target sector. Skipping");
+			yield* Effect.log("Fleet already in target sector. Skipping");
 
 			return [];
 		}
@@ -91,7 +91,9 @@ export const subwarpToSector = ({
 			txs.map((tx) => gameService.utils.sendTransaction(tx)),
 		);
 
-		console.log(`Subwarping to - X: ${targetSectorX} | Y: ${targetSectorY}`);
+		yield* Effect.log(
+			`Subwarping to - X: ${targetSectorX} | Y: ${targetSectorY}`,
+		);
 
 		return txId;
 	});

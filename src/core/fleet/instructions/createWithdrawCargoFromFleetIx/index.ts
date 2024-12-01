@@ -6,7 +6,7 @@ import {
 	StarbasePlayer,
 } from "@staratlas/sage";
 import BN from "bn.js";
-import { Console, Data, Effect, Option, pipe } from "effect";
+import { Data, Effect, Option, pipe } from "effect";
 import type { UnloadResourceInput } from "../../../../decoders";
 import { getAssociatedTokenAddress } from "../../../../utils/getAssociatedTokenAddress";
 import { isResourceAllowedForCargoPod } from "../../../../utils/resources/isResourceAllowedForCargoPod";
@@ -204,7 +204,7 @@ export const createWithdrawCargoFromFleetIx = ({
 		});
 
 		if (unloadAmount.lten(0)) {
-			yield* Console.log(
+			yield* Effect.log(
 				`Skip unload of ${resourceMint.toString()}, computed amount is: ${unloadAmount.toString()}`,
 			);
 
