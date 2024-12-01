@@ -12,7 +12,7 @@ export const sendTransaction = (
 		Effect.flatMap((solanaService) => solanaService.secondaryAnchorProvider),
 		Effect.flatMap((provider) =>
 			customSageSendTransaction(tx, provider.connection, {
-				commitment: "confirmed",
+				commitment: "finalized",
 				sendOptions,
 			}),
 		),
