@@ -1,5 +1,12 @@
 
 
+## [1.5.1](https://github.com/hexon-studio/atom-core/compare/v1.5.0...v1.5.1) (2024-12-02)
+
+
+### Bug Fixes
+
+* new logs ([efd5445](https://github.com/hexon-studio/atom-core/commit/efd5445fb6d642d800e82ebf0697735f349361fc))
+
 # [1.5.0](https://github.com/hexon-studio/atom-core/compare/v1.4.0...v1.5.0) (2024-12-02)
 
 
