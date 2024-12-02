@@ -45,6 +45,14 @@ export const createSubwarpToCoordinateIx = ({
 
 		ixs.push(...movementHandlerIxs);
 
+		yield* Effect.log("Creating startSubwarp IX").pipe(
+			Effect.annotateLogs({
+				fleetAddress: fleetAccount.key.toString(),
+				keyIndex: context.keyIndexes.sage,
+				toSector: [targetSectorX, targetSectorY].toString(),
+			}),
+		);
+
 		const subwarpIx = Fleet.startSubwarp(
 			programs.sage,
 			signer,
