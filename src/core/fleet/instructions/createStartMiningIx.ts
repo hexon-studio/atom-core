@@ -141,6 +141,8 @@ export const createStartMiningIx = ({
 			return yield* Effect.fail(new FleetNotEnoughFuelError());
 		}
 
+		yield* Effect.log("Creating startMiningAsteroid IX");
+
 		const miningIx = Fleet.startMiningAsteroid(
 			programs.sage,
 			signer,

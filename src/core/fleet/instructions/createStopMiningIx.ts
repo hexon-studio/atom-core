@@ -157,6 +157,8 @@ export const createStopMiningIx = ({
 			context.playerProfile.key,
 		);
 
+		yield* Effect.log("Creating stopMiningAsteroid IX");
+
 		const stopMiningAsteroidIx = Fleet.stopMiningAsteroid(
 			programs.sage,
 			programs.cargo,

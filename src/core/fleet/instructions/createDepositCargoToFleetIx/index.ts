@@ -188,6 +188,15 @@ export const createDepositCargoToFleetIx = ({
 		const gameId = context.gameInfo.game.key;
 		const gameState = context.gameInfo.game.data.gameState;
 
+		yield* Effect.log("Creating depositCargoToFleet IX").pipe(
+			Effect.annotateLogs({
+				fleetAddress: fleetAccount.key.toString(),
+				resourceMint: resourceMint.toString(),
+				keyIndex: context.keyIndexes.sage,
+				amount: finalAmountToDeposit.toString(),
+			}),
+		);
+
 		const ix_1 = Fleet.depositCargoToFleet(
 			programs.sage,
 			programs.cargo,

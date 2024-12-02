@@ -62,6 +62,14 @@ export const createWarpToCoordinateIx = ({
 
 		ixs.push(...movementHandlerIxs);
 
+		yield* Effect.log("Creating warpToCoordinate IX").pipe(
+			Effect.annotateLogs({
+				fleetAddress: fleetAccount.key.toString(),
+				keyIndex: context.keyIndexes.sage,
+				toSector: [targetSectorX, targetSectorY].toString(),
+			}),
+		);
+
 		const warpIx = Fleet.warpToCoordinate(
 			programs.sage,
 			signer,

@@ -120,6 +120,8 @@ export const createDockToStarbaseIx = (fleetAccount: Fleet) =>
 
 		ixs.push(...maybeMoveHandlerIx);
 
+		yield* Effect.log("Creating idleToLoadingBay IX");
+
 		const dockIx = Fleet.idleToLoadingBay(
 			programs.sage,
 			signer,

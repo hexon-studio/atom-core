@@ -221,6 +221,15 @@ export const createWithdrawCargoFromFleetIx = ({
 			return [];
 		}
 
+		yield* Effect.log("Creating withdrawCargoFromFleet IX").pipe(
+			Effect.annotateLogs({
+				fleetAddress: fleetAccount.key.toString(),
+				resourceMint: resourceMint.toString(),
+				keyIndex: context.keyIndexes.sage,
+				amount: unloadAmount.toString(),
+			}),
+		);
+
 		const withdrawCargoFromFleetIx = Fleet.withdrawCargoFromFleet(
 			programs.sage,
 			programs.cargo,

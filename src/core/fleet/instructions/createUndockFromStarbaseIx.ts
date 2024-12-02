@@ -41,6 +41,8 @@ export const createUndockFromStarbaseIx = (fleetAccount: Fleet) =>
 			starbaseAccount.data.seqId,
 		);
 
+		yield* Effect.log("Creating loadingBayToIdle IX");
+
 		return Fleet.loadingBayToIdle(
 			programs.sage,
 			signer,
