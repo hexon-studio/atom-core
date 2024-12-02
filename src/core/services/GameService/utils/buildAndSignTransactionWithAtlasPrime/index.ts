@@ -81,7 +81,7 @@ export const buildAndSignTransactionWithAtlasPrime = (
 					const builder = await AtlasPrimeTransactionBuilder.new({
 						afpUrl: "https://prime.staratlas.com/",
 						connection: provider.connection,
-						commitment: "finalized",
+						commitment: "confirmed",
 						lookupTables: lookupTable.value ? [lookupTable.value] : undefined,
 						getFee: helius.pipe(
 							Option.map(

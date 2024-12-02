@@ -5,9 +5,13 @@ import {
 	WebhookService,
 } from "../core/services/WebhookService";
 
-export const fireWebhookEvent = (param: WebhookEvent) =>
+export const fireWebhookEvent = (event: WebhookEvent) =>
 	Effect.serviceOptional(WebhookService).pipe(
-		Effect.tap(() => Effect.log(`Firing "${param.type}" event`)),
-		Effect.flatMap((service) => service.fireWebhookEvent(param)),
+		Effect.tap(() =>
+			Effect.log(`[WebhookService] Firing "${event.type}" event`).pipe(
+				Effect.annotateLogs({ event }),
+			),
+		),
+		Effect.flatMap((service) => service.fireWebhookEvent(event)),
 		Effect.orElseSucceed(constNull),
 	);

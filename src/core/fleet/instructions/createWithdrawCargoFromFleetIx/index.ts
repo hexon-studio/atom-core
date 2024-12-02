@@ -62,7 +62,6 @@ export const createWithdrawCargoFromFleetIx = ({
 
 		const gameService = yield* GameService;
 		const context = yield* getGameContext();
-		// const fleetAccount = yield* getFleetAccount(staleFleetAccount.key);
 
 		const playerProfilePubkey = fleetAccount.data.ownerProfile;
 
@@ -202,6 +201,16 @@ export const createWithdrawCargoFromFleetIx = ({
 			resourceFleetMaxCap: fleetMaxCapacityInTokens,
 			value: new BN(amount),
 		});
+
+		yield* Effect.log("Unloading cargo amount").pipe(
+			Effect.annotateLogs({
+				mode,
+				resourceAmountInFleet: loadedResourcesAmountInTokens.toString(),
+				resourceFleetMaxCap: fleetMaxCapacityInTokens.toString(),
+				amount,
+				unloadAmount: unloadAmount.toString(),
+			}),
+		);
 
 		if (unloadAmount.lten(0)) {
 			yield* Effect.log(

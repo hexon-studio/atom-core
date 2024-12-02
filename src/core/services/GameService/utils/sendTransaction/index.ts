@@ -1,19 +1,18 @@
-import type { SendOptions } from "@solana/web3.js";
 import type { TransactionReturn } from "@staratlas/data-source";
 import { Effect } from "effect";
 import { SolanaService } from "../../../SolanaService";
 import { customSageSendTransaction } from "./customSageSendTransaction";
 
-export const sendTransaction = (
-	tx: TransactionReturn,
-	sendOptions?: SendOptions,
-) =>
+export const sendTransaction = (tx: TransactionReturn) =>
 	SolanaService.pipe(
 		Effect.flatMap((solanaService) => solanaService.secondaryAnchorProvider),
 		Effect.flatMap((provider) =>
 			customSageSendTransaction(tx, provider.connection, {
-				commitment: "finalized",
-				sendOptions,
+				commitment: "confirmed",
+				sendOptions: {
+					skipPreflight: true,
+					maxRetries: 0,
+				},
 			}),
 		),
 		Effect.map((tx) => tx.signature),
