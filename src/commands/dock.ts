@@ -19,11 +19,11 @@ export const runDock = async ({ fleetNameOrAddress, globalOpts }: Param) => {
 	const program = GameService.pipe(
 		Effect.tap((service) =>
 			service.methods.initGame({
+				contextRef: service.context,
+				feeUrl,
 				owner,
 				playerProfile,
 				signerAddress: keypair.publicKey,
-				contextRef: service.context,
-				feeUrl,
 			}),
 		),
 		Effect.tap(() => Effect.log("Game initialized.")),

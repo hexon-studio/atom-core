@@ -65,9 +65,7 @@ export const startMining = ({
 			yield* gameService.utils.buildAndSignTransactionWithAtlasPrime(ixs);
 
 		const txIds = yield* Effect.all(
-			txs.map((tx) =>
-				gameService.utils.sendTransaction(tx, { skipPreflight: true }),
-			),
+			txs.map((tx) => gameService.utils.sendTransaction(tx)),
 		);
 
 		yield* Effect.log("Mining started!");

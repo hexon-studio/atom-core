@@ -83,9 +83,8 @@ export const unloadCargo = ({
 							),
 						),
 						Effect.tap((txs) =>
-							Effect.log(
-								"Fleet stopped mining and docked to starbase. Txs: ",
-								txs.join(", "),
+							Effect.log("Fleet stopped mining and docked to starbase.").pipe(
+								Effect.annotateLogs({ txs }),
 							),
 						),
 						Effect.map((txIds) => ({ txIds, ixs: [] })),

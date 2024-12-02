@@ -101,13 +101,19 @@ export const getFleetCargoPodInfoByType = ({
 			new BN(0),
 		);
 
-		return yield* Effect.succeed({
+		const cargoPodInfo = {
 			key: cargoPod.key,
 			loadedAmountInCargoUnits,
 			resources,
 			maxCapacity: cargoPodMaxCapacity,
 			podIsFull: loadedAmountInCargoUnits.eq(cargoPodMaxCapacity),
-		});
+		};
+
+		yield* Effect.log("Cargo info fetched.").pipe(
+			Effect.annotateLogs({ cargoPodInfo }),
+		);
+
+		return cargoPodInfo;
 	});
 
 export type CargoPodEnhanced = Effect.Effect.Success<

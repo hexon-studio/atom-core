@@ -162,6 +162,17 @@ export const createDepositCargoToFleetIx = ({
 			value: new BN(amount),
 		});
 
+		yield* Effect.log("Load cargo amount").pipe(
+			Effect.annotateLogs({
+				resourceFleetMaxCap: fleetMaxCapacityInTokens.toString(),
+				mode,
+				resourceAmountInFleet: loadedAmountInTokens.toString(),
+				resourceAmountInStarbase: starbaseResourceAmountInTokens.toString(),
+				amount,
+				finalAmountToDeposit: finalAmountToDeposit.toString(),
+			}),
+		);
+
 		if (finalAmountToDeposit.lten(0)) {
 			yield* Effect.log(
 				`Skip deposit of ${resourceMint.toString()}, computed amount is: ${finalAmountToDeposit.toString()}`,
