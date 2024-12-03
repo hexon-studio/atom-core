@@ -15,6 +15,7 @@ import {
 	pipe,
 } from "effect";
 import { z } from "zod";
+import { version as packageJsonVersion } from "../package.json";
 import { runDock } from "./commands/dock";
 import { runFleetInfo } from "./commands/fleetInfo";
 import { runProfileInfo } from "./commands/profileInfo";
@@ -40,7 +41,7 @@ Dotenv.config();
 const main = async () => {
 	const program = commander
 		.name("atom")
-		.version(process.env.npm_package_version ?? "0.0.0")
+		.version(packageJsonVersion)
 		.addOption(
 			new Option(
 				"-o, --owner <publickKey>",
