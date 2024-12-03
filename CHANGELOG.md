@@ -1,5 +1,12 @@
 
 
+## [1.6.1](https://github.com/hexon-studio/atom-core/compare/v1.6.0...v1.6.1) (2024-12-03)
+
+
+### Bug Fixes
+
+* unload delay minor fix ([fb873f0](https://github.com/hexon-studio/atom-core/commit/fb873f0bb80eaa2960fd48819b98a507ba44542b))
+
 # [1.6.0](https://github.com/hexon-studio/atom-core/compare/v1.5.2...v1.6.0) (2024-12-03)
 
 
