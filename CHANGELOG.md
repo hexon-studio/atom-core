@@ -1,5 +1,12 @@
 
 
+## [1.7.1](https://github.com/hexon-studio/atom-core/compare/v1.7.0...v1.7.1) (2024-12-03)
+
+
+### Bug Fixes
+
+* add pkg version ([e20f14c](https://github.com/hexon-studio/atom-core/commit/e20f14ccbe984f80de777e0dee110005796526df))
+
 # [1.7.0](https://github.com/hexon-studio/atom-core/compare/v1.6.1...v1.7.0) (2024-12-03)
 
 
