@@ -87,8 +87,9 @@ export const unloadCargo = ({
 								Effect.annotateLogs({ txs }),
 							),
 						),
-						Effect.map((txIds) => ({ txIds, ixs: [] })),
-						Effect.delay(5000),
+						Effect.flatMap((txIds) =>
+							Effect.sleep(5000).pipe(Effect.map(() => ({ txIds, ixs: [] }))),
+						),
 					),
 			),
 			Match.orElse(() => Effect.succeed({ txIds: [] as string[], ixs: [] })),
