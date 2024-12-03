@@ -16,6 +16,7 @@ import {
 } from "../utils/accounts";
 import { getFleetAddressByName } from "../utils/pdas";
 import { createDrainVaultIx } from "../vault/instructions/createDrainVaultIx";
+import { WarpIsOnCooldown } from "../fleet/errors";
 
 export const warpToSector = ({
 	fleetNameOrAddress,
@@ -32,6 +33,16 @@ export const warpToSector = ({
 		yield* Effect.log("Start warp...");
 
 		let fleetAccount = yield* getFleetAccount(fleetAddress);
+
+		const warpCooldownExpiresAt =
+			fleetAccount.data.warpCooldownExpiresAt.toNumber();
+
+		const timestampInSeconds = Math.floor(Date.now() / 1000);
+
+		if (warpCooldownExpiresAt > timestampInSeconds) {
+			yield* Effect.log("Warp is on cooldown");
+			return yield* Effect.fail(new WarpIsOnCooldown());
+		}
 
 		const ixs: InstructionReturn[] = [];
 

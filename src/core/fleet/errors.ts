@@ -74,3 +74,5 @@ export class InvalidAmountError extends Data.TaggedError("InvalidAmountError")<{
 export class InvalidResourceForPodKind extends Data.TaggedError(
 	"InvalidResourceForPodKind",
 ) {}
+
+export class WarpIsOnCooldown extends Data.TaggedError("WarpIsOnCooldown") {}
