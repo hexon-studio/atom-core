@@ -9,6 +9,7 @@ import {
 } from "effect";
 import { constVoid } from "effect/Function";
 import pino from "pino";
+import { version as packageJsonVersion } from "../../../../package.json";
 import type { GlobalOptionsWithWebhook } from "../../../types";
 import { getEnv } from "../../../utils/env";
 
@@ -39,7 +40,7 @@ const createLogger = (opts: GlobalOptionsWithWebhook) => {
 				player_profile: opts.playerProfile,
 				task_id: opts.webhookArgs?.taskId,
 				user_id: opts.owner,
-				version: process.env.npm_package_version ?? "0.0.0",
+				version: packageJsonVersion,
 			},
 			original_message: _message,
 		};
