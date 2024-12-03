@@ -36,9 +36,10 @@ const createLogger = (opts: GlobalOptionsWithWebhook) => {
 		const pinoContext = {
 			context: {
 				annotations: Record.fromEntries(HashMap.toEntries(annotations)),
+				player_profile: opts.playerProfile,
 				task_id: opts.webhookArgs?.taskId,
 				user_id: opts.owner,
-				player_profile: opts.playerProfile,
+				version: process.env.npm_package_version ?? "0.0.0",
 			},
 			original_message: _message,
 		};
