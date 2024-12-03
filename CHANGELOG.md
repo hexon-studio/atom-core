@@ -1,5 +1,12 @@
 
 
+## [1.5.2](https://github.com/hexon-studio/atom-core/compare/v1.5.1...v1.5.2) (2024-12-03)
+
+
+### Bug Fixes
+
+* unload delay ([318806a](https://github.com/hexon-studio/atom-core/commit/318806a55defeab37f3284613ffa3d10ca72bc89))
+
 ## [1.5.1](https://github.com/hexon-studio/atom-core/compare/v1.5.0...v1.5.1) (2024-12-02)
 
 
