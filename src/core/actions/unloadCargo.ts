@@ -88,6 +88,7 @@ export const unloadCargo = ({
 							),
 						),
 						Effect.map((txIds) => ({ txIds, ixs: [] })),
+						Effect.delay(5000),
 					),
 			),
 			Match.orElse(() => Effect.succeed({ txIds: [] as string[], ixs: [] })),
