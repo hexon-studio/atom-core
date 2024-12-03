@@ -17,7 +17,10 @@ import { initGame } from "../../../services/GameService/methods/initGame";
 import type { Fees } from "../../../services/GameService/methods/initGame/fetchFees";
 import type { GameInfo } from "../../../services/GameService/methods/initGame/fetchGameInfo";
 import { SolanaService } from "../../../services/SolanaService";
-import { InvalidAmountError, InvalidResourceForPodKind } from "../../errors";
+import {
+	InvalidAmountError,
+	InvalidResourceForPodKindError,
+} from "../../errors";
 
 vi.mock("../../../utils/accounts");
 
@@ -147,7 +150,14 @@ describe("createDepositCargoToFleetIx", () => {
 
 			const result = await Effect.runPromiseExit(program);
 
-			expect(result).toStrictEqual(Exit.fail(new InvalidResourceForPodKind()));
+			expect(result).toStrictEqual(
+				Exit.fail(
+					new InvalidResourceForPodKindError({
+						cargoPodKind,
+						resourceMint: new PublicKey(resourceMint),
+					}),
+				),
+			);
 		},
 	);
 });

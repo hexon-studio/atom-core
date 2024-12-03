@@ -71,8 +71,18 @@ export class InvalidAmountError extends Data.TaggedError("InvalidAmountError")<{
 	}
 }
 
-export class InvalidResourceForPodKind extends Data.TaggedError(
+export class InvalidResourceForPodKindError extends Data.TaggedError(
 	"InvalidResourceForPodKind",
-) {}
+)<{ cargoPodKind: CargoPodKind; resourceMint: PublicKey }> {
+	override get message() {
+		return `Invalid resource for cargo pod kind: ${this.cargoPodKind}, ${this.resourceMint.toString()}`;
+	}
+}
 
-export class WarpIsOnCooldown extends Data.TaggedError("WarpIsOnCooldown") {}
+export class FleetWarpCooldownError extends Data.TaggedError(
+	"FleetWarpCooldownError",
+)<{ warpCooldownExpiresAt: string }> {
+	override get message() {
+		return `Fleet warp is on cooldown until ${this.warpCooldownExpiresAt}`;
+	}
+}

@@ -25,7 +25,10 @@ import {
 	getStarbaseAddressbyCoordinates,
 	getStarbasePlayerAddress,
 } from "../../../utils/pdas";
-import { InvalidAmountError, InvalidResourceForPodKind } from "../../errors";
+import {
+	InvalidAmountError,
+	InvalidResourceForPodKindError,
+} from "../../errors";
 import { getCurrentFleetSectorCoordinates } from "../../utils/getCurrentFleetSectorCoordinates";
 import { computeDepositAmount } from "./computeDepositAmout";
 
@@ -51,7 +54,12 @@ export const createDepositCargoToFleetIx = ({
 		);
 
 		if (!isAllowed) {
-			return yield* Effect.fail(new InvalidResourceForPodKind());
+			return yield* Effect.fail(
+				new InvalidResourceForPodKindError({
+					cargoPodKind,
+					resourceMint,
+				}),
+			);
 		}
 
 		const gameService = yield* GameService;

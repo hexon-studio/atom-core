@@ -3,6 +3,7 @@ import type { InstructionReturn } from "@staratlas/data-source";
 import BN from "bn.js";
 import { Effect, Match, pipe } from "effect";
 import { isPublicKey } from "../../utils/public-key";
+import { FleetWarpCooldownError } from "../fleet/errors";
 import {
 	createStopMiningIx,
 	createUndockFromStarbaseIx,
@@ -16,7 +17,6 @@ import {
 } from "../utils/accounts";
 import { getFleetAddressByName } from "../utils/pdas";
 import { createDrainVaultIx } from "../vault/instructions/createDrainVaultIx";
-import { WarpIsOnCooldown } from "../fleet/errors";
 
 export const warpToSector = ({
 	fleetNameOrAddress,
@@ -41,7 +41,14 @@ export const warpToSector = ({
 
 		if (warpCooldownExpiresAt > timestampInSeconds) {
 			yield* Effect.log("Warp is on cooldown");
-			return yield* Effect.fail(new WarpIsOnCooldown());
+
+			return yield* Effect.fail(
+				new FleetWarpCooldownError({
+					warpCooldownExpiresAt: new Date(
+						warpCooldownExpiresAt * 1000,
+					).toISOString(),
+				}),
+			);
 		}
 
 		const ixs: InstructionReturn[] = [];
