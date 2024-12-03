@@ -1,5 +1,17 @@
 
 
+# [1.7.0](https://github.com/hexon-studio/atom-core/compare/v1.6.1...v1.7.0) (2024-12-03)
+
+
+### Bug Fixes
+
+* added warp is on cooldown error ([f90bee3](https://github.com/hexon-studio/atom-core/commit/f90bee304b04738cd4fbac91273b6b2dcd580581))
+
+
+### Features
+
+* enrich error infos ([d485c20](https://github.com/hexon-studio/atom-core/commit/d485c208acf353207a5ce2acd3276957a8b6ac3e))
+
 ## [1.6.1](https://github.com/hexon-studio/atom-core/compare/v1.6.0...v1.6.1) (2024-12-03)
 
 
