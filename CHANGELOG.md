@@ -1,5 +1,12 @@
 
 
+# [1.6.0](https://github.com/hexon-studio/atom-core/compare/v1.5.2...v1.6.0) (2024-12-03)
+
+
+### Features
+
+* add atom version in log context ([c167211](https://github.com/hexon-studio/atom-core/commit/c167211409544c35edd9cdd229d9df63c673f89f))
+
 ## [1.5.2](https://github.com/hexon-studio/atom-core/compare/v1.5.1...v1.5.2) (2024-12-03)
 
 
