@@ -26,7 +26,10 @@ import {
 	getStarbaseAddressbyCoordinates,
 	getStarbasePlayerAddress,
 } from "../../../utils/pdas";
-import { InvalidAmountError, InvalidResourceForPodKind } from "../../errors";
+import {
+	InvalidAmountError,
+	InvalidResourceForPodKindError,
+} from "../../errors";
 import { getCurrentFleetSectorCoordinates } from "../../utils/getCurrentFleetSectorCoordinates";
 import { getCargoPodsByAuthority } from "./../../../cargo-utils";
 import { computeWithdrawAmount } from "./computeWithdrawAmount";
@@ -57,7 +60,12 @@ export const createWithdrawCargoFromFleetIx = ({
 		);
 
 		if (!isAllowed) {
-			return yield* Effect.fail(new InvalidResourceForPodKind());
+			return yield* Effect.fail(
+				new InvalidResourceForPodKindError({
+					cargoPodKind,
+					resourceMint,
+				}),
+			);
 		}
 
 		const gameService = yield* GameService;
