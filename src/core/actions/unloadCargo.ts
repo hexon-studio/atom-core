@@ -88,7 +88,9 @@ export const unloadCargo = ({
 							),
 						),
 						Effect.flatMap((txIds) =>
-							Effect.sleep(5000).pipe(Effect.map(() => ({ txIds, ixs: [] }))),
+							Effect.sleep("10 seconds").pipe(
+								Effect.map(() => ({ txIds, ixs: [] })),
+							),
 						),
 					),
 			),
