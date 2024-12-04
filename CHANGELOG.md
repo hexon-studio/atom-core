@@ -1,5 +1,12 @@
 
 
+## [1.7.2](https://github.com/hexon-studio/atom-core/compare/v1.7.1...v1.7.2) (2024-12-04)
+
+
+### Bug Fixes
+
+* changed delay time to 10 seconds ([3163cf9](https://github.com/hexon-studio/atom-core/commit/3163cf9682cce8d9d6091f1c73ca41c440debc9b))
+
 ## [1.7.1](https://github.com/hexon-studio/atom-core/compare/v1.7.0...v1.7.1) (2024-12-03)
 
 
