@@ -187,6 +187,11 @@ export const createWithdrawCargoFromFleetIx = ({
 			Option.getOrElse(() => new BN(0)),
 		);
 
+		const amountInCargoUnits = getCargoSpaceUsedByTokenAmount(
+			cargoTypeAccount,
+			new BN(amount),
+		);
+
 		const unloadAmountInCargoUnits = yield* computeWithdrawAmount({
 			fleetAddress: fleetAccount.key,
 			resourceMint,
@@ -202,13 +207,16 @@ export const createWithdrawCargoFromFleetIx = ({
 
 		const unloadAmount = unloadAmountInCargoUnits.div(resourceSpaceMultiplier);
 
-		yield* Effect.log("Unloading cargo amount").pipe(
+		yield* Effect.log(`Unloading cargo from ${cargoPodKind}`).pipe(
 			Effect.annotateLogs({
+				cargoPodKind,
+				amountInCargoUnits: amountInCargoUnits.toString(),
+				amountInTokens: amount.toString(),
 				mode,
 				resourceAmountInFleet: resourceAmountInFleetInCargoUnits.toString(),
 				resourceFleetMaxCap: cargoPodInfo.maxCapacityInCargoUnits.toString(),
-				amount,
 				unloadAmount: unloadAmount.toString(),
+				unloadAmountInCargoUnits: unloadAmountInCargoUnits.toString(),
 			}),
 		);
 
