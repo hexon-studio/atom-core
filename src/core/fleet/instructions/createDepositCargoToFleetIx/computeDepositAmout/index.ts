@@ -23,15 +23,23 @@ export const computeDepositAmount =
 		resourceAmountInStarbase: BN;
 		resourceAmountInFleet: BN;
 		resourceFleetMaxCap: BN;
+		totalResourcesAmountInFleet: BN;
 	}) => {
-		const freeAmountInFleet = param.resourceFleetMaxCap.sub(
-			param.resourceAmountInFleet,
+		const freeCargoUnitsInFleet = param.resourceFleetMaxCap.sub(
+			param.totalResourcesAmountInFleet,
 		);
 
-		return Match.value({ ...param, freeAmountInFleet }).pipe(
+		return Match.value({
+			...param,
+			freeCargoUnitsInFleet,
+		}).pipe(
 			Match.when(
 				{ mode: "fixed" },
-				({ value: fixedAmount, resourceAmountInStarbase, freeAmountInFleet }) =>
+				({
+					value: fixedAmount,
+					resourceAmountInStarbase,
+					freeCargoUnitsInFleet,
+				}) =>
 					Effect.gen(function* () {
 						if (resourceAmountInStarbase.lt(new BN(fixedAmount))) {
 							yield* Effect.fail(
@@ -45,11 +53,11 @@ export const computeDepositAmount =
 							);
 						}
 
-						if (freeAmountInFleet.lt(new BN(fixedAmount))) {
+						if (freeCargoUnitsInFleet.lt(new BN(fixedAmount))) {
 							return yield* Effect.fail(
 								new FleetNotEnoughSpaceError({
 									amountAdded: fixedAmount.toString(),
-									amountAvailable: freeAmountInFleet.toString(),
+									amountAvailable: freeCargoUnitsInFleet.toString(),
 									cargoKind: cargoPodKind,
 								}),
 							);
@@ -64,16 +72,22 @@ export const computeDepositAmount =
 					value: capThreshold,
 					resourceAmountInFleet,
 					resourceAmountInStarbase,
-					freeAmountInFleet,
+					resourceFleetMaxCap,
+					freeCargoUnitsInFleet,
 				}) =>
 					Effect.sync(() => {
-						const neededQtyInTokens = capThreshold.sub(resourceAmountInFleet);
+						const neededQtyInCargoUnits = capThreshold.sub(
+							resourceAmountInFleet,
+						);
 
-						if (neededQtyInTokens.lten(0)) {
+						if (neededQtyInCargoUnits.lten(0)) {
 							return new BN(0);
 						}
 
-						return BN.min(neededQtyInTokens, resourceAmountInStarbase);
+						return BN.min(
+							freeCargoUnitsInFleet,
+							BN.min(neededQtyInCargoUnits, resourceAmountInStarbase),
+						);
 					}),
 			),
 			Match.when(
@@ -82,27 +96,40 @@ export const computeDepositAmount =
 					value: floorThreshold,
 					resourceAmountInFleet,
 					resourceAmountInStarbase,
+					freeCargoUnitsInFleet,
 				}) =>
 					Effect.gen(function* () {
-						const neededQtyInTokens = floorThreshold.sub(resourceAmountInFleet);
+						const neededQtyInCargoUnits = floorThreshold.sub(
+							resourceAmountInFleet,
+						);
 
-						if (neededQtyInTokens.lten(0)) {
+						if (neededQtyInCargoUnits.lten(0)) {
 							return new BN(0);
 						}
 
-						if (neededQtyInTokens.gt(resourceAmountInStarbase)) {
+						if (neededQtyInCargoUnits.gt(resourceAmountInStarbase)) {
 							return yield* Effect.fail(
 								new ResourceNotEnoughError({
 									from: "starbase",
 									entity: starbaseAddress,
 									resourceMint,
 									amountAvailable: resourceAmountInStarbase.toString(),
-									amountAdded: neededQtyInTokens.toString(),
+									amountAdded: neededQtyInCargoUnits.toString(),
 								}),
 							);
 						}
 
-						return neededQtyInTokens;
+						if (neededQtyInCargoUnits.gt(freeCargoUnitsInFleet)) {
+							return yield* Effect.fail(
+								new FleetNotEnoughSpaceError({
+									amountAdded: neededQtyInCargoUnits.toString(),
+									amountAvailable: freeCargoUnitsInFleet.toString(),
+									cargoKind: cargoPodKind,
+								}),
+							);
+						}
+
+						return neededQtyInCargoUnits;
 					}),
 			),
 			Match.when(
@@ -110,7 +137,7 @@ export const computeDepositAmount =
 				({
 					value: minFillThreshold,
 					resourceAmountInFleet,
-					freeAmountInFleet,
+					freeCargoUnitsInFleet,
 					resourceAmountInStarbase,
 				}) =>
 					Effect.gen(function* () {
@@ -118,24 +145,24 @@ export const computeDepositAmount =
 							return new BN(0);
 						}
 
-						const neededQtyInTokens = BN.max(
+						const neededQtyInCargoUnits = BN.max(
 							minFillThreshold.sub(resourceAmountInFleet),
 							new BN(0),
 						);
 
-						if (neededQtyInTokens.gt(resourceAmountInStarbase)) {
+						if (neededQtyInCargoUnits.gt(resourceAmountInStarbase)) {
 							return yield* Effect.fail(
 								new ResourceNotEnoughError({
 									from: "starbase",
 									entity: starbaseAddress,
 									resourceMint,
 									amountAvailable: resourceAmountInStarbase.toString(),
-									amountAdded: neededQtyInTokens.toString(),
+									amountAdded: neededQtyInCargoUnits.toString(),
 								}),
 							);
 						}
 
-						return BN.min(freeAmountInFleet, resourceAmountInStarbase);
+						return BN.min(freeCargoUnitsInFleet, resourceAmountInStarbase);
 					}),
 			),
 			Match.exhaustive,

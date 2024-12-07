@@ -1,7 +1,10 @@
-import type { PublicKey } from "@solana/web3.js";
-import { Fleet, SAGE_CARGO_STAT_VALUE_INDEX } from "@staratlas/sage";
+import {
+	Fleet,
+	SAGE_CARGO_STAT_VALUE_INDEX,
+	getCargoSpaceUsedByTokenAmount,
+} from "@staratlas/sage";
 import BN from "bn.js";
-import { Effect, pipe } from "effect";
+import { Effect, Array as EffectArray, Option, pipe } from "effect";
 import type { LoadResourceInput } from "../../../../decoders";
 import { getAssociatedTokenAddress } from "../../../../utils/getAssociatedTokenAddress";
 import { isResourceAllowedForCargoPod } from "../../../../utils/resources/isResourceAllowedForCargoPod";
@@ -15,7 +18,6 @@ import { getGameContext } from "../../../services/GameService/utils";
 import { SolanaService } from "../../../services/SolanaService";
 import {
 	getCargoTypeAccount,
-	getFleetAccount,
 	getStarbaseAccount,
 } from "../../../utils/accounts";
 import {
@@ -34,10 +36,10 @@ import { computeDepositAmount } from "./computeDepositAmout";
 
 export const createDepositCargoToFleetIx = ({
 	item,
-	fleetAddress,
+	fleetAccount,
 }: {
 	item: LoadResourceInput;
-	fleetAddress: PublicKey;
+	fleetAccount: Fleet;
 }) =>
 	Effect.gen(function* () {
 		const { amount, cargoPodKind, mode, resourceMint } = item;
@@ -64,8 +66,6 @@ export const createDepositCargoToFleetIx = ({
 
 		const gameService = yield* GameService;
 		const context = yield* getGameContext();
-
-		const fleetAccount = yield* getFleetAccount(fleetAddress);
 
 		const cargoPodInfo = yield* getFleetCargoPodInfoByType({
 			fleetAccount,
@@ -131,7 +131,7 @@ export const createDepositCargoToFleetIx = ({
 		const targetTokenAccount =
 			yield* gameService.utils.createAssociatedTokenAccountIdempotent(
 				resourceMint,
-				cargoPodInfo.key,
+				cargoPodInfo.cargoPod.key,
 				true,
 			);
 
@@ -139,44 +139,66 @@ export const createDepositCargoToFleetIx = ({
 
 		const ix_0 = targetTokenAccount.instructions;
 
+		const resourceAmountInFleetInCargoUnits = EffectArray.findFirst(
+			cargoPodInfo.resources,
+			(resource) => resource.mint.equals(resourceMint),
+		).pipe(
+			Option.map((resource) => resource.amountInCargoUnits),
+			Option.getOrElse(() => new BN(0)),
+		);
+
 		const cargoTypeAddress = yield* getCargoTypeAddress(
 			resourceMint,
 			context.gameInfo.cargoStatsDefinition.key,
 			context.gameInfo.cargoStatsDefinition.data.seqId,
 		);
 
-		const cargoType = yield* getCargoTypeAccount(cargoTypeAddress);
+		const cargoTypeAccount = yield* getCargoTypeAccount(cargoTypeAddress);
 
 		const resourceSpaceMultiplier =
-			cargoType.stats[SAGE_CARGO_STAT_VALUE_INDEX] ?? new BN(0);
+			cargoTypeAccount.stats[SAGE_CARGO_STAT_VALUE_INDEX] ?? new BN(1);
 
-		const fleetMaxCapacityInTokens = cargoPodInfo.maxCapacity.div(
-			resourceSpaceMultiplier,
+		const fleetMaxCapacityInCargoUnits = cargoPodInfo.maxCapacityInCargoUnits;
+
+		const amountInCargoUnits = getCargoSpaceUsedByTokenAmount(
+			cargoTypeAccount,
+			new BN(amount),
 		);
 
-		const loadedAmountInTokens = cargoPodInfo.loadedAmountInCargoUnits.div(
-			resourceSpaceMultiplier,
-		);
-
-		const finalAmountToDeposit = yield* computeDepositAmount({
+		const finalAmountToDepositInCargoUnits = yield* computeDepositAmount({
 			cargoPodKind,
 			resourceMint,
 			starbaseAddress: starbasePlayerCargoPodsPubkey,
 		})({
-			resourceFleetMaxCap: fleetMaxCapacityInTokens,
 			mode,
-			resourceAmountInFleet: loadedAmountInTokens,
-			resourceAmountInStarbase: starbaseResourceAmountInTokens,
-			value: new BN(amount),
+			resourceFleetMaxCap: fleetMaxCapacityInCargoUnits,
+			resourceAmountInFleet: resourceAmountInFleetInCargoUnits,
+			resourceAmountInStarbase: getCargoSpaceUsedByTokenAmount(
+				cargoTypeAccount,
+				starbaseResourceAmountInTokens,
+			),
+			totalResourcesAmountInFleet:
+				cargoPodInfo.totalResourcesAmountInCargoUnits,
+			value: amountInCargoUnits,
 		});
 
-		yield* Effect.log("Load cargo amount").pipe(
+		const finalAmountToDeposit = finalAmountToDepositInCargoUnits.div(
+			resourceSpaceMultiplier,
+		);
+
+		yield* Effect.log(`Load cargo in ${cargoPodKind}`).pipe(
 			Effect.annotateLogs({
-				resourceFleetMaxCap: fleetMaxCapacityInTokens.toString(),
+				cargoPodKind,
+				resourceFleetMaxCap: fleetMaxCapacityInCargoUnits.toString(),
 				mode,
-				resourceAmountInFleet: loadedAmountInTokens.toString(),
+				totalResourcesAmountInFleet:
+					cargoPodInfo.totalResourcesAmountInCargoUnits.toString(),
+				resourceAmountInFleet: resourceAmountInFleetInCargoUnits.toString(),
 				resourceAmountInStarbase: starbaseResourceAmountInTokens.toString(),
-				amount,
+				amount: amount.toString(),
+				amountInCargoUnits: amountInCargoUnits.toString(),
+				finalAmountToDepositInCargoUnits:
+					finalAmountToDepositInCargoUnits.toString(),
 				finalAmountToDeposit: finalAmountToDeposit.toString(),
 			}),
 		);
@@ -214,10 +236,10 @@ export const createDepositCargoToFleetIx = ({
 			"funder",
 			starbasePubkey,
 			starbasePlayerPubkey,
-			fleetAddress,
+			fleetAccount.key,
 			starbasePlayerCargoPodsPubkey,
-			cargoPodInfo.key,
-			cargoType.key,
+			cargoPodInfo.cargoPod.key,
+			cargoTypeAccount.key,
 			context.gameInfo.cargoStatsDefinition.key,
 			starbaseResourceTokenAccount,
 			tokenAccountToPubkey,

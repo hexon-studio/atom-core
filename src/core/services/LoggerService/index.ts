@@ -2,7 +2,6 @@ import {
 	Array as EffectArray,
 	HashMap,
 	Inspectable,
-	Layer,
 	Logger,
 	Match,
 	Record,
@@ -60,4 +59,7 @@ const createLogger = (opts: GlobalOptionsWithWebhook) => {
 export const createLoggerServiceLive = (opts: GlobalOptionsWithWebhook) =>
 	getEnv() === "production" && opts.loggingToken
 		? Logger.replace(Logger.defaultLogger, createLogger(opts))
-		: Layer.empty;
+		: Logger.replace(
+				Logger.defaultLogger,
+				Logger.prettyLogger({ mode: "tty" }),
+			);

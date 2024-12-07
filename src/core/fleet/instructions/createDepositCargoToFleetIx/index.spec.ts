@@ -2,6 +2,7 @@ import { Keypair, PublicKey } from "@solana/web3.js";
 import { AnchorProvider } from "@staratlas/anchor";
 import { keypairToAsyncSigner } from "@staratlas/data-source";
 import type { PlayerProfile } from "@staratlas/player-profile";
+import type { Fleet } from "@staratlas/sage";
 import { Effect, Exit, Layer, Option, Ref } from "effect";
 import { constant, unsafeCoerce } from "effect/Function";
 import mock from "mock-fs";
@@ -115,7 +116,7 @@ describe("createDepositCargoToFleetIx", () => {
 				cargoPodKind: "ammo_bank",
 				resourceMint: resourceNameToMint.Carbon,
 			},
-			fleetAddress: noopPublicKey,
+			fleetAccount: {} as Fleet,
 		}).pipe(Effect.provide(mainLive));
 
 		const result = await Effect.runPromiseExit(program);
@@ -145,7 +146,7 @@ describe("createDepositCargoToFleetIx", () => {
 					resourceMint: new PublicKey(resourceMint),
 					mode: "fixed",
 				},
-				fleetAddress: noopPublicKey,
+				fleetAccount: {} as Fleet,
 			}).pipe(Effect.provide(mainLive));
 
 			const result = await Effect.runPromiseExit(program);

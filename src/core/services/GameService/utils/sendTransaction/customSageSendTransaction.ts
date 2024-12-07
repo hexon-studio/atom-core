@@ -33,7 +33,11 @@ export class TransactionFailedError extends Data.TaggedError(
 	"TransactionFailedError",
 )<{ error: TransactionError; signature: string }> {
 	override get message() {
-		return String(this.error);
+		try {
+			return JSON.stringify(this.error);
+		} catch {
+			return String(this.error);
+		}
 	}
 }
 
