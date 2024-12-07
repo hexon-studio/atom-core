@@ -171,7 +171,7 @@ export const createStopMiningIx = ({
 			resourceKey,
 			planetAddress,
 			fleetAccount.data.fuelTank,
-			fuelInTankData.cargoTypeKey,
+			fuelInTankData.cargoTypeAccount.key,
 			context.gameInfo.cargoStatsDefinition.key,
 			miningXpKey,
 			context.gameInfo.game.data.points.miningXpCategory.category,

@@ -131,7 +131,7 @@ export const createDepositCargoToFleetIx = ({
 		const targetTokenAccount =
 			yield* gameService.utils.createAssociatedTokenAccountIdempotent(
 				resourceMint,
-				cargoPodInfo.key,
+				cargoPodInfo.cargoPod.key,
 				true,
 			);
 
@@ -147,17 +147,6 @@ export const createDepositCargoToFleetIx = ({
 			Option.getOrElse(() => new BN(0)),
 		);
 
-		// if (Option.isNone(maybeCargoResource)) {
-		// 	return yield* Effect.fail(
-		// 		new InvalidResourceForPodKindError({
-		// 			cargoPodKind,
-		// 			resourceMint,
-		// 		}),
-		// 	);
-		// }
-
-		// const cargoTypeAccount = maybeCargoResource.value.cargoTypeAccount;
-
 		const cargoTypeAddress = yield* getCargoTypeAddress(
 			resourceMint,
 			context.gameInfo.cargoStatsDefinition.key,
@@ -169,7 +158,7 @@ export const createDepositCargoToFleetIx = ({
 		const resourceSpaceMultiplier =
 			cargoTypeAccount.stats[SAGE_CARGO_STAT_VALUE_INDEX] ?? new BN(1);
 
-		const fleetMaxCapacityInCargoUnits = cargoPodInfo.maxCapacity;
+		const fleetMaxCapacityInCargoUnits = cargoPodInfo.maxCapacityInCargoUnits;
 
 		const amountInCargoUnits = getCargoSpaceUsedByTokenAmount(
 			cargoTypeAccount,
@@ -188,7 +177,8 @@ export const createDepositCargoToFleetIx = ({
 				cargoTypeAccount,
 				starbaseResourceAmountInTokens,
 			),
-			totalResourcesAmountInFleet: cargoPodInfo.loadedAmountInCargoUnits,
+			totalResourcesAmountInFleet:
+				cargoPodInfo.totalResourcesAmountInCargoUnits,
 			value: amountInCargoUnits,
 		});
 
@@ -202,7 +192,7 @@ export const createDepositCargoToFleetIx = ({
 				resourceFleetMaxCap: fleetMaxCapacityInCargoUnits.toString(),
 				mode,
 				totalResourcesAmountInFleet:
-					cargoPodInfo.loadedAmountInCargoUnits.toString(),
+					cargoPodInfo.totalResourcesAmountInCargoUnits.toString(),
 				resourceAmountInFleet: resourceAmountInFleetInCargoUnits.toString(),
 				resourceAmountInStarbase: starbaseResourceAmountInTokens.toString(),
 				amount: amount.toString(),
@@ -248,7 +238,7 @@ export const createDepositCargoToFleetIx = ({
 			starbasePlayerPubkey,
 			fleetAccount.key,
 			starbasePlayerCargoPodsPubkey,
-			cargoPodInfo.key,
+			cargoPodInfo.cargoPod.key,
 			cargoTypeAccount.key,
 			context.gameInfo.cargoStatsDefinition.key,
 			starbaseResourceTokenAccount,

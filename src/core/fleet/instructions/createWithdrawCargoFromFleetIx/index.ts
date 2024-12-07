@@ -4,9 +4,10 @@ import {
 	Fleet,
 	SAGE_CARGO_STAT_VALUE_INDEX,
 	StarbasePlayer,
+	getCargoSpaceUsedByTokenAmount,
 } from "@staratlas/sage";
 import BN from "bn.js";
-import { Data, Effect, Option, pipe } from "effect";
+import { Data, Effect, Array as EffectArray, Option, pipe } from "effect";
 import type { UnloadResourceInput } from "../../../../decoders";
 import { getAssociatedTokenAddress } from "../../../../utils/getAssociatedTokenAddress";
 import { isResourceAllowedForCargoPod } from "../../../../utils/resources/isResourceAllowedForCargoPod";
@@ -88,7 +89,7 @@ export const createWithdrawCargoFromFleetIx = ({
 
 		const cargoPodTokenAccount = yield* getAssociatedTokenAddress(
 			resourceMint,
-			cargoPodInfo.key,
+			cargoPodInfo.cargoPod.key,
 			true,
 		);
 
@@ -176,45 +177,36 @@ export const createWithdrawCargoFromFleetIx = ({
 			context.gameInfo.cargoStatsDefinition.data.seqId,
 		);
 
-		const cargoType = yield* getCargoTypeAccount(cargoTypeAddress);
+		const cargoTypeAccount = yield* getCargoTypeAccount(cargoTypeAddress);
 
-		const resourceSpaceMultiplier =
-			cargoType.stats[SAGE_CARGO_STAT_VALUE_INDEX] ?? new BN(0);
-
-		const fleetMaxCapacityInTokens = cargoPodInfo.maxCapacity.div(
-			resourceSpaceMultiplier,
+		const resourceAmountInFleetInCargoUnits = EffectArray.findFirst(
+			cargoPodInfo.resources,
+			(resource) => resource.mint.equals(resourceMint),
+		).pipe(
+			Option.map((resource) => resource.amountInCargoUnits),
+			Option.getOrElse(() => new BN(0)),
 		);
 
-		const loadedResourcesAmountInCargoUnits = cargoPodInfo.resources.reduce(
-			(acc, item) => {
-				if (item.mint.equals(resourceMint)) {
-					return acc.add(item.amountInCargoUnits);
-				}
-
-				return acc;
-			},
-			new BN(0),
-		);
-
-		const loadedResourcesAmountInTokens = loadedResourcesAmountInCargoUnits.div(
-			resourceSpaceMultiplier,
-		);
-
-		const unloadAmount = yield* computeWithdrawAmount({
+		const unloadAmountInCargoUnits = yield* computeWithdrawAmount({
 			fleetAddress: fleetAccount.key,
 			resourceMint,
 		})({
 			mode,
-			resourceAmountInFleet: loadedResourcesAmountInTokens,
-			resourceFleetMaxCap: fleetMaxCapacityInTokens,
-			value: new BN(amount),
+			resourceAmountInFleet: resourceAmountInFleetInCargoUnits,
+			resourceFleetMaxCap: cargoPodInfo.maxCapacityInCargoUnits,
+			value: getCargoSpaceUsedByTokenAmount(cargoTypeAccount, new BN(amount)),
 		});
+
+		const resourceSpaceMultiplier =
+			cargoTypeAccount.stats[SAGE_CARGO_STAT_VALUE_INDEX] ?? new BN(1);
+
+		const unloadAmount = unloadAmountInCargoUnits.div(resourceSpaceMultiplier);
 
 		yield* Effect.log("Unloading cargo amount").pipe(
 			Effect.annotateLogs({
 				mode,
-				resourceAmountInFleet: loadedResourcesAmountInTokens.toString(),
-				resourceFleetMaxCap: fleetMaxCapacityInTokens.toString(),
+				resourceAmountInFleet: resourceAmountInFleetInCargoUnits.toString(),
+				resourceFleetMaxCap: cargoPodInfo.maxCapacityInCargoUnits.toString(),
 				amount,
 				unloadAmount: unloadAmount.toString(),
 			}),
@@ -248,7 +240,7 @@ export const createWithdrawCargoFromFleetIx = ({
 			starbaseAddress,
 			starbasePlayerAddress,
 			fleetAccount.key,
-			cargoPodInfo.key,
+			cargoPodInfo.cargoPod.key,
 			starbasePlayerCargoPodAddress,
 			cargoTypeAddress,
 			context.gameInfo.cargoStatsDefinition.key,

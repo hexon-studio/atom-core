@@ -149,7 +149,7 @@ describe("computeDepositAmout", () => {
 		});
 	});
 
-	describe("Floor mode", () => {
+	describe("Min mode", () => {
 		it("returns 0 if the amout in fleet is more or equal to value", async () => {
 			const result = await Effect.runPromise(
 				compute({
@@ -165,7 +165,7 @@ describe("computeDepositAmout", () => {
 			expect(result).toBe("0");
 		});
 
-		it("returns StarbaseResourceNotEnoughError if the amount needed is more than the starbase resource amount", async () => {
+		it("returns ResourceNotEnoughError if the amount needed is more than the starbase resource amount", async () => {
 			const result = await Effect.runPromiseExit(
 				compute({
 					mode: "min",
@@ -197,6 +197,36 @@ describe("computeDepositAmout", () => {
 			`);
 		});
 
+		it("returns ResourceNotEnoughError if the amount needed is more than the free available space in fleet", async () => {
+			const result = await Effect.runPromiseExit(
+				compute({
+					mode: "min",
+					value: new BN(100),
+					resourceFleetMaxCap: new BN(1000),
+					resourceAmountInFleet: new BN(50),
+					resourceAmountInStarbase: new BN(1000),
+					totalResourcesAmountInFleet: new BN(951),
+				}),
+			);
+
+			expect(result).toMatchInlineSnapshot(`
+				{
+				  "_id": "Exit",
+				  "_tag": "Failure",
+				  "cause": {
+				    "_id": "Cause",
+				    "_tag": "Fail",
+				    "failure": {
+				      "_tag": "FleetNotEnoughSpaceError",
+				      "amountAdded": "50",
+				      "amountAvailable": "49",
+				      "cargoKind": "ammo_bank",
+				    },
+				  },
+				}
+			`);
+		});
+
 		it("returns the needed amount if possible", async () => {
 			const result = await Effect.runPromise(
 				compute({
@@ -205,7 +235,7 @@ describe("computeDepositAmout", () => {
 					resourceFleetMaxCap: new BN(1000),
 					resourceAmountInFleet: new BN(50),
 					resourceAmountInStarbase: new BN(1000),
-					totalResourcesAmountInFleet: new BN(0),
+					totalResourcesAmountInFleet: new BN(50),
 				}).pipe(Effect.map((x) => x.toString())),
 			);
 

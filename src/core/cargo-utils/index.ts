@@ -58,7 +58,7 @@ export const getFleetCargoPodInfoByType = ({
 
 		const cargoStats = fleetAccount.data.stats.cargoStats as CargoStats;
 
-		const cargoPodMaxCapacity: BN = Match.value(type).pipe(
+		const maxCapacityInCargoUnits: BN = Match.value(type).pipe(
 			Match.when("ammo_bank", () => new BN(cargoStats.ammoCapacity)),
 			Match.when("cargo_hold", () => new BN(cargoStats.cargoCapacity)),
 			Match.when("fuel_tank", () => new BN(cargoStats.fuelCapacity)),
@@ -96,17 +96,16 @@ export const getFleetCargoPodInfoByType = ({
 			});
 		}
 
-		const loadedAmountInCargoUnits = resources.reduce(
+		const totalResourcesAmountInCargoUnits = resources.reduce(
 			(acc, item) => acc.add(item.amountInCargoUnits),
 			new BN(0),
 		);
 
 		const cargoPodInfo = {
-			key: cargoPod.key,
-			loadedAmountInCargoUnits,
+			cargoPod,
+			maxCapacityInCargoUnits,
 			resources,
-			maxCapacity: cargoPodMaxCapacity,
-			podIsFull: loadedAmountInCargoUnits.eq(cargoPodMaxCapacity),
+			totalResourcesAmountInCargoUnits,
 		};
 
 		yield* Effect.log("Cargo info fetched.").pipe(

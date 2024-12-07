@@ -73,14 +73,10 @@ export const computeDepositAmount =
 					resourceAmountInFleet,
 					resourceAmountInStarbase,
 					resourceFleetMaxCap,
+					freeCargoUnitsInFleet,
 				}) =>
 					Effect.sync(() => {
-						const capThresholdCapped = BN.min(
-							capThreshold,
-							resourceFleetMaxCap,
-						);
-
-						const neededQtyInCargoUnits = capThresholdCapped.sub(
+						const neededQtyInCargoUnits = capThreshold.sub(
 							resourceAmountInFleet,
 						);
 
@@ -88,7 +84,10 @@ export const computeDepositAmount =
 							return new BN(0);
 						}
 
-						return BN.min(neededQtyInCargoUnits, resourceAmountInStarbase);
+						return BN.min(
+							freeCargoUnitsInFleet,
+							BN.min(neededQtyInCargoUnits, resourceAmountInStarbase),
+						);
 					}),
 			),
 			Match.when(
@@ -97,6 +96,7 @@ export const computeDepositAmount =
 					value: floorThreshold,
 					resourceAmountInFleet,
 					resourceAmountInStarbase,
+					freeCargoUnitsInFleet,
 				}) =>
 					Effect.gen(function* () {
 						const neededQtyInCargoUnits = floorThreshold.sub(
@@ -115,6 +115,16 @@ export const computeDepositAmount =
 									resourceMint,
 									amountAvailable: resourceAmountInStarbase.toString(),
 									amountAdded: neededQtyInCargoUnits.toString(),
+								}),
+							);
+						}
+
+						if (neededQtyInCargoUnits.gt(freeCargoUnitsInFleet)) {
+							return yield* Effect.fail(
+								new FleetNotEnoughSpaceError({
+									amountAdded: neededQtyInCargoUnits.toString(),
+									amountAvailable: freeCargoUnitsInFleet.toString(),
+									cargoKind: cargoPodKind,
 								}),
 							);
 						}
