@@ -1,5 +1,13 @@
 
 
+## [1.7.4](https://github.com/hexon-studio/atom-core/compare/v1.7.3...v1.7.4) (2024-12-07)
+
+
+### Bug Fixes
+
+* load-cargo compute ([30311da](https://github.com/hexon-studio/atom-core/commit/30311dadcec28b8a3fecda8a506570ef511c7e7f))
+* unload-cargo compute ([2af5c77](https://github.com/hexon-studio/atom-core/commit/2af5c77f7eecb36a31a34584a87da68dfe13bec5))
+
 ## [1.7.3](https://github.com/hexon-studio/atom-core/compare/v1.7.2...v1.7.3) (2024-12-07)
 
 ## [1.7.2](https://github.com/hexon-studio/atom-core/compare/v1.7.1...v1.7.2) (2024-12-04)
