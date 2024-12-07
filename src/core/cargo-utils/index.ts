@@ -82,16 +82,16 @@ export const getFleetCargoPodInfoByType = ({
 				context.gameInfo.cargoStatsDefinition.data.seqId,
 			);
 
-			const cargoType = yield* getCargoTypeAccount(cargoTypeKey);
+			const cargoTypeAccount = yield* getCargoTypeAccount(cargoTypeKey);
 
 			resources.push({
 				mint: cargoPodTokenAccount.mint,
-				amount: new BN(cargoPodTokenAccount.amount.toString()),
+				amountInTokens: new BN(cargoPodTokenAccount.amount.toString()),
 				amountInCargoUnits: getCargoSpaceUsedByTokenAmount(
-					cargoType,
+					cargoTypeAccount,
 					new BN(cargoPodTokenAccount.amount.toString()),
 				),
-				cargoTypeKey: cargoType.key,
+				cargoTypeAccount,
 				tokenAccountKey: cargoPodTokenAccount.address,
 			});
 		}

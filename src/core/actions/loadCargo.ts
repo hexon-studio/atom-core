@@ -9,6 +9,7 @@ import {
 } from "../fleet/instructions";
 import { GameService } from "../services/GameService";
 import {
+	getFleetAccount,
 	getFleetAccountByNameOrAddress,
 	getMineItemAccount,
 	getResourceAccount,
@@ -75,10 +76,34 @@ export const loadCargo = ({
 
 		ixs.push(...preIxs);
 
+		const freshFleetAccount = yield* getFleetAccount(fleetAccount.key);
+
+		// const groupedItems = EffectArray.groupBy(
+		// 	items,
+		// 	(item) => item.cargoPodKind,
+		// );
+
+		// const otherItems = [
+		// 	...(groupedItems?.ammo_bank ?? []),
+		// 	...(groupedItems?.fuel_tank ?? []),
+		// ];
+
+		// const cargoPodInfo = yield* getFleetCargoPodInfoByType({
+		// 	fleetAccount: freshFleetAccount,
+		// 	type: "cargo_hold",
+		// });
+
+		// const cargoItems = groupedItems?.cargo_hold ?? [];
+
+		// const cargoItemsSpaceInTokens = cargoItems.reduce((acc, item) => {
+		// 	const amount = item.amount;
+		// 	return acc + item.amount;
+		// }, 0);
+
 		const loadCargoIxs = yield* Effect.all(
 			EffectArray.map(items, (item) =>
 				createDepositCargoToFleetIx({
-					fleetAddress: fleetAccount.key,
+					fleetAccount: freshFleetAccount,
 					item,
 				}),
 			),

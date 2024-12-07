@@ -19,6 +19,7 @@ describe("computeDepositAmout", () => {
 					resourceFleetMaxCap: new BN(100),
 					resourceAmountInFleet: new BN(0),
 					resourceAmountInStarbase: new BN(1000),
+					totalResourcesAmountInFleet: new BN(0),
 				}).pipe(Effect.map((x) => x.toString())),
 			);
 
@@ -33,6 +34,7 @@ describe("computeDepositAmout", () => {
 					resourceFleetMaxCap: new BN(99),
 					resourceAmountInFleet: new BN(0),
 					resourceAmountInStarbase: new BN(1000),
+					totalResourcesAmountInFleet: new BN(0),
 				}),
 			);
 
@@ -62,6 +64,7 @@ describe("computeDepositAmout", () => {
 					resourceFleetMaxCap: new BN(100),
 					resourceAmountInFleet: new BN(0),
 					resourceAmountInStarbase: new BN(99),
+					totalResourcesAmountInFleet: new BN(0),
 				}),
 			);
 
@@ -95,6 +98,7 @@ describe("computeDepositAmout", () => {
 					resourceFleetMaxCap: new BN(1000),
 					resourceAmountInFleet: new BN(101),
 					resourceAmountInStarbase: new BN(0),
+					totalResourcesAmountInFleet: new BN(0),
 				}).pipe(Effect.map((x) => x.toString())),
 			);
 
@@ -107,6 +111,7 @@ describe("computeDepositAmout", () => {
 					resourceFleetMaxCap: new BN(1000),
 					resourceAmountInFleet: new BN(100),
 					resourceAmountInStarbase: new BN(0),
+					totalResourcesAmountInFleet: new BN(0),
 				}).pipe(Effect.map((x) => x.toString())),
 			);
 
@@ -121,6 +126,7 @@ describe("computeDepositAmout", () => {
 					resourceFleetMaxCap: new BN(100),
 					resourceAmountInFleet: new BN(50),
 					resourceAmountInStarbase: new BN(100),
+					totalResourcesAmountInFleet: new BN(0),
 				}).pipe(Effect.map((x) => x.toString())),
 			);
 
@@ -135,6 +141,7 @@ describe("computeDepositAmout", () => {
 					resourceFleetMaxCap: new BN(100),
 					resourceAmountInFleet: new BN(50),
 					resourceAmountInStarbase: new BN(23),
+					totalResourcesAmountInFleet: new BN(0),
 				}).pipe(Effect.map((x) => x.toString())),
 			);
 
@@ -151,6 +158,7 @@ describe("computeDepositAmout", () => {
 					resourceFleetMaxCap: new BN(50),
 					resourceAmountInFleet: new BN(100),
 					resourceAmountInStarbase: new BN(0),
+					totalResourcesAmountInFleet: new BN(0),
 				}).pipe(Effect.map((x) => x.toString())),
 			);
 
@@ -165,6 +173,7 @@ describe("computeDepositAmout", () => {
 					resourceFleetMaxCap: new BN(1000),
 					resourceAmountInFleet: new BN(50),
 					resourceAmountInStarbase: new BN(49),
+					totalResourcesAmountInFleet: new BN(0),
 				}),
 			);
 
@@ -196,6 +205,7 @@ describe("computeDepositAmout", () => {
 					resourceFleetMaxCap: new BN(1000),
 					resourceAmountInFleet: new BN(50),
 					resourceAmountInStarbase: new BN(1000),
+					totalResourcesAmountInFleet: new BN(0),
 				}).pipe(Effect.map((x) => x.toString())),
 			);
 
@@ -212,6 +222,7 @@ describe("computeDepositAmout", () => {
 					resourceFleetMaxCap: new BN(1000),
 					resourceAmountInFleet: new BN(50),
 					resourceAmountInStarbase: new BN(49),
+					totalResourcesAmountInFleet: new BN(0),
 				}),
 			);
 
@@ -243,6 +254,7 @@ describe("computeDepositAmout", () => {
 					resourceFleetMaxCap: new BN(1000),
 					resourceAmountInFleet: new BN(100),
 					resourceAmountInStarbase: new BN(1000),
+					totalResourcesAmountInFleet: new BN(0),
 				}).pipe(Effect.map((x) => x.toString())),
 			);
 
@@ -255,20 +267,22 @@ describe("computeDepositAmout", () => {
 					resourceFleetMaxCap: new BN(1000),
 					resourceAmountInFleet: new BN(100),
 					resourceAmountInStarbase: new BN(1000),
+					totalResourcesAmountInFleet: new BN(0),
 				}).pipe(Effect.map((x) => x.toString())),
 			);
 
 			expect(result2).toBe("0");
 		});
 
-		it("returns the amount for filling the space if have enough resoruce in starbase", async () => {
+		it("returns the amount for filling the space if have enough resource in starbase", async () => {
 			const result = await Effect.runPromise(
 				compute({
 					mode: "min-and-fill",
 					value: new BN(100),
 					resourceFleetMaxCap: new BN(1000),
-					resourceAmountInFleet: new BN(50),
+					resourceAmountInFleet: new BN(0),
 					resourceAmountInStarbase: new BN(1001),
+					totalResourcesAmountInFleet: new BN(50),
 				}).pipe(Effect.map((x) => x.toString())),
 			);
 
@@ -283,6 +297,7 @@ describe("computeDepositAmout", () => {
 					resourceFleetMaxCap: new BN(1000),
 					resourceAmountInFleet: new BN(50),
 					resourceAmountInStarbase: new BN(666),
+					totalResourcesAmountInFleet: new BN(0),
 				}).pipe(Effect.map((x) => x.toString())),
 			);
 
