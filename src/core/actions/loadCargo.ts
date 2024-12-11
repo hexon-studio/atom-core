@@ -1,12 +1,25 @@
 import type { PublicKey } from "@solana/web3.js";
 import type { InstructionReturn } from "@staratlas/data-source";
-import { Data, Effect, Array as EffectArray, Match, pipe } from "effect";
+import { SAGE_CARGO_STAT_VALUE_INDEX } from "@staratlas/sage";
+import BN from "bn.js";
+import {
+	Data,
+	Effect,
+	Array as EffectArray,
+	Match,
+	Option,
+	Record,
+	pipe,
+} from "effect";
+import { resourceMintToName } from "../../constants/resources";
 import type { LoadResourceInput } from "../../decoders";
+import { getFleetCargoPodInfoByType } from "../cargo-utils";
 import {
 	createDepositCargoToFleetIx,
 	createDockToStarbaseIx,
 	createStopMiningIx,
 } from "../fleet/instructions";
+import { getCurrentFleetSectorCoordinates } from "../fleet/utils/getCurrentFleetSectorCoordinates";
 import { GameService } from "../services/GameService";
 import {
 	getFleetAccount,
@@ -14,6 +27,11 @@ import {
 	getMineItemAccount,
 	getResourceAccount,
 } from "../utils/accounts";
+import {
+	type EnhancedResourceItem,
+	enrichLoadResourceInput,
+} from "../utils/enrichLoadResourceItem";
+import { getStarbaseInfoByCoords } from "../utils/getStarbaseInfo";
 import { createDrainVaultIx } from "../vault/instructions/createDrainVaultIx";
 
 export class BuildOptinalTxError extends Data.TaggedError(
@@ -76,37 +94,167 @@ export const loadCargo = ({
 
 		ixs.push(...preIxs);
 
-		const freshFleetAccount = yield* getFleetAccount(fleetAccount.key);
+		const [ammoBankPodInfo, fuelTankPodInfo, cargoHoldPodInfo] =
+			yield* Effect.all(
+				[
+					getFleetCargoPodInfoByType({
+						fleetAccount,
+						type: "ammo_bank",
+					}),
+					getFleetCargoPodInfoByType({
+						fleetAccount,
+						type: "fuel_tank",
+					}),
+					getFleetCargoPodInfoByType({
+						fleetAccount,
+						type: "cargo_hold",
+					}),
+				],
+				{ concurrency: "unbounded" },
+			);
 
-		// const groupedItems = EffectArray.groupBy(
-		// 	items,
-		// 	(item) => item.cargoPodKind,
-		// );
+		const fleetCoords = yield* getCurrentFleetSectorCoordinates(
+			fleetAccount.state,
+		);
 
-		// const otherItems = [
-		// 	...(groupedItems?.ammo_bank ?? []),
-		// 	...(groupedItems?.fuel_tank ?? []),
-		// ];
+		const starbaseInfo = yield* getStarbaseInfoByCoords({
+			startbaseCoords: fleetCoords,
+		});
 
-		// const cargoPodInfo = yield* getFleetCargoPodInfoByType({
-		// 	fleetAccount: freshFleetAccount,
-		// 	type: "cargo_hold",
-		// });
-
-		// const cargoItems = groupedItems?.cargo_hold ?? [];
-
-		// const cargoItemsSpaceInTokens = cargoItems.reduce((acc, item) => {
-		// 	const amount = item.amount;
-		// 	return acc + item.amount;
-		// }, 0);
-
-		const loadCargoIxs = yield* Effect.all(
-			EffectArray.map(items, (item) =>
-				createDepositCargoToFleetIx({
-					fleetAccount: freshFleetAccount,
+		const enhancedItems = yield* pipe(
+			items,
+			EffectArray.map((item) =>
+				enrichLoadResourceInput({
 					item,
+					pods: {
+						ammo_bank: ammoBankPodInfo,
+						fuel_tank: fuelTankPodInfo,
+						cargo_hold: cargoHoldPodInfo,
+					},
+					starbasePlayerCargoPodsPubkey:
+						starbaseInfo.starbasePlayerCargoPodsAccountPubkey,
 				}),
 			),
+			Effect.all,
+		);
+
+		const groupedItems = EffectArray.groupBy(
+			enhancedItems,
+			(item) => item.cargoPodKind,
+		);
+
+		const ammoAndFuelItems = [
+			...(groupedItems?.ammo_bank ?? []),
+			...(groupedItems?.fuel_tank ?? []),
+		];
+
+		const enhancedCargoItems = groupedItems?.cargo_hold ?? [];
+
+		const cargoItemsToLoad: Array<EnhancedResourceItem> = [];
+
+		// Check if the cargo_hold pod has enough space to load all the items
+		for (const enhancedItem of enhancedCargoItems) {
+			const reachedCapacity = EffectArray.reduce(
+				cargoItemsToLoad,
+				new BN(cargoHoldPodInfo.totalResourcesAmountInCargoUnits),
+				(acc, item) => acc.add(item.computedAmountInCargoUnits),
+			);
+
+			const nextReachedCapacity = reachedCapacity
+				.clone()
+				.add(enhancedItem.computedAmountInCargoUnits);
+
+			if (nextReachedCapacity.gt(cargoHoldPodInfo.maxCapacityInCargoUnits)) {
+				yield* Effect.log(
+					`Not enough space to load ${enhancedItem.resourceMint.toString()}, skipping`,
+				);
+
+				break;
+			}
+
+			cargoItemsToLoad.push(enhancedItem);
+		}
+
+		const loadingItems = cargoItemsToLoad.map((item) =>
+			pipe(
+				Record.get(resourceMintToName, item.resourceMint.toString()),
+				Option.getOrElse(() => item.resourceMint.toString()),
+			),
+		);
+
+		yield* Effect.log(`Loading: ${loadingItems.join()} items`).pipe(
+			Effect.annotateLogs({ cargoItemsToLoad }),
+		);
+
+		const allEnhancedItems: Array<EnhancedResourceItem> = [
+			...ammoAndFuelItems,
+			...cargoItemsToLoad,
+		];
+
+		const [loadEnhancedItems, skipLoadEnhancedItems] = pipe(
+			allEnhancedItems,
+			EffectArray.partition((item) => {
+				const resourceSpaceMultiplier =
+					item.cargoTypeAccount.stats[SAGE_CARGO_STAT_VALUE_INDEX] ?? new BN(1);
+
+				// NOTE: Transform amount in tokens
+				const finalAmountToDeposit = item.computedAmountInCargoUnits.div(
+					resourceSpaceMultiplier,
+				);
+
+				return finalAmountToDeposit.lten(0);
+			}),
+		);
+
+		if (skipLoadEnhancedItems.length) {
+			// NOTE: TLDR just logging the items that are not going to be loaded
+			yield* Effect.all(
+				EffectArray.map(skipLoadEnhancedItems, (item) => {
+					const resourceSpaceMultiplier =
+						item.cargoTypeAccount.stats[SAGE_CARGO_STAT_VALUE_INDEX] ??
+						new BN(1);
+
+					// NOTE: Transform amount in tokens
+					const finalAmountToDeposit = item.computedAmountInCargoUnits.div(
+						resourceSpaceMultiplier,
+					);
+
+					return Effect.log(
+						`Skip deposit of ${item.resourceMint.toString()}, computed amount is: ${finalAmountToDeposit.toString()}`,
+					);
+				}),
+			);
+		}
+
+		const freshFleetAccount = yield* getFleetAccount(fleetAccount.key);
+
+		const loadCargoIxs = yield* Effect.all(
+			EffectArray.map(loadEnhancedItems, (item) => {
+				const resourceSpaceMultiplier =
+					item.cargoTypeAccount.stats[SAGE_CARGO_STAT_VALUE_INDEX] ?? new BN(1);
+
+				// NOTE: Transform amount in tokens
+				const finalAmountToDeposit = item.computedAmountInCargoUnits.div(
+					resourceSpaceMultiplier,
+				);
+
+				return createDepositCargoToFleetIx({
+					fleetAccount: freshFleetAccount,
+					starbaseInfo,
+					item: {
+						amount: finalAmountToDeposit,
+						cargoPodInfo: Match.value(item.cargoPodKind).pipe(
+							Match.when("ammo_bank", () => ammoBankPodInfo),
+							Match.when("fuel_tank", () => fuelTankPodInfo),
+							Match.when("cargo_hold", () => cargoHoldPodInfo),
+							Match.exhaustive,
+						),
+						cargoPodKind: item.cargoPodKind,
+						resourceMint: item.resourceMint,
+						starbaseResourceTokenAccount: item.starbaseResourceTokenAccount,
+					},
+				});
+			}),
 		).pipe(Effect.map(EffectArray.flatten));
 
 		if (!loadCargoIxs.length) {

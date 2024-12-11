@@ -3,6 +3,7 @@ import { AnchorProvider } from "@staratlas/anchor";
 import { keypairToAsyncSigner } from "@staratlas/data-source";
 import type { PlayerProfile } from "@staratlas/player-profile";
 import type { Fleet } from "@staratlas/sage";
+import { BN } from "bn.js";
 import { Effect, Exit, Layer, Option, Ref } from "effect";
 import { constant, unsafeCoerce } from "effect/Function";
 import mock from "mock-fs";
@@ -10,6 +11,7 @@ import { createDepositCargoToFleetIx } from ".";
 import { resourceNameToMint } from "../../../../constants/resources";
 import { noopPublicKey } from "../../../../constants/tokens";
 import type { CargoPodKind } from "../../../../decoders";
+import type { CargoPodEnhanced } from "../../../cargo-utils";
 import { type GameContext, GameService } from "../../../services/GameService";
 import { findFleets } from "../../../services/GameService/methods/findFleets";
 import { findGame } from "../../../services/GameService/methods/findGame";
@@ -110,11 +112,18 @@ describe("createDepositCargoToFleetIx", () => {
 		const mainLive = createMockServiceLive(signer);
 
 		const program = createDepositCargoToFleetIx({
+			starbaseInfo: {
+				starbasePlayerCargoPodsAccountPubkey: PublicKey.default,
+				sagePlayerProfilePubkey: PublicKey.default,
+				starbasePlayerPubkey: PublicKey.default,
+				starbasePubkey: PublicKey.default,
+			},
 			item: {
-				mode: "fixed",
-				amount: 0,
+				amount: new BN(0),
+				cargoPodInfo: {} as CargoPodEnhanced,
 				cargoPodKind: "ammo_bank",
 				resourceMint: resourceNameToMint.Carbon,
+				starbaseResourceTokenAccount: PublicKey.default,
 			},
 			fleetAccount: {} as Fleet,
 		}).pipe(Effect.provide(mainLive));
@@ -124,7 +133,7 @@ describe("createDepositCargoToFleetIx", () => {
 		expect(result).toStrictEqual(
 			Exit.fail(
 				new InvalidAmountError({
-					amount: 0,
+					amount: "0",
 					resourceMint: resourceNameToMint.Carbon,
 				}),
 			),
@@ -140,11 +149,18 @@ describe("createDepositCargoToFleetIx", () => {
 			const mainLive = createMockServiceLive(signer);
 
 			const program = createDepositCargoToFleetIx({
+				starbaseInfo: {
+					starbasePlayerCargoPodsAccountPubkey: PublicKey.default,
+					sagePlayerProfilePubkey: PublicKey.default,
+					starbasePlayerPubkey: PublicKey.default,
+					starbasePubkey: PublicKey.default,
+				},
 				item: {
-					amount: 1,
+					starbaseResourceTokenAccount: PublicKey.default,
+					cargoPodInfo: {} as CargoPodEnhanced,
+					amount: new BN(1),
 					cargoPodKind,
 					resourceMint: new PublicKey(resourceMint),
-					mode: "fixed",
 				},
 				fleetAccount: {} as Fleet,
 			}).pipe(Effect.provide(mainLive));

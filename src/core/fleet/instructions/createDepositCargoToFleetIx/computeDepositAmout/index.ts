@@ -72,7 +72,6 @@ export const computeDepositAmount =
 					value: capThreshold,
 					resourceAmountInFleet,
 					resourceAmountInStarbase,
-					resourceFleetMaxCap,
 					freeCargoUnitsInFleet,
 				}) =>
 					Effect.sync(() => {

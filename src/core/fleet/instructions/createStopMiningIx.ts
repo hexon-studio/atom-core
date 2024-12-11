@@ -2,7 +2,7 @@ import type { PublicKey } from "@solana/web3.js";
 import type { InstructionReturn } from "@staratlas/data-source";
 import { Fleet, PlanetType, StarbasePlayer } from "@staratlas/sage";
 import type BN from "bn.js";
-import { Effect } from "effect";
+import { Effect, Option, Record } from "effect";
 import { isNone } from "effect/Option";
 import { resourceNameToMint } from "../../../constants/resources";
 import { getFleetCargoPodInfoByType } from "../../cargo-utils";
@@ -135,13 +135,16 @@ export const createStopMiningIx = ({
 			fleetAccount,
 		});
 
-		const fuelInTankData = fuelTankInfo.resources.find((item) =>
-			item.mint.equals(resourceNameToMint.Fuel),
+		const maybeFuelInTankData = Record.get(
+			fuelTankInfo.resources,
+			resourceNameToMint.Fuel.toString(),
 		);
 
-		if (!fuelInTankData) {
+		if (Option.isNone(maybeFuelInTankData)) {
 			return yield* Effect.fail(new FleetNotEnoughFuelError());
 		}
+
+		const fuelInTankData = maybeFuelInTankData.value;
 
 		const miningHandlerIxs = yield* createAsteroidMiningHandlerIx({
 			fleetAccount,

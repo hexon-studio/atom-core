@@ -86,7 +86,7 @@ export const resourceNames = [
 
 export type ResourceName = (typeof resourceNames)[number];
 
-export const resourceMintToName = {
+export const resourceMintToName: Record<string, ResourceName> = {
 	SiLiCA4xKGkyymB5XteUVmUeLqE4JGQTyWBpKFESLgh: "Silica",
 	Nitro6idW5JCb2ysUPGUAvVqv3HmUR7NVH7NdybGJ4L: "Nitrogen",
 	tiorehR1rLfeATZ96YoByUkvNFsBfUUSQWgSH2mizXL: "TitaniumOre",
