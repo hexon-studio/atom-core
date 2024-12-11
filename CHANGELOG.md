@@ -1,5 +1,12 @@
 
 
+# [1.8.0](https://github.com/hexon-studio/atom-core/compare/v1.7.4...v1.8.0) (2024-12-11)
+
+
+### Features
+
+* skip cargo resources if max cargo capacity is reached ([c03d40b](https://github.com/hexon-studio/atom-core/commit/c03d40be0a69fea54f6ee64f997ac98eb11752df))
+
 ## [1.7.4](https://github.com/hexon-studio/atom-core/compare/v1.7.3...v1.7.4) (2024-12-07)
 
 
