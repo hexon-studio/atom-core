@@ -61,5 +61,5 @@ export const createLoggerServiceLive = (opts: GlobalOptionsWithWebhook) =>
 		? Logger.replace(Logger.defaultLogger, createLogger(opts))
 		: Logger.replace(
 				Logger.defaultLogger,
-				Logger.prettyLogger({ mode: "tty" }),
+				Logger.prettyLogger({ mode: "auto" }),
 			);

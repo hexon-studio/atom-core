@@ -60,7 +60,7 @@ export class InvalidFleetStateError extends Data.TaggedError(
 
 export class InvalidAmountError extends Data.TaggedError("InvalidAmountError")<{
 	resourceMint?: PublicKey;
-	amount?: number;
+	amount?: string;
 }> {
 	override get message() {
 		if (this.resourceMint && this.amount !== undefined) {

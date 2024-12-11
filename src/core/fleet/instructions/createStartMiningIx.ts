@@ -1,7 +1,7 @@
 import type { PublicKey } from "@solana/web3.js";
 import { Fleet, PlanetType, StarbasePlayer } from "@staratlas/sage";
 import type BN from "bn.js";
-import { Effect } from "effect";
+import { Effect, Option, Record } from "effect";
 import { isNone } from "effect/Option";
 import { resourceNameToMint } from "../../../constants/resources";
 import { getFleetCargoPodInfoByType } from "../../cargo-utils";
@@ -128,18 +128,21 @@ export const createStartMiningIx = ({
 
 		const fleetKey = fleetAccount.key;
 
-		const fielCargoPodInfo = yield* getFleetCargoPodInfoByType({
+		const fuelCargoPodInfo = yield* getFleetCargoPodInfoByType({
 			type: "fuel_tank",
 			fleetAccount,
 		});
 
-		const fuelInTankData = fielCargoPodInfo.resources.find((item) =>
-			item.mint.equals(resourceNameToMint.Fuel),
+		const maybeFuelInTankData = Record.get(
+			fuelCargoPodInfo.resources,
+			resourceNameToMint.Fuel.toString(),
 		);
 
-		if (!fuelInTankData) {
+		if (Option.isNone(maybeFuelInTankData)) {
 			return yield* Effect.fail(new FleetNotEnoughFuelError());
 		}
+
+		const fuelInTankData = maybeFuelInTankData.value;
 
 		yield* Effect.log("Creating startMiningAsteroid IX");
 

@@ -7,7 +7,7 @@ import {
 	getCargoSpaceUsedByTokenAmount,
 } from "@staratlas/sage";
 import BN from "bn.js";
-import { Data, Effect, Array as EffectArray, Option, pipe } from "effect";
+import { Data, Effect, Option, Record, pipe } from "effect";
 import type { UnloadResourceInput } from "../../../../decoders";
 import { getAssociatedTokenAddress } from "../../../../utils/getAssociatedTokenAddress";
 import { isResourceAllowedForCargoPod } from "../../../../utils/resources/isResourceAllowedForCargoPod";
@@ -51,7 +51,7 @@ export const createWithdrawCargoFromFleetIx = ({
 
 		if (amount <= 0) {
 			return yield* Effect.fail(
-				new InvalidAmountError({ resourceMint, amount }),
+				new InvalidAmountError({ resourceMint, amount: amount.toString() }),
 			);
 		}
 
@@ -179,9 +179,9 @@ export const createWithdrawCargoFromFleetIx = ({
 
 		const cargoTypeAccount = yield* getCargoTypeAccount(cargoTypeAddress);
 
-		const resourceAmountInFleetInCargoUnits = EffectArray.findFirst(
+		const resourceAmountInFleetInCargoUnits = Record.get(
 			cargoPodInfo.resources,
-			(resource) => resource.mint.equals(resourceMint),
+			resourceMint.toString(),
 		).pipe(
 			Option.map((resource) => resource.amountInCargoUnits),
 			Option.getOrElse(() => new BN(0)),
@@ -199,7 +199,7 @@ export const createWithdrawCargoFromFleetIx = ({
 			mode,
 			resourceAmountInFleet: resourceAmountInFleetInCargoUnits,
 			resourceFleetMaxCap: cargoPodInfo.maxCapacityInCargoUnits,
-			value: getCargoSpaceUsedByTokenAmount(cargoTypeAccount, new BN(amount)),
+			value: amountInCargoUnits,
 		});
 
 		const resourceSpaceMultiplier =

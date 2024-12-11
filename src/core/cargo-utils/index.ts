@@ -1,4 +1,5 @@
 import { PublicKey } from "@solana/web3.js";
+import type { CargoType } from "@staratlas/cargo";
 import {
 	type CargoStats,
 	type Fleet,
@@ -6,7 +7,7 @@ import {
 	getCargoPodsByAuthority as sageGetCargoPodsByAuthority,
 } from "@staratlas/sage";
 import BN from "bn.js";
-import { Data, Effect, Match } from "effect";
+import { Data, Effect, Match, Record } from "effect";
 import type { CargoPodKind } from "../../decoders";
 import { SagePrograms } from "../programs";
 import { GameService } from "../services/GameService";
@@ -73,30 +74,42 @@ export const getFleetCargoPodInfoByType = ({
 		const cargoPodTokenAccounts =
 			yield* gameService.utils.getParsedTokenAccountsByOwner(cargoPod.key);
 
-		const resources = [];
+		const resources = yield* Effect.reduce(
+			cargoPodTokenAccounts,
+			Record.empty<
+				string,
+				{
+					mint: PublicKey;
+					amountInTokens: BN;
+					amountInCargoUnits: BN;
+					cargoTypeAccount: CargoType;
+					tokenAccountKey: PublicKey;
+				}
+			>(),
+			(acc, cargoPodTokenAccount) =>
+				Effect.gen(function* () {
+					const cargoTypeKey = yield* getCargoTypeAddress(
+						cargoPodTokenAccount.mint,
+						new PublicKey(context.gameInfo.cargoStatsDefinition.key),
+						context.gameInfo.cargoStatsDefinition.data.seqId,
+					);
 
-		for (const cargoPodTokenAccount of cargoPodTokenAccounts) {
-			const cargoTypeKey = yield* getCargoTypeAddress(
-				cargoPodTokenAccount.mint,
-				new PublicKey(context.gameInfo.cargoStatsDefinition.key),
-				context.gameInfo.cargoStatsDefinition.data.seqId,
-			);
+					const cargoTypeAccount = yield* getCargoTypeAccount(cargoTypeKey);
 
-			const cargoTypeAccount = yield* getCargoTypeAccount(cargoTypeKey);
+					return Record.set(acc, cargoPodTokenAccount.mint.toString(), {
+						mint: cargoPodTokenAccount.mint,
+						amountInTokens: new BN(cargoPodTokenAccount.amount.toString()),
+						amountInCargoUnits: getCargoSpaceUsedByTokenAmount(
+							cargoTypeAccount,
+							new BN(cargoPodTokenAccount.amount.toString()),
+						),
+						cargoTypeAccount,
+						tokenAccountKey: cargoPodTokenAccount.address,
+					});
+				}),
+		);
 
-			resources.push({
-				mint: cargoPodTokenAccount.mint,
-				amountInTokens: new BN(cargoPodTokenAccount.amount.toString()),
-				amountInCargoUnits: getCargoSpaceUsedByTokenAmount(
-					cargoTypeAccount,
-					new BN(cargoPodTokenAccount.amount.toString()),
-				),
-				cargoTypeAccount,
-				tokenAccountKey: cargoPodTokenAccount.address,
-			});
-		}
-
-		const totalResourcesAmountInCargoUnits = resources.reduce(
+		const totalResourcesAmountInCargoUnits = Record.values(resources).reduce(
 			(acc, item) => acc.add(item.amountInCargoUnits),
 			new BN(0),
 		);
@@ -108,7 +121,7 @@ export const getFleetCargoPodInfoByType = ({
 			totalResourcesAmountInCargoUnits,
 		};
 
-		yield* Effect.log("Cargo info fetched.").pipe(
+		yield* Effect.log(`Getting ${type} info`).pipe(
 			Effect.annotateLogs({ cargoPodInfo }),
 		);
 
