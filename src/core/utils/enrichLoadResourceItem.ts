@@ -17,9 +17,11 @@ import { getCargoTypeAddress } from "./pdas";
 export const enrichLoadResourceInput = ({
 	item,
 	pods,
+	totalResourcesAmountInCargoUnits,
 	starbasePlayerCargoPodsPubkey,
 }: {
 	item: LoadResourceInput;
+	totalResourcesAmountInCargoUnits: BN;
 	pods: Record<CargoPodKind, CargoPodEnhanced>;
 	starbasePlayerCargoPodsPubkey: PublicKey;
 }) =>
@@ -72,8 +74,7 @@ export const enrichLoadResourceInput = ({
 				cargoTypeAccount,
 				starbaseResourceAmountInTokens,
 			),
-			totalResourcesAmountInFleet:
-				cargoPodInfo.totalResourcesAmountInCargoUnits,
+			totalResourcesAmountInFleet: totalResourcesAmountInCargoUnits,
 			value: amountInCargoUnits,
 		});
 
