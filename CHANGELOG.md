@@ -1,5 +1,13 @@
 
 
+## [1.8.2](https://github.com/hexon-studio/atom-core/compare/v1.8.1...v1.8.2) (2024-12-12)
+
+
+### Bug Fixes
+
+* load-cargo simplify logic ([1a77cd0](https://github.com/hexon-studio/atom-core/commit/1a77cd01c92102f711206b7110f5b0b632149ac8))
+* load-cargo skip resource instead of breking the loop ([cfa6755](https://github.com/hexon-studio/atom-core/commit/cfa6755d2c02b3f3b29f2f7fc888d693e1858865))
+
 ## [1.8.1](https://github.com/hexon-studio/atom-core/compare/v1.8.0...v1.8.1) (2024-12-12)
 
 
