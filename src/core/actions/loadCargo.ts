@@ -166,7 +166,7 @@ export const loadCargo = ({
 
 			if (nextReachedCapacity.gt(cargoHoldPodInfo.maxCapacityInCargoUnits)) {
 				yield* Effect.log(
-					`Not enough space to load ${enhancedItem.resourceMint.toString()}, skipping`,
+					`Not enough space to load ${enhancedItem.resourceMint.toString()}, reachedCapacity (${nextReachedCapacity.toString()}) > maxCapacity (${cargoHoldPodInfo.maxCapacityInCargoUnits.toString()})`,
 				);
 
 				break;
