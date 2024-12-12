@@ -169,7 +169,7 @@ export const loadCargo = ({
 					`Not enough space to load ${enhancedItem.resourceMint.toString()}, reachedCapacity (${nextReachedCapacity.toString()}) > maxCapacity (${cargoHoldPodInfo.maxCapacityInCargoUnits.toString()})`,
 				);
 
-				break;
+				continue;
 			}
 
 			cargoItemsToLoad.push(enhancedItem);
