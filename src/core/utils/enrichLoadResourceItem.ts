@@ -17,9 +17,11 @@ import { getCargoTypeAddress } from "./pdas";
 export const enrichLoadResourceInput = ({
 	item,
 	pods,
+	totalResourcesAmountInCargoUnits,
 	starbasePlayerCargoPodsPubkey,
 }: {
 	item: LoadResourceInput;
+	totalResourcesAmountInCargoUnits: BN;
 	pods: Record<CargoPodKind, CargoPodEnhanced>;
 	starbasePlayerCargoPodsPubkey: PublicKey;
 }) =>
@@ -72,16 +74,19 @@ export const enrichLoadResourceInput = ({
 				cargoTypeAccount,
 				starbaseResourceAmountInTokens,
 			),
-			totalResourcesAmountInFleet:
-				cargoPodInfo.totalResourcesAmountInCargoUnits,
+			totalResourcesAmountInFleet: totalResourcesAmountInCargoUnits,
 			value: amountInCargoUnits,
 		});
 
 		const resourceSpaceMultiplier =
 			cargoTypeAccount.stats[SAGE_CARGO_STAT_VALUE_INDEX] ?? new BN(1);
 
-		yield* Effect.log(`Load cargo in ${cargoPodKind}`).pipe(
+		yield* Effect.log(
+			`Load ${resourceMint.toString()} in ${cargoPodKind}`,
+		).pipe(
 			Effect.annotateLogs({
+				resourceSpaceMultiplier: resourceSpaceMultiplier.toString(),
+				resourceMint: resourceMint.toString(),
 				cargoPodKind,
 				resourceFleetMaxCap: cargoPodInfo.maxCapacityInCargoUnits.toString(),
 				mode,
