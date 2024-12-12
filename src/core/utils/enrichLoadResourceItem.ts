@@ -1,5 +1,8 @@
 import { PublicKey } from "@solana/web3.js";
-import { getCargoSpaceUsedByTokenAmount } from "@staratlas/sage";
+import {
+	SAGE_CARGO_STAT_VALUE_INDEX,
+	getCargoSpaceUsedByTokenAmount,
+} from "@staratlas/sage";
 import BN from "bn.js";
 import { Effect, Option, Record } from "effect";
 import type { CargoPodKind, LoadResourceInput } from "../../decoders";
@@ -73,6 +76,27 @@ export const enrichLoadResourceInput = ({
 				cargoPodInfo.totalResourcesAmountInCargoUnits,
 			value: amountInCargoUnits,
 		});
+
+		const resourceSpaceMultiplier =
+			cargoTypeAccount.stats[SAGE_CARGO_STAT_VALUE_INDEX] ?? new BN(1);
+
+		yield* Effect.log(`Load cargo in ${cargoPodKind}`).pipe(
+			Effect.annotateLogs({
+				cargoPodKind,
+				resourceFleetMaxCap: cargoPodInfo.maxCapacityInCargoUnits.toString(),
+				mode,
+				totalResourcesAmountInFleet:
+					cargoPodInfo.totalResourcesAmountInCargoUnits.toString(),
+				resourceAmountInFleet: resourceAmountInFleetInCargoUnits.toString(),
+				resourceAmountInStarbase: starbaseResourceAmountInTokens.toString(),
+				amount: amount.toString(),
+				amountInCargoUnits: amountInCargoUnits.toString(),
+				computedAmountInCargoUnits: computedAmountInCargoUnits.toString(),
+				computedAmountInTokens: computedAmountInCargoUnits
+					.div(resourceSpaceMultiplier)
+					.toString(),
+			}),
+		);
 
 		return {
 			...item,

@@ -3,6 +3,7 @@ import type { CargoType } from "@staratlas/cargo";
 import {
 	type CargoStats,
 	type Fleet,
+	SAGE_CARGO_STAT_VALUE_INDEX,
 	getCargoSpaceUsedByTokenAmount,
 	getCargoPodsByAuthority as sageGetCargoPodsByAuthority,
 } from "@staratlas/sage";
@@ -122,7 +123,31 @@ export const getFleetCargoPodInfoByType = ({
 		};
 
 		yield* Effect.log(`Getting ${type} info`).pipe(
-			Effect.annotateLogs({ cargoPodInfo }),
+			Effect.annotateLogs({
+				cargoPodInfo: {
+					cargoPod: cargoPod.key.toString(),
+					maxCapacityInCargoUnits: maxCapacityInCargoUnits.toString(),
+					resources: Record.map(
+						resources,
+						({
+							amountInCargoUnits,
+							amountInTokens,
+							cargoTypeAccount,
+							mint,
+							tokenAccountKey,
+						}) => ({
+							amountInCargoUnits: amountInCargoUnits.toString(),
+							amountInTokens: amountInTokens.toString(),
+							cargoTypeMultiplier:
+								cargoTypeAccount.stats[SAGE_CARGO_STAT_VALUE_INDEX]?.toString(),
+							mint: mint.toString(),
+							tokenAccountKey: tokenAccountKey.toString(),
+						}),
+					),
+					totalResourcesAmountInCargoUnits:
+						totalResourcesAmountInCargoUnits.toString(),
+				},
+			}),
 		);
 
 		return cargoPodInfo;
