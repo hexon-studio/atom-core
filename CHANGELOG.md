@@ -1,5 +1,12 @@
 
 
+## [1.8.1](https://github.com/hexon-studio/atom-core/compare/v1.8.0...v1.8.1) (2024-12-12)
+
+
+### Bug Fixes
+
+* improve logs ([998d690](https://github.com/hexon-studio/atom-core/commit/998d6901f196620c8ee82517446e8a410aededf6))
+
 # [1.8.0](https://github.com/hexon-studio/atom-core/compare/v1.7.4...v1.8.0) (2024-12-11)
 
 
