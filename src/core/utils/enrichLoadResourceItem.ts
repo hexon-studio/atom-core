@@ -5,7 +5,7 @@ import {
 } from "@staratlas/sage";
 import BN from "bn.js";
 import { Effect, Option, Record } from "effect";
-import type { CargoPodKind, LoadResourceInput } from "../../decoders";
+import type { LoadResourceInput } from "../../decoders";
 import { getAssociatedTokenAccountBalance } from "../../utils/getAssociatedTokenAccountBalance";
 import { getAssociatedTokenAddress } from "../../utils/getAssociatedTokenAddress";
 import type { CargoPodEnhanced } from "../cargo-utils";
@@ -16,21 +16,19 @@ import { getCargoTypeAddress } from "./pdas";
 
 export const enrichLoadResourceInput = ({
 	item,
-	pods,
+	cargoPodInfo,
 	totalResourcesAmountInCargoUnits,
 	starbasePlayerCargoPodsPubkey,
 }: {
 	item: LoadResourceInput;
 	totalResourcesAmountInCargoUnits: BN;
-	pods: Record<CargoPodKind, CargoPodEnhanced>;
+	cargoPodInfo: CargoPodEnhanced;
 	starbasePlayerCargoPodsPubkey: PublicKey;
 }) =>
 	Effect.gen(function* () {
 		const { amount, mode, cargoPodKind, resourceMint } = item;
 
 		const context = yield* getGameContext();
-
-		const cargoPodInfo = pods[cargoPodKind];
 
 		const starbaseResourceTokenAccount = yield* getAssociatedTokenAddress(
 			resourceMint,
@@ -105,6 +103,7 @@ export const enrichLoadResourceInput = ({
 
 		return {
 			...item,
+			cargoPodInfo,
 			starbaseResourceTokenAccount,
 			amount,
 			computedAmountInCargoUnits,
