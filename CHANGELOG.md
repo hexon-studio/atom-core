@@ -1,5 +1,12 @@
 
 
+## [1.8.3](https://github.com/hexon-studio/atom-core/compare/v1.8.2...v1.8.3) (2024-12-13)
+
+
+### Bug Fixes
+
+* load-cargo logic ([5d7a49e](https://github.com/hexon-studio/atom-core/commit/5d7a49ed5a3fc7e68e0e0d52b6c31e1c9b0ec344))
+
 ## [1.8.2](https://github.com/hexon-studio/atom-core/compare/v1.8.1...v1.8.2) (2024-12-12)
 
 
