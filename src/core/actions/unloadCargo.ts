@@ -127,6 +127,7 @@ export const unloadCargo = ({
 
 		const txIds = yield* Effect.all(
 			txs.map((tx) => gameService.utils.sendTransaction(tx)),
+			{ concurrency: 5 },
 		);
 
 		return [...stopMiningTxsIds, ...txIds];
