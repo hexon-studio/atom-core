@@ -2,7 +2,7 @@ import type { PublicKey } from "@solana/web3.js";
 import type { InstructionReturn } from "@staratlas/data-source";
 import { SAGE_CARGO_STAT_VALUE_INDEX } from "@staratlas/sage";
 import BN from "bn.js";
-import { Data, Effect, Array as EffectArray, Match, pipe } from "effect";
+import { Data, Effect, Array as EffectArray, Match, Order, pipe } from "effect";
 import type { LoadResourceInput } from "../../decoders";
 import { getFleetCargoPodInfoByType } from "../cargo-utils";
 import {
@@ -85,22 +85,18 @@ export const loadCargo = ({
 
 		ixs.push(...preIxs);
 
-		const [ammoBankPodInfo, fuelTankPodInfo, cargoHoldPodInfo] =
+		const itemsCargoPodsKinds = EffectArray.sort(Order.string)([
+			...new Set(items.map((item) => item.cargoPodKind)),
+		]);
+
+		const [ammoBankPodInfo, cargoHoldPodInfo, fuelTankPodInfo] =
 			yield* Effect.all(
-				[
+				itemsCargoPodsKinds.map((cargoPodKind) =>
 					getFleetCargoPodInfoByType({
 						fleetAccount,
-						type: "ammo_bank",
+						type: cargoPodKind,
 					}),
-					getFleetCargoPodInfoByType({
-						fleetAccount,
-						type: "fuel_tank",
-					}),
-					getFleetCargoPodInfoByType({
-						fleetAccount,
-						type: "cargo_hold",
-					}),
-				],
+				),
 				{ concurrency: "unbounded" },
 			);
 
@@ -115,26 +111,31 @@ export const loadCargo = ({
 		const enhancedItems: EnhancedResourceItem[] = [];
 
 		for (const item of items) {
-			const totalResourcesAmountInCargoUnits = EffectArray.reduce(
-				enhancedItems,
-				new BN(cargoHoldPodInfo.totalResourcesAmountInCargoUnits),
-				(acc, item) => acc.add(item.computedAmountInCargoUnits),
-			);
-
-			const podInfo = Match.value(item.cargoPodKind).pipe(
+			const cargoPodInfo = Match.value(item.cargoPodKind).pipe(
 				Match.when("ammo_bank", () => ammoBankPodInfo),
 				Match.when("fuel_tank", () => fuelTankPodInfo),
 				Match.when("cargo_hold", () => cargoHoldPodInfo),
 				Match.exhaustive,
 			);
 
+			if (!cargoPodInfo) {
+				continue;
+			}
+
+			const enhanceItemsForPod = EffectArray.filter(
+				enhancedItems,
+				({ cargoPodKind }) => cargoPodKind === item.cargoPodKind,
+			);
+
+			const totalResourcesAmountInCargoUnits = EffectArray.reduce(
+				enhanceItemsForPod,
+				new BN(cargoPodInfo.totalResourcesAmountInCargoUnits),
+				(acc, item) => acc.add(item.computedAmountInCargoUnits),
+			);
+
 			const enhancedItem = yield* enrichLoadResourceInput({
 				item,
-				pods: {
-					ammo_bank: ammoBankPodInfo,
-					fuel_tank: fuelTankPodInfo,
-					cargo_hold: cargoHoldPodInfo,
-				},
+				cargoPodInfo,
 				totalResourcesAmountInCargoUnits,
 				starbasePlayerCargoPodsPubkey:
 					starbaseInfo.starbasePlayerCargoPodsAccountPubkey,
@@ -144,7 +145,7 @@ export const loadCargo = ({
 
 			if (!enhancedItem) {
 				yield* Effect.log(
-					`Not enough space to load ${item.resourceMint.toString()}, reachedCapacity (${totalResourcesAmountInCargoUnits.toString()}) >= maxCapacity (${podInfo.maxCapacityInCargoUnits.toString()})`,
+					`Not enough space to load ${item.resourceMint.toString()}, reachedCapacity (${totalResourcesAmountInCargoUnits.toString()}) >= maxCapacity (${cargoPodInfo.maxCapacityInCargoUnits.toString()})`,
 				);
 
 				continue;
@@ -178,12 +179,7 @@ export const loadCargo = ({
 					starbaseInfo,
 					item: {
 						amount: finalAmountToDeposit,
-						cargoPodInfo: Match.value(item.cargoPodKind).pipe(
-							Match.when("ammo_bank", () => ammoBankPodInfo),
-							Match.when("fuel_tank", () => fuelTankPodInfo),
-							Match.when("cargo_hold", () => cargoHoldPodInfo),
-							Match.exhaustive,
-						),
+						cargoPodInfo: item.cargoPodInfo,
 						cargoPodKind: item.cargoPodKind,
 						resourceMint: item.resourceMint,
 						starbaseResourceTokenAccount: item.starbaseResourceTokenAccount,
