@@ -1,5 +1,12 @@
 
 
+## [1.8.4](https://github.com/hexon-studio/atom-core/compare/v1.8.3...v1.8.4) (2024-12-13)
+
+
+### Bug Fixes
+
+* add concurrency in load/unload ([afa4137](https://github.com/hexon-studio/atom-core/commit/afa4137318bab0f6c830d079f0cec37623ca04ab))
+
 ## [1.8.3](https://github.com/hexon-studio/atom-core/compare/v1.8.2...v1.8.3) (2024-12-13)
 
 
