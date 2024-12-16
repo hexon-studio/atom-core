@@ -1,7 +1,7 @@
 import { getAssociatedTokenAddressSync } from "@solana/spl-token";
 import { ProfileVault } from "@staratlas/profile-vault";
-import { Effect, unsafeCoerce } from "effect";
-import { constant } from "effect/Function";
+import { Effect, Array as EffectArray } from "effect";
+import { constant, unsafeCoerce } from "effect/Function";
 import { MIN_ATLAS_QTY, tokenMints } from "../constants/tokens";
 import { SagePrograms } from "../core/programs";
 import { AtlasNotEnoughError } from "../core/services/GameService/methods/initGame";
@@ -61,7 +61,8 @@ export const runBaseCommand = <E, R>({
 	normalizeError: (error: E) => {
 		tag: string;
 		message: string;
-		signature?: string;
+		signatures: string | string[] | null;
+		context?: Record<string, unknown>;
 	};
 }) =>
 	fireWebhookEvent({ type: "start" }).pipe(
@@ -72,14 +73,17 @@ export const runBaseCommand = <E, R>({
 		Effect.flatMap(self),
 		Effect.tapBoth({
 			onFailure: (error) => {
-				const { message, tag, signature } = normalizeError(unsafeCoerce(error));
+				const { message, tag, signatures, context } = normalizeError(
+					unsafeCoerce(error),
+				);
 
 				return fireWebhookEvent({
 					type: "error",
 					payload: {
 						tag,
 						message,
-						signatures: signature ? [signature] : [],
+						signatures: EffectArray.ensure(signatures ?? []),
+						context,
 					},
 				});
 			},

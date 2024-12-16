@@ -20,6 +20,7 @@ export type WebhookEvent =
 				tag: string;
 				message: string;
 				signatures: string[];
+				context?: Record<string, unknown>;
 			};
 	  };
 

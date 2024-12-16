@@ -18,6 +18,15 @@ export class SendRawTransactionError extends Data.TaggedError(
 			: String(this.error);
 	}
 }
+export class VerifySignaturesError extends Data.TaggedError(
+	"VerifySignaturesError",
+)<{ error: unknown }> {
+	override get message() {
+		return this.error instanceof Error
+			? this.error.message
+			: String(this.error);
+	}
+}
 
 export class ConfirmTransactionError extends Data.TaggedError(
 	"ConfirmTransactionError",
@@ -50,7 +59,10 @@ export const customSageSendTransaction = (
 		const rawTransaction = transaction.transaction.serialize();
 
 		if (isVersionedTransaction(transaction.transaction)) {
-			yield* Effect.try(() => verifySignatures(transaction.transaction));
+			yield* Effect.try({
+				try: () => verifySignatures(transaction.transaction),
+				catch: (error) => new VerifySignaturesError({ error }),
+			});
 		}
 
 		const commitment = options?.commitment || "confirmed";

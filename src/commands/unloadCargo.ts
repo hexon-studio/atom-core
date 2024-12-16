@@ -1,5 +1,7 @@
 import type { PublicKey } from "@solana/web3.js";
-import { Cause, Effect, Exit, LogLevel, Logger, Option } from "effect";
+import { BN } from "bn.js";
+import { Cause, Effect, Exit, LogLevel, Logger, Match, Option } from "effect";
+import { constNull, constUndefined } from "effect/Function";
 import { unloadCargo } from "../core/actions/unloadCargo";
 import { GameService } from "../core/services/GameService";
 import type { UnloadResourceInput } from "../decoders";
@@ -43,11 +45,33 @@ export const runUnloadCargo = async ({
 				normalizeError: (err) => ({
 					tag: err._tag,
 					message: err.message,
-					signature:
-						err._tag === "TransactionFailedError" ||
-						err._tag === "ConfirmTransactionError"
-							? err.signature
-							: undefined,
+					context: Match.value(err).pipe(
+						Match.when(
+							{ _tag: "LoadUnloadPartiallyFailedError" },
+							({ context }) =>
+								JSON.parse(
+									JSON.stringify(context, (_, value) =>
+										value instanceof BN ? value.toString() : value,
+									),
+								) as Record<string, unknown>,
+						),
+						Match.orElse(constUndefined),
+					),
+					signatures: Match.value(err).pipe(
+						Match.when(
+							{ _tag: "LoadUnloadPartiallyFailedError" },
+							({ signatures }) => signatures,
+						),
+						Match.when(
+							{ _tag: "TransactionFailedError" },
+							({ signature }) => signature,
+						),
+						Match.when(
+							{ _tag: "ConfirmTransactionError" },
+							({ signature }) => signature,
+						),
+						Match.orElse(constNull),
+					),
 				}),
 			}),
 		),

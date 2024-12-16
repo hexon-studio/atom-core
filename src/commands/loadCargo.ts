@@ -1,4 +1,5 @@
 import type { PublicKey } from "@solana/web3.js";
+import { BN } from "bn.js";
 import { Cause, Effect, Exit, LogLevel, Logger, Option } from "effect";
 import { loadCargo } from "../core/actions/loadCargo";
 import { GameService } from "../core/services/GameService";
@@ -43,10 +44,17 @@ export const runLoadCargo = async ({
 				normalizeError: (err) => ({
 					tag: err._tag,
 					message: err.message,
-					signature:
-						err._tag === "TransactionFailedError" ||
-						err._tag === "ConfirmTransactionError"
-							? err.signature
+					signatures:
+						err._tag === "LoadUnloadPartiallyFailedError"
+							? err.signatures
+							: null,
+					context:
+						err._tag === "LoadUnloadPartiallyFailedError"
+							? (JSON.parse(
+									JSON.stringify(err.context, (_, value) =>
+										value instanceof BN ? value.toString() : value,
+									),
+								) as Record<string, unknown>)
 							: undefined,
 				}),
 			}),
