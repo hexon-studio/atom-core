@@ -1,5 +1,12 @@
 
 
+# [1.9.0](https://github.com/hexon-studio/atom-core/compare/v1.8.4...v1.9.0) (2024-12-16)
+
+
+### Features
+
+* send load unload state if some send transaciton errors occurs ([9f00b21](https://github.com/hexon-studio/atom-core/commit/9f00b2142eb3497ce00631a65bf8af7db391149b))
+
 ## [1.8.4](https://github.com/hexon-studio/atom-core/compare/v1.8.3...v1.8.4) (2024-12-13)
 
 
