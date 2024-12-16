@@ -1,13 +1,16 @@
 import type { PublicKey } from "@solana/web3.js";
 import type { InstructionReturn } from "@staratlas/data-source";
-import { Effect, Array as EffectArray, Match, pipe } from "effect";
+import { Effect, Array as EffectArray, Match, identity, pipe } from "effect";
+import { constNull } from "effect/Function";
 import type { UnloadResourceInput } from "../../decoders";
 import { isPublicKey } from "../../utils/public-key";
+import { LoadUnloadPartiallyFailedError } from "../fleet/errors";
 import {
 	createDockToStarbaseIx,
 	createStopMiningIx,
 	createWithdrawCargoFromFleetIx,
 } from "../fleet/instructions";
+import { getFleetCargoPodInfosForItems } from "../fleet/utils/getFleetCargoPodInfosForItems";
 import { GameService } from "../services/GameService";
 import {
 	getFleetAccount,
@@ -125,10 +128,31 @@ export const unloadCargo = ({
 		const txs =
 			yield* gameService.utils.buildAndSignTransactionWithAtlasPrime(ixs);
 
-		const txIds = yield* Effect.all(
-			txs.map((tx) => gameService.utils.sendTransaction(tx)),
+		const maybeTxIds = yield* Effect.all(
+			txs.map((tx) =>
+				gameService.utils.sendTransaction(tx).pipe(Effect.either),
+			),
 			{ concurrency: 5 },
 		);
 
-		return [...stopMiningTxsIds, ...txIds];
+		const [errors, signatures] = EffectArray.partitionMap(maybeTxIds, identity);
+
+		if (EffectArray.isNonEmptyArray(errors)) {
+			const itemsCargoPodsKinds = [
+				...new Set(items.map((item) => item.cargoPodKind)),
+			];
+
+			const cargoPodsInfos = yield* getFleetCargoPodInfosForItems({
+				cargoPodKinds: itemsCargoPodsKinds,
+				fleetAccount,
+			}).pipe(Effect.orElseSucceed(constNull));
+
+			yield* new LoadUnloadPartiallyFailedError({
+				errors,
+				signatures,
+				context: cargoPodsInfos,
+			});
+		}
+
+		return [...stopMiningTxsIds, ...signatures];
 	});

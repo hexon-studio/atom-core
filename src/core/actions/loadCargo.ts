@@ -2,15 +2,24 @@ import type { PublicKey } from "@solana/web3.js";
 import type { InstructionReturn } from "@staratlas/data-source";
 import { SAGE_CARGO_STAT_VALUE_INDEX } from "@staratlas/sage";
 import BN from "bn.js";
-import { Data, Effect, Array as EffectArray, Match, Order, pipe } from "effect";
+import {
+	Data,
+	Effect,
+	Array as EffectArray,
+	Match,
+	identity,
+	pipe,
+} from "effect";
+import { constNull } from "effect/Function";
 import type { LoadResourceInput } from "../../decoders";
-import { getFleetCargoPodInfoByType } from "../cargo-utils";
+import { LoadUnloadPartiallyFailedError } from "../fleet/errors";
 import {
 	createDepositCargoToFleetIx,
 	createDockToStarbaseIx,
 	createStopMiningIx,
 } from "../fleet/instructions";
 import { getCurrentFleetSectorCoordinates } from "../fleet/utils/getCurrentFleetSectorCoordinates";
+import { getFleetCargoPodInfosForItems } from "../fleet/utils/getFleetCargoPodInfosForItems";
 import { GameService } from "../services/GameService";
 import {
 	getFleetAccount,
@@ -85,20 +94,18 @@ export const loadCargo = ({
 
 		ixs.push(...preIxs);
 
-		const itemsCargoPodsKinds = EffectArray.sort(Order.string)([
+		const itemsCargoPodsKinds = [
 			...new Set(items.map((item) => item.cargoPodKind)),
-		]);
+		];
 
-		const [ammoBankPodInfo, cargoHoldPodInfo, fuelTankPodInfo] =
-			yield* Effect.all(
-				itemsCargoPodsKinds.map((cargoPodKind) =>
-					getFleetCargoPodInfoByType({
-						fleetAccount,
-						type: cargoPodKind,
-					}),
-				),
-				{ concurrency: "unbounded" },
-			);
+		const {
+			ammo_bank: ammoBankPodInfo,
+			cargo_hold: cargoHoldPodInfo,
+			fuel_tank: fuelTankPodInfo,
+		} = yield* getFleetCargoPodInfosForItems({
+			cargoPodKinds: itemsCargoPodsKinds,
+			fleetAccount,
+		});
 
 		const fleetCoords = yield* getCurrentFleetSectorCoordinates(
 			fleetAccount.state,
@@ -188,7 +195,7 @@ export const loadCargo = ({
 			}),
 		).pipe(Effect.map(EffectArray.flatten));
 
-		if (!loadCargoIxs.length) {
+		if (EffectArray.isEmptyArray(loadCargoIxs)) {
 			yield* Effect.log("Nothing to load. Skipping");
 
 			return [];
@@ -205,10 +212,27 @@ export const loadCargo = ({
 		const txs =
 			yield* gameService.utils.buildAndSignTransactionWithAtlasPrime(ixs);
 
-		const txIds = yield* Effect.all(
-			txs.map((tx) => gameService.utils.sendTransaction(tx)),
+		const maybeTxIds = yield* Effect.all(
+			txs.map((tx) =>
+				gameService.utils.sendTransaction(tx).pipe(Effect.either),
+			),
 			{ concurrency: 5 },
 		);
 
-		return txIds;
+		const [errors, signatures] = EffectArray.partitionMap(maybeTxIds, identity);
+
+		if (EffectArray.isNonEmptyArray(errors)) {
+			const cargoPodsInfos = yield* getFleetCargoPodInfosForItems({
+				cargoPodKinds: itemsCargoPodsKinds,
+				fleetAccount,
+			}).pipe(Effect.orElseSucceed(constNull));
+
+			yield* new LoadUnloadPartiallyFailedError({
+				errors,
+				signatures,
+				context: cargoPodsInfos,
+			});
+		}
+
+		return signatures;
 	});

@@ -42,11 +42,11 @@ export const runWarp = async ({
 				normalizeError: (err) => ({
 					tag: err._tag,
 					message: err.message,
-					signature:
+					signatures:
 						err._tag === "TransactionFailedError" ||
 						err._tag === "ConfirmTransactionError"
 							? err.signature
-							: undefined,
+							: null,
 				}),
 			}),
 		),

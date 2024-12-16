@@ -1,12 +1,13 @@
 import type { PublicKey } from "@solana/web3.js";
 import type { FleetStateData } from "@staratlas/sage";
 import type BN from "bn.js";
-import { Data } from "effect";
+import { Data, type Effect } from "effect";
 import {
 	type ResourceMint,
 	resourceMintToName,
 } from "../../constants/resources";
 import type { CargoPodKind } from "../../decoders";
+import type { getFleetCargoPodInfosForItems } from "./utils/getFleetCargoPodInfosForItems";
 
 export class ResourceNotEnoughError extends Data.TaggedError(
 	"ResourceNotEnoughError",
@@ -84,5 +85,19 @@ export class FleetWarpCooldownError extends Data.TaggedError(
 )<{ warpCooldownExpiresAt: string }> {
 	override get message() {
 		return `Fleet warp is on cooldown until ${this.warpCooldownExpiresAt}`;
+	}
+}
+
+export class LoadUnloadPartiallyFailedError extends Data.TaggedError(
+	"LoadUnloadPartiallyFailedError",
+)<{
+	signatures: string[];
+	errors: Error[];
+	context: Effect.Effect.Success<
+		ReturnType<typeof getFleetCargoPodInfosForItems>
+	> | null;
+}> {
+	override get message() {
+		return this.errors.map((error) => error.message).join("\n");
 	}
 }
