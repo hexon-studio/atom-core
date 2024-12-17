@@ -1,5 +1,12 @@
 
 
+# [1.11.0](https://github.com/hexon-studio/atom-core/compare/v1.10.0...v1.11.0) (2024-12-17)
+
+
+### Features
+
+* add load/unload error with input items type ([676ce7d](https://github.com/hexon-studio/atom-core/commit/676ce7d4b9d4175929386162e82989b687f2ba2b))
+
 # [1.10.0](https://github.com/hexon-studio/atom-core/compare/v1.9.0...v1.10.0) (2024-12-17)
 
 
