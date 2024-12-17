@@ -210,12 +210,16 @@ export const unloadCargo = ({
 				...ammoDifference,
 				...fuelDifference,
 				...cargoDifference,
-			];
+			].map((item) => item.mint.toString());
+
+			const missingItems = items.filter((item) =>
+				missingResources.includes(item.resourceMint.toString()),
+			);
 
 			yield* new LoadUnloadPartiallyFailedError({
 				errors,
 				signatures,
-				context: { missingResources },
+				context: { missingResources: missingItems },
 			});
 		}
 

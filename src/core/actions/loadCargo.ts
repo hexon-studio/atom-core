@@ -243,6 +243,7 @@ export const loadCargo = ({
 							before: ammoBankPodInfo,
 						})
 					: [];
+
 			const fuelDifference =
 				cargoPodsInfos?.fuel_tank && fuelTankPodInfo
 					? getCargoPodsResourcesDifference({
@@ -250,6 +251,7 @@ export const loadCargo = ({
 							before: fuelTankPodInfo,
 						})
 					: [];
+
 			const cargoDifference =
 				cargoPodsInfos?.cargo_hold && cargoHoldPodInfo
 					? getCargoPodsResourcesDifference({
@@ -262,14 +264,22 @@ export const loadCargo = ({
 				...ammoDifference,
 				...fuelDifference,
 				...cargoDifference,
-			].filter((res) => loadingResources.includes(res.mint.toString()));
+			]
+				.filter(
+					(res) =>
+						res.amountInTokens.gtn(0) ||
+						loadingResources.includes(res.mint.toString()),
+				)
+				.map((res) => res.mint.toString());
+
+			const missingItems = items.filter((item) =>
+				missingResources.includes(item.resourceMint.toString()),
+			);
 
 			yield* new LoadUnloadPartiallyFailedError({
 				errors,
 				signatures,
-				context: {
-					missingResources,
-				},
+				context: { missingResources: missingItems },
 			});
 		}
 

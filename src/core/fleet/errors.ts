@@ -6,8 +6,11 @@ import {
 	type ResourceMint,
 	resourceMintToName,
 } from "../../constants/resources";
-import type { CargoPodKind } from "../../decoders";
-import type { CargoPodsDifference } from "./utils/getCargoPodsResourcesDifference";
+import type {
+	CargoPodKind,
+	LoadResourceInput,
+	UnloadResourceInput,
+} from "../../decoders";
 
 export class ResourceNotEnoughError extends Data.TaggedError(
 	"ResourceNotEnoughError",
@@ -93,7 +96,7 @@ export class LoadUnloadPartiallyFailedError extends Data.TaggedError(
 )<{
 	signatures: string[];
 	errors: Error[];
-	context: { missingResources: CargoPodsDifference };
+	context: { missingResources: Array<LoadResourceInput | UnloadResourceInput> };
 }> {
 	override get message() {
 		return this.errors.map((error) => error.message).join("\n");
