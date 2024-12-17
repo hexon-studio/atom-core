@@ -11,7 +11,7 @@ import { Data, Effect, Option, Record, pipe } from "effect";
 import type { UnloadResourceInput } from "../../../../decoders";
 import { getAssociatedTokenAddress } from "../../../../utils/getAssociatedTokenAddress";
 import { isResourceAllowedForCargoPod } from "../../../../utils/resources/isResourceAllowedForCargoPod";
-import { getFleetCargoPodInfoByType } from "../../../cargo-utils";
+import type { CargoPodEnhanced } from "../../../cargo-utils";
 import { SagePrograms } from "../../../programs";
 import { GameService } from "../../../services/GameService";
 import { getGameContext } from "../../../services/GameService/utils";
@@ -44,10 +44,10 @@ export const createWithdrawCargoFromFleetIx = ({
 	item,
 }: {
 	fleetAccount: Fleet;
-	item: UnloadResourceInput;
+	item: UnloadResourceInput & { cargoPodInfo: CargoPodEnhanced };
 }) =>
 	Effect.gen(function* () {
-		const { mode, resourceMint, amount, cargoPodKind } = item;
+		const { mode, resourceMint, amount, cargoPodKind, cargoPodInfo } = item;
 
 		if (amount <= 0) {
 			return yield* Effect.fail(
@@ -81,11 +81,6 @@ export const createWithdrawCargoFromFleetIx = ({
 
 		const playerFactionAddress =
 			yield* getProfileFactionAddress(playerProfilePubkey);
-
-		const cargoPodInfo = yield* getFleetCargoPodInfoByType({
-			fleetAccount,
-			type: cargoPodKind,
-		});
 
 		const cargoPodTokenAccount = yield* getAssociatedTokenAddress(
 			resourceMint,

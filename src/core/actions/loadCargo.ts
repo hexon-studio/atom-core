@@ -18,6 +18,7 @@ import {
 	createDockToStarbaseIx,
 	createStopMiningIx,
 } from "../fleet/instructions";
+import { getCargoPodsResourcesDifference } from "../fleet/utils/getCargoPodsResourcesDifference";
 import { getCurrentFleetSectorCoordinates } from "../fleet/utils/getCurrentFleetSectorCoordinates";
 import { getFleetCargoPodInfosForItems } from "../fleet/utils/getFleetCargoPodInfosForItems";
 import { GameService } from "../services/GameService";
@@ -222,15 +223,53 @@ export const loadCargo = ({
 		const [errors, signatures] = EffectArray.partitionMap(maybeTxIds, identity);
 
 		if (EffectArray.isNonEmptyArray(errors)) {
+			const cargoPodKinds = [
+				...new Set(enhancedItems.map((item) => item.cargoPodKind)),
+			];
+
+			const loadingResources = enhancedItems.map((item) =>
+				item.resourceMint.toString(),
+			);
+
 			const cargoPodsInfos = yield* getFleetCargoPodInfosForItems({
-				cargoPodKinds: itemsCargoPodsKinds,
+				cargoPodKinds,
 				fleetAccount,
 			}).pipe(Effect.orElseSucceed(constNull));
+
+			const ammoDifference =
+				cargoPodsInfos?.ammo_bank && ammoBankPodInfo
+					? getCargoPodsResourcesDifference({
+							after: cargoPodsInfos.ammo_bank,
+							before: ammoBankPodInfo,
+						})
+					: [];
+			const fuelDifference =
+				cargoPodsInfos?.fuel_tank && fuelTankPodInfo
+					? getCargoPodsResourcesDifference({
+							after: cargoPodsInfos.fuel_tank,
+							before: fuelTankPodInfo,
+						})
+					: [];
+			const cargoDifference =
+				cargoPodsInfos?.cargo_hold && cargoHoldPodInfo
+					? getCargoPodsResourcesDifference({
+							after: cargoPodsInfos.cargo_hold,
+							before: cargoHoldPodInfo,
+						})
+					: [];
+
+			const missingResources = [
+				...ammoDifference,
+				...fuelDifference,
+				...cargoDifference,
+			].filter((res) => loadingResources.includes(res.mint.toString()));
 
 			yield* new LoadUnloadPartiallyFailedError({
 				errors,
 				signatures,
-				context: cargoPodsInfos,
+				context: {
+					missingResources,
+				},
 			});
 		}
 
