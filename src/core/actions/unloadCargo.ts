@@ -1,6 +1,13 @@
 import type { PublicKey } from "@solana/web3.js";
 import type { InstructionReturn } from "@staratlas/data-source";
-import { Effect, Array as EffectArray, Match, identity, pipe } from "effect";
+import {
+	Effect,
+	Array as EffectArray,
+	Match,
+	Option,
+	identity,
+	pipe,
+} from "effect";
 import { constNull } from "effect/Function";
 import type { UnloadResourceInput } from "../../decoders";
 import { isPublicKey } from "../../utils/public-key";
@@ -10,6 +17,7 @@ import {
 	createStopMiningIx,
 	createWithdrawCargoFromFleetIx,
 } from "../fleet/instructions";
+import { getCargoPodsResourcesDifference } from "../fleet/utils/getCargoPodsResourcesDifference";
 import { getFleetCargoPodInfosForItems } from "../fleet/utils/getFleetCargoPodInfosForItems";
 import { GameService } from "../services/GameService";
 import {
@@ -102,15 +110,44 @@ export const unloadCargo = ({
 
 		ixs.push(...preIxs);
 
+		const itemsCargoPodsKinds = [
+			...new Set(items.map((item) => item.cargoPodKind)),
+		];
+
+		const {
+			ammo_bank: ammoBankPodInfo,
+			cargo_hold: cargoHoldPodInfo,
+			fuel_tank: fuelTankPodInfo,
+		} = yield* getFleetCargoPodInfosForItems({
+			cargoPodKinds: itemsCargoPodsKinds,
+			fleetAccount,
+		});
+
 		const freshFleetAccount = yield* getFleetAccount(fleetAddress);
 
 		const unloadCargoIxs = yield* Effect.all(
-			EffectArray.map(items, (item) =>
-				createWithdrawCargoFromFleetIx({
-					fleetAccount: freshFleetAccount,
-					item,
-				}),
-			),
+			EffectArray.filterMap(items, (item) => {
+				const cargoPodInfo = Match.value(item.cargoPodKind).pipe(
+					Match.when("ammo_bank", () => ammoBankPodInfo),
+					Match.when("fuel_tank", () => fuelTankPodInfo),
+					Match.when("cargo_hold", () => cargoHoldPodInfo),
+					Match.exhaustive,
+				);
+
+				if (!cargoPodInfo) {
+					return Option.none();
+				}
+
+				return Option.some(
+					createWithdrawCargoFromFleetIx({
+						fleetAccount: freshFleetAccount,
+						item: {
+							...item,
+							cargoPodInfo,
+						},
+					}),
+				);
+			}),
 		).pipe(Effect.map(EffectArray.flatten));
 
 		if (!unloadCargoIxs.length) {
@@ -138,19 +175,47 @@ export const unloadCargo = ({
 		const [errors, signatures] = EffectArray.partitionMap(maybeTxIds, identity);
 
 		if (EffectArray.isNonEmptyArray(errors)) {
-			const itemsCargoPodsKinds = [
+			const cargoPodKinds = [
 				...new Set(items.map((item) => item.cargoPodKind)),
 			];
 
 			const cargoPodsInfos = yield* getFleetCargoPodInfosForItems({
-				cargoPodKinds: itemsCargoPodsKinds,
+				cargoPodKinds,
 				fleetAccount,
 			}).pipe(Effect.orElseSucceed(constNull));
+
+			const ammoDifference =
+				cargoPodsInfos?.ammo_bank && ammoBankPodInfo
+					? getCargoPodsResourcesDifference({
+							after: cargoPodsInfos.ammo_bank,
+							before: ammoBankPodInfo,
+						})
+					: [];
+			const fuelDifference =
+				cargoPodsInfos?.fuel_tank && fuelTankPodInfo
+					? getCargoPodsResourcesDifference({
+							after: cargoPodsInfos.fuel_tank,
+							before: fuelTankPodInfo,
+						})
+					: [];
+			const cargoDifference =
+				cargoPodsInfos?.cargo_hold && cargoHoldPodInfo
+					? getCargoPodsResourcesDifference({
+							after: cargoPodsInfos.cargo_hold,
+							before: cargoHoldPodInfo,
+						})
+					: [];
+
+			const missingResources = [
+				...ammoDifference,
+				...fuelDifference,
+				...cargoDifference,
+			];
 
 			yield* new LoadUnloadPartiallyFailedError({
 				errors,
 				signatures,
-				context: cargoPodsInfos,
+				context: { missingResources },
 			});
 		}
 

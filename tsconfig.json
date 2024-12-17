@@ -2,6 +2,7 @@
 	"extends": "@total-typescript/tsconfig/bundler/no-dom/library",
 	"compilerOptions": {
 		"types": ["vitest/globals"],
-		"outDir": "dist"
+		"outDir": "dist",
+		"noErrorTruncation": true
 	}
 }
