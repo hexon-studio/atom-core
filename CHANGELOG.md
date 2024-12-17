@@ -1,5 +1,12 @@
 
 
+# [1.10.0](https://github.com/hexon-studio/atom-core/compare/v1.9.0...v1.10.0) (2024-12-17)
+
+
+### Features
+
+* add load/unload error missing resources difference ([ee5a35e](https://github.com/hexon-studio/atom-core/commit/ee5a35ecc8c152926aa14431a1d23afb6c15d745))
+
 # [1.9.0](https://github.com/hexon-studio/atom-core/compare/v1.8.4...v1.9.0) (2024-12-16)
 
 
