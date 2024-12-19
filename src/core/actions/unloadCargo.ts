@@ -210,11 +210,17 @@ export const unloadCargo = ({
 				...ammoDifference,
 				...fuelDifference,
 				...cargoDifference,
-			].map((item) => item.mint.toString());
+			].filter((item) => item.amountInTokens.isZero());
 
-			const missingItems = items.filter((item) =>
-				missingResources.includes(item.resourceMint.toString()),
-			);
+			const missingItems = items.filter((item) => {
+				const res = missingResources.find(
+					(res) =>
+						res.mint.equals(item.resourceMint) &&
+						res.cargoPodKind === item.cargoPodKind,
+				);
+
+				return !!res;
+			});
 
 			yield* new LoadUnloadPartiallyFailedError({
 				errors,

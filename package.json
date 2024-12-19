@@ -34,7 +34,7 @@
 		"@total-typescript/tsconfig": "^1.0.4",
 		"@types/bn.js": "^5.1.6",
 		"@types/mock-fs": "^4.13.4",
-		"@types/node": "^20.17.9",
+		"@types/node": "^20.17.10",
 		"mock-fs": "^5.4.1",
 		"neverthrow": "6.2.2",
 		"release-it": "^17.10.0",
@@ -47,7 +47,7 @@
 	"dependencies": {
 		"@logtail/pino": "^0.5.2",
 		"@solana/spl-token": "^0.4.9",
-		"@solana/web3.js": "^1.95.8",
+		"@solana/web3.js": "^1.98.0",
 		"@staratlas/anchor": "^0.25.1",
 		"@staratlas/atlas-prime": "^0.13.1",
 		"@staratlas/cargo": "^1.1.0",
@@ -68,9 +68,9 @@
 		"bs58": "^5.0.0",
 		"commander": "^12.1.0",
 		"dotenv": "^16.4.7",
-		"effect": "^3.11.3",
+		"effect": "^3.11.8",
 		"pino": "^9.5.0",
-		"zod": "^3.23.8"
+		"zod": "^3.24.1"
 	},
 	"pnpm": {
 		"overrides": {

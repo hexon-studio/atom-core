@@ -260,21 +260,36 @@ export const loadCargo = ({
 						})
 					: [];
 
+			yield* Effect.log("Difference in cargo pods resources").pipe(
+				Effect.annotateLogs({
+					context: JSON.parse(
+						JSON.stringify(
+							{ ammoDifference, fuelDifference, cargoDifference },
+							(_, value) => (value instanceof BN ? value.toString() : value),
+						),
+					),
+				}),
+			);
+
 			const missingResources = [
 				...ammoDifference,
 				...fuelDifference,
 				...cargoDifference,
-			]
-				.filter(
-					(res) =>
-						res.amountInTokens.gtn(0) &&
-						loadingResources.includes(res.mint.toString()),
-				)
-				.map((res) => res.mint.toString());
-
-			const missingItems = items.filter((item) =>
-				missingResources.includes(item.resourceMint.toString()),
+			].filter(
+				(res) =>
+					res.amountInTokens.isZero() &&
+					loadingResources.includes(res.mint.toString()),
 			);
+
+			const missingItems = items.filter((item) => {
+				const res = missingResources.find(
+					(res) =>
+						res.mint.equals(item.resourceMint) &&
+						res.cargoPodKind === item.cargoPodKind,
+				);
+
+				return !!res;
+			});
 
 			yield* new LoadUnloadPartiallyFailedError({
 				errors,

@@ -25,13 +25,14 @@ export const getCargoPodsResourcesDifference = ({
 		),
 		EffectArray.map(([afterRes, beforeRes]) => ({
 			mint: afterRes.mint,
+			cargoPodKind: after.type,
 			resourceMultiplier:
 				afterRes.cargoTypeAccount.stats[SAGE_CARGO_STAT_VALUE_INDEX] ??
 				new BN(1),
-			amountInCargoUnits: beforeRes.amountInCargoUnits.sub(
-				afterRes.amountInCargoUnits,
+			amountInCargoUnits: afterRes.amountInCargoUnits.sub(
+				beforeRes.amountInCargoUnits,
 			),
-			amountInTokens: beforeRes.amountInTokens.sub(afterRes.amountInTokens),
+			amountInTokens: afterRes.amountInTokens.sub(beforeRes.amountInTokens),
 		})),
 	);
 
