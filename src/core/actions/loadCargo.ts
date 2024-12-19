@@ -267,7 +267,7 @@ export const loadCargo = ({
 			]
 				.filter(
 					(res) =>
-						res.amountInTokens.gtn(0) ||
+						res.amountInTokens.gtn(0) &&
 						loadingResources.includes(res.mint.toString()),
 				)
 				.map((res) => res.mint.toString());

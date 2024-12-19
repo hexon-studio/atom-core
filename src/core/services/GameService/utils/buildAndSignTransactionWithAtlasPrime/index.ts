@@ -64,6 +64,7 @@ export const buildAndSignTransactionWithAtlasPrime = (
 				getGameContext(),
 			]),
 		),
+		Effect.tap(() => Effect.log("Building ixs")),
 		Effect.flatMap(([programs, helius, provider, signer, context]) =>
 			Effect.tryPromise({
 				try: async () => {
@@ -78,6 +79,8 @@ export const buildAndSignTransactionWithAtlasPrime = (
 						new PublicKey("5NrYTRkLRsSSJGgfX2vNRbSXiEFi9yUHV5n7bs7VM9P2"),
 					);
 
+					let heliusFee: number;
+
 					const builder = await AtlasPrimeTransactionBuilder.new({
 						afpUrl: "https://prime.staratlas.com/",
 						connection: provider.connection,
@@ -87,14 +90,15 @@ export const buildAndSignTransactionWithAtlasPrime = (
 							Option.map(
 								({ rpc: heliusRpcUrl, feeMode }) =>
 									async (writableAccounts: PublicKey[]) => {
-										const microLamports =
-											await getHeliusEstimatedTransactionFee({
+										if (!heliusFee) {
+											heliusFee = await getHeliusEstimatedTransactionFee({
 												heliusRpcUrl,
 												writableAccounts,
 												feeMode,
 											});
+										}
 
-										return microLamports;
+										return heliusFee;
 									},
 							),
 							Option.getOrUndefined,
