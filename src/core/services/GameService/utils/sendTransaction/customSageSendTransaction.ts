@@ -78,25 +78,22 @@ export const customSageSendTransaction = (
 			Effect.retry({ times: 5 }),
 		);
 
-		const result = yield* Effect.log("Confirming transaction").pipe(
-			Effect.flatMap(() =>
-				Effect.tryPromise({
-					try: () =>
-						connection.confirmTransaction(
-							{ signature, ...transaction.rbh },
-							commitment,
-						),
-					catch: (error) => new ConfirmTransactionError({ error, signature }),
-				}),
-			),
-			Effect.retry({ times: 5 }),
-		);
+		const result = yield* Effect.tryPromise({
+			try: () =>
+				connection.confirmTransaction(
+					{ signature, ...transaction.rbh },
+					commitment,
+				),
+			catch: (error) => new ConfirmTransactionError({ error, signature }),
+		}).pipe(Effect.retry({ times: 5 }));
 
 		if (result.value.err !== null) {
 			return yield* Effect.fail(
 				new TransactionFailedError({ error: result.value.err, signature }),
 			);
 		}
+
+		yield* Effect.log("Transaction confirmed.");
 
 		return { context: result.context, signature };
 	});
