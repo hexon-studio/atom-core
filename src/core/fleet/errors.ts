@@ -8,8 +8,8 @@ import {
 } from "../../constants/resources";
 import type {
 	CargoPodKind,
-	LoadResourceInput,
-	UnloadResourceInput,
+	LoadResourceOutput,
+	UnloadResourceOutput,
 } from "../../decoders";
 
 export class ResourceNotEnoughError extends Data.TaggedError(
@@ -96,7 +96,9 @@ export class LoadUnloadPartiallyFailedError extends Data.TaggedError(
 )<{
 	signatures: string[];
 	errors: Error[];
-	context: { missingResources: Array<LoadResourceInput | UnloadResourceInput> };
+	context: {
+		missingResources: Array<LoadResourceOutput | UnloadResourceOutput>;
+	};
 }> {
 	override get message() {
 		return this.errors.map((error) => error.message).join("\n");

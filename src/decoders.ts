@@ -21,6 +21,20 @@ export const loadResourceDecoder = z.object({
 
 export type LoadResourceInput = z.infer<typeof loadResourceDecoder>;
 
+export const loadResourceDecoderOutput = z.object({
+	mint: z.string().transform((value) => new PublicKey(value)),
+	mode: z.union([
+		z.literal("fixed"),
+		z.literal("max"),
+		z.literal("min"),
+		z.literal("min-and-fill"),
+	]),
+	amount: z.number(),
+	cargoPod: cargoPodKindDecoder,
+});
+
+export type LoadResourceOutput = z.infer<typeof loadResourceDecoderOutput>;
+
 export const unloadResourceDecoder = z.object({
 	resourceMint: z.string().transform((value) => new PublicKey(value)),
 	mode: z.union([z.literal("fixed"), z.literal("max")]),
@@ -29,3 +43,12 @@ export const unloadResourceDecoder = z.object({
 });
 
 export type UnloadResourceInput = z.infer<typeof unloadResourceDecoder>;
+
+export const unloadResourceDecoderOutput = z.object({
+	mint: z.string().transform((value) => new PublicKey(value)),
+	mode: z.union([z.literal("fixed"), z.literal("max")]),
+	amount: z.number(),
+	cargoPod: cargoPodKindDecoder,
+});
+
+export type UnloadResourceOutput = z.infer<typeof unloadResourceDecoderOutput>;

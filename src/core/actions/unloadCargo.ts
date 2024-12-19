@@ -225,7 +225,16 @@ export const unloadCargo = ({
 			yield* new LoadUnloadPartiallyFailedError({
 				errors,
 				signatures,
-				context: { missingResources: missingItems },
+				context: {
+					missingResources: missingItems.map((item) => {
+						return {
+							mint: item.resourceMint,
+							mode: item.mode,
+							amount: item.amount,
+							cargoPod: item.cargoPodKind,
+						};
+					}),
+				},
 			});
 		}
 
