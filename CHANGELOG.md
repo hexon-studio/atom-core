@@ -1,5 +1,12 @@
 
 
+## [1.11.2](https://github.com/hexon-studio/atom-core/compare/v1.11.1...v1.11.2) (2024-12-19)
+
+
+### Bug Fixes
+
+* load cargo missing resources condition ([4d4d173](https://github.com/hexon-studio/atom-core/commit/4d4d173a7bed7242fbdcf66d1806c06c94972c99))
+
 ## [1.11.1](https://github.com/hexon-studio/atom-core/compare/v1.11.0...v1.11.1) (2024-12-19)
 
 
