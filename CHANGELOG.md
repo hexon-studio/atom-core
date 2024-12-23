@@ -1,5 +1,12 @@
 
 
+## [1.11.3](https://github.com/hexon-studio/atom-core/compare/v1.11.2...v1.11.3) (2024-12-23)
+
+
+### Bug Fixes
+
+* update @solana/web3.js dependency version to exact match ([1b787ba](https://github.com/hexon-studio/atom-core/commit/1b787ba60915e4ad348a3a55d9ae778e05d7bd32))
+
 ## [1.11.2](https://github.com/hexon-studio/atom-core/compare/v1.11.1...v1.11.2) (2024-12-19)
 
 
