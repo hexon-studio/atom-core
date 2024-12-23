@@ -47,7 +47,7 @@
 	"dependencies": {
 		"@logtail/pino": "^0.5.2",
 		"@solana/spl-token": "^0.4.9",
-		"@solana/web3.js": "^1.98.0",
+		"@solana/web3.js": "1.98.0",
 		"@staratlas/anchor": "^0.25.1",
 		"@staratlas/atlas-prime": "^0.13.1",
 		"@staratlas/cargo": "^1.1.0",
