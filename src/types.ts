@@ -22,6 +22,7 @@ export type GlobalOptions = {
 	secondaryRpcUrl?: string;
 	heliusRpcUrl?: string;
 	feeMode: FeeMode;
+	feeLimit?: number;
 	webhookSecret?: string;
 	webhookUrl?: string;
 	taskId?: string;

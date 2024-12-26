@@ -88,7 +88,7 @@ export const buildAndSignTransactionWithAtlasPrime = (
 						lookupTables: lookupTable.value ? [lookupTable.value] : undefined,
 						getFee: helius.pipe(
 							Option.map(
-								({ rpc: heliusRpcUrl, feeMode }) =>
+								({ rpc: heliusRpcUrl, feeMode, feeLimit }) =>
 									async (writableAccounts: PublicKey[]) => {
 										if (!heliusFee) {
 											heliusFee = await getHeliusEstimatedTransactionFee({
@@ -98,7 +98,7 @@ export const buildAndSignTransactionWithAtlasPrime = (
 											});
 										}
 
-										return heliusFee;
+										return feeLimit ? Math.min(heliusFee, feeLimit) : heliusFee;
 									},
 							),
 							Option.getOrUndefined,

@@ -89,6 +89,22 @@ const main = async () => {
 		)
 		.addOption(
 			new Option(
+				"--feeLimit <feeLimit>",
+				"The priority fee limit price in microlamports",
+			)
+				.argParser((value) => {
+					const parsedValue = Number.parseInt(value, 10);
+
+					if (Number.isNaN(parsedValue)) {
+						throw new InvalidArgumentError("Not a number.");
+					}
+
+					return parsedValue;
+				})
+				.makeOptionMandatory(false),
+		)
+		.addOption(
+			new Option(
 				"-k, --keypair <secretKey>",
 				"The secret key of the hot wallet as a base58 string",
 			)
