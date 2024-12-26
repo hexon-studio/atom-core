@@ -1,5 +1,12 @@
 
 
+# [1.12.0](https://github.com/hexon-studio/atom-core/compare/v1.11.3...v1.12.0) (2024-12-26)
+
+
+### Features
+
+* add fee limit ([4b8ac0b](https://github.com/hexon-studio/atom-core/commit/4b8ac0b2408301c58ca6012fa0d5d6d135242631))
+
 ## [1.11.3](https://github.com/hexon-studio/atom-core/compare/v1.11.2...v1.11.3) (2024-12-23)
 
 
