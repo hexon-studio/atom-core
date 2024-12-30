@@ -41,6 +41,7 @@ const fireWebhookEvent =
 					Effect.tryPromise({
 						try: async (): Promise<{ success: boolean }> => {
 							const response = await fetch(webhookUrl, {
+								signal: AbortSignal.timeout(10_000),
 								method: "POST",
 								headers: {
 									"Content-Type": "application/json",

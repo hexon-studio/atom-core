@@ -1,5 +1,5 @@
 import type { PublicKey } from "@solana/web3.js";
-import type { FeeMode } from "../../../../../types";
+import type { FeeMode } from "~/types";
 
 const feeModeToHeliusFeeMode = {
 	low: "Low",
@@ -20,6 +20,7 @@ export const getHeliusEstimatedTransactionFee = async ({
 		// Getting estimated fees from helius
 		const response = await fetch(heliusRpcUrl, {
 			method: "POST",
+			signal: AbortSignal.timeout(10_000),
 			headers: { "Content-Type": "application/json" },
 			body: JSON.stringify({
 				jsonrpc: "2.0",

@@ -1,7 +1,7 @@
 import { readAllFromRPC } from "@staratlas/data-source";
 import { Planet } from "@staratlas/sage";
 import { Data, Effect, pipe } from "effect";
-import { SagePrograms } from "../../../../programs";
+import { getSagePrograms } from "../../../../programs";
 import { SolanaService } from "../../../SolanaService";
 
 export class FindPlanetsError extends Data.TaggedError("FindPlanetsError")<{
@@ -10,7 +10,7 @@ export class FindPlanetsError extends Data.TaggedError("FindPlanetsError")<{
 
 export const findAllPlanets = () =>
 	pipe(
-		Effect.all([SagePrograms, SolanaService]),
+		Effect.all([getSagePrograms(), SolanaService]),
 		Effect.flatMap(([programs, service]) =>
 			service.anchorProvider.pipe(
 				Effect.flatMap((provider) =>

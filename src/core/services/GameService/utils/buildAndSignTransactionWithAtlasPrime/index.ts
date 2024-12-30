@@ -8,17 +8,20 @@ import type {
 import { ProfileVault } from "@staratlas/profile-vault";
 import { Data, Effect, Array as EffectArray, Option } from "effect";
 import type { Result } from "neverthrow";
-import { type GameNotInitializedError, getGameContext } from "..";
-import { GameService } from "../..";
-import { tokenMints } from "../../../../../constants/tokens";
-import type { FetchDummyKeysError } from "../../../../atlas-core-utils/dummy-keys";
-import { SagePrograms } from "../../../../programs";
-import type { ReadFromRPCError } from "../../../../utils/accounts";
+import { tokenMints } from "~/constants/tokens";
+import type { FetchDummyKeysError } from "~/core/atlas-core-utils/dummy-keys";
+import { getSagePrograms } from "~/core/programs";
+import { GameService } from "~/core/services/GameService";
+import {
+	type GameNotInitializedError,
+	getGameContext,
+} from "~/core/services/GameService/utils";
 import {
 	type CreateKeypairError,
 	type CreateProviderError,
 	SolanaService,
-} from "../../../SolanaService";
+} from "~/core/services/SolanaService";
+import type { ReadFromRPCError } from "~/libs/@staratlas/data-source";
 import { getHeliusEstimatedTransactionFee } from "./getHeliusEstimatedTransactionFee";
 
 export class BuildAndSignTransactionWithAtlasPrimeError extends Data.TaggedError(
@@ -57,7 +60,7 @@ export const buildAndSignTransactionWithAtlasPrime = (
 	Effect.all([SolanaService, GameService]).pipe(
 		Effect.flatMap(([solanaService, gameService]) =>
 			Effect.all([
-				SagePrograms,
+				getSagePrograms(),
 				solanaService.helius,
 				solanaService.secondaryAnchorProvider,
 				gameService.signer,

@@ -1,6 +1,5 @@
 import type { PublicKey } from "@solana/web3.js";
 import type { InstructionReturn } from "@staratlas/data-source";
-import { SAGE_CARGO_STAT_VALUE_INDEX } from "@staratlas/sage";
 import BN from "bn.js";
 import {
 	Data,
@@ -11,6 +10,13 @@ import {
 	pipe,
 } from "effect";
 import { constNull } from "effect/Function";
+import {
+	getFleetAccount,
+	getFleetAccountByNameOrAddress,
+	getMineItemAccount,
+	getResourceAccount,
+} from "~/libs/@staratlas/sage";
+import { getCargoTypeResourceMultiplier } from "~/libs/@staratlas/sage/utils/getCargoTypeResourceMultiplier";
 import type { LoadResourceInput } from "../../decoders";
 import { LoadUnloadPartiallyFailedError } from "../fleet/errors";
 import {
@@ -22,12 +28,6 @@ import { getCargoPodsResourcesDifference } from "../fleet/utils/getCargoPodsReso
 import { getCurrentFleetSectorCoordinates } from "../fleet/utils/getCurrentFleetSectorCoordinates";
 import { getFleetCargoPodInfosForItems } from "../fleet/utils/getFleetCargoPodInfosForItems";
 import { GameService } from "../services/GameService";
-import {
-	getFleetAccount,
-	getFleetAccountByNameOrAddress,
-	getMineItemAccount,
-	getResourceAccount,
-} from "../utils/accounts";
 import {
 	type EnhancedResourceItem,
 	enrichLoadResourceInput,
@@ -174,8 +174,9 @@ export const loadCargo = ({
 
 		const loadCargoIxs = yield* Effect.all(
 			EffectArray.map(enhancedItems, (item) => {
-				const resourceSpaceMultiplier =
-					item.cargoTypeAccount.stats[SAGE_CARGO_STAT_VALUE_INDEX] ?? new BN(1);
+				const resourceSpaceMultiplier = getCargoTypeResourceMultiplier(
+					item.cargoTypeAccount,
+				);
 
 				// NOTE: Transform amount in tokens
 				const finalAmountToDeposit = item.computedAmountInCargoUnits.div(

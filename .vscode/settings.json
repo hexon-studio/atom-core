@@ -1,4 +1,5 @@
 {
+	"typescript.preferences.importModuleSpecifier": "shortest",
 	"editor.defaultFormatter": "biomejs.biome",
 	"editor.codeActionsOnSave": {
 		"quickfix.biome": "explicit"

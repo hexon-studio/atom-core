@@ -1,10 +1,10 @@
 import { Fleet } from "@staratlas/sage";
 import type BN from "bn.js";
 import { Effect } from "effect";
-import { SagePrograms } from "../../programs";
+import { getProfileFactionAddress } from "~/libs/@staratlas/profile-faction";
+import { getSagePrograms } from "../../programs";
 import { GameService } from "../../services/GameService";
 import { getGameContext } from "../../services/GameService/utils";
-import { getProfileFactionAddress } from "../../utils/pdas";
 import { getCurrentFleetSectorCoordinates } from "../utils/getCurrentFleetSectorCoordinates";
 import { createMovementHandlerIx } from "./createMovementHandlerIx";
 
@@ -28,7 +28,7 @@ export const createSubwarpToCoordinateIx = ({
 			return [];
 		}
 
-		const programs = yield* SagePrograms;
+		const programs = yield* getSagePrograms();
 		const context = yield* getGameContext();
 
 		const signer = yield* GameService.pipe(

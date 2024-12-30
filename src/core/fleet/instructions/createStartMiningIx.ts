@@ -3,23 +3,21 @@ import { Fleet, PlanetType, StarbasePlayer } from "@staratlas/sage";
 import type BN from "bn.js";
 import { Effect, Option, Record } from "effect";
 import { isNone } from "effect/Option";
-import { resourceNameToMint } from "../../../constants/resources";
-import { getFleetCargoPodInfoByType } from "../../cargo-utils";
-import { SagePrograms } from "../../programs";
-import { GameService } from "../../services/GameService";
-import { getGameContext } from "../../services/GameService/utils";
-import {
-	getStarbaseAccount,
-	getStarbasePlayerAccount,
-} from "../../utils/accounts";
+import { getProfileFactionAddress } from "~/libs/@staratlas/profile-faction";
 import {
 	getMineItemAddress,
-	getProfileFactionAddress,
 	getResourceAddress,
 	getSagePlayerProfileAddress,
-	getStarbaseAddressbyCoordinates,
+	getStarbaseAccount,
+	getStarbaseAddressByCoordinates,
+	getStarbasePlayerAccount,
 	getStarbasePlayerAddress,
-} from "../../utils/pdas";
+} from "~/libs/@staratlas/sage";
+import { resourceNameToMint } from "../../../constants/resources";
+import { getFleetCargoPodInfoByType } from "../../cargo-utils";
+import { getSagePrograms } from "../../programs";
+import { GameService } from "../../services/GameService";
+import { getGameContext } from "../../services/GameService/utils";
 import {
 	FleetNotEnoughFuelError,
 	PlanetNotFoundInSectorError,
@@ -39,7 +37,7 @@ export const createStartMiningIx = ({
 
 		const signer = yield* gameService.signer;
 
-		const programs = yield* SagePrograms;
+		const programs = yield* getSagePrograms();
 
 		const context = yield* getGameContext();
 
@@ -73,7 +71,7 @@ export const createStartMiningIx = ({
 
 		const planetPubkey = maybePlanet.value.key;
 
-		const starbaseAddress = yield* getStarbaseAddressbyCoordinates(
+		const starbaseAddress = yield* getStarbaseAddressByCoordinates(
 			fleetAccount.data.gameId,
 			fleetCoordinates,
 		);

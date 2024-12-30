@@ -1,38 +1,35 @@
 import { Keypair } from "@solana/web3.js";
 import type { InstructionReturn } from "@staratlas/data-source";
-import {
-	Fleet,
-	SAGE_CARGO_STAT_VALUE_INDEX,
-	StarbasePlayer,
-	getCargoSpaceUsedByTokenAmount,
-} from "@staratlas/sage";
+import { Fleet, StarbasePlayer } from "@staratlas/sage";
 import BN from "bn.js";
 import { Data, Effect, Option, Record, pipe } from "effect";
+import {
+	getCargoPodAddress,
+	getCargoTypeAccount,
+	getCargoTypeAddress,
+} from "~/libs/@staratlas/cargo";
+import { getProfileFactionAddress } from "~/libs/@staratlas/profile-faction";
+import {
+	getCargoUnitsFromTokenAmount,
+	getSagePlayerProfileAddress,
+	getStarbaseAccount,
+	getStarbaseAddressByCoordinates,
+	getStarbasePlayerAddress,
+} from "~/libs/@staratlas/sage";
+import { getCargoPodsByAuthority } from "~/libs/@staratlas/sage/getCargoPodsByAuthority";
+import { getCargoTypeResourceMultiplier } from "~/libs/@staratlas/sage/utils/getCargoTypeResourceMultiplier";
 import type { UnloadResourceInput } from "../../../../decoders";
 import { getAssociatedTokenAddress } from "../../../../utils/getAssociatedTokenAddress";
 import { isResourceAllowedForCargoPod } from "../../../../utils/resources/isResourceAllowedForCargoPod";
 import type { CargoPodEnhanced } from "../../../cargo-utils";
-import { SagePrograms } from "../../../programs";
+import { getSagePrograms } from "../../../programs";
 import { GameService } from "../../../services/GameService";
 import { getGameContext } from "../../../services/GameService/utils";
-import {
-	getCargoTypeAccount,
-	getStarbaseAccount,
-} from "../../../utils/accounts";
-import {
-	getCargoPodAddress,
-	getCargoTypeAddress,
-	getProfileFactionAddress,
-	getSagePlayerProfileAddress,
-	getStarbaseAddressbyCoordinates,
-	getStarbasePlayerAddress,
-} from "../../../utils/pdas";
 import {
 	InvalidAmountError,
 	InvalidResourceForPodKindError,
 } from "../../errors";
 import { getCurrentFleetSectorCoordinates } from "../../utils/getCurrentFleetSectorCoordinates";
-import { getCargoPodsByAuthority } from "./../../../cargo-utils";
 import { computeWithdrawAmount } from "./computeWithdrawAmount";
 
 export class FleetCargoPodTokenAccountNotFoundError extends Data.TaggedError(
@@ -92,7 +89,7 @@ export const createWithdrawCargoFromFleetIx = ({
 		const fleetCoords = yield* getCurrentFleetSectorCoordinates(
 			fleetAccount.state,
 		);
-		const starbaseAddress = yield* getStarbaseAddressbyCoordinates(
+		const starbaseAddress = yield* getStarbaseAddressByCoordinates(
 			context.gameInfo.game.key,
 			fleetCoords,
 		);
@@ -105,7 +102,7 @@ export const createWithdrawCargoFromFleetIx = ({
 			starbaseAccount.data.seqId,
 		);
 
-		const programs = yield* SagePrograms;
+		const programs = yield* getSagePrograms();
 		const signer = yield* gameService.signer;
 		const gameId = context.gameInfo.game.key;
 		const gameState = context.gameInfo.game.data.gameState;
@@ -182,10 +179,10 @@ export const createWithdrawCargoFromFleetIx = ({
 			Option.getOrElse(() => new BN(0)),
 		);
 
-		const amountInCargoUnits = getCargoSpaceUsedByTokenAmount(
-			cargoTypeAccount,
-			new BN(amount),
-		);
+		const amountInCargoUnits = getCargoUnitsFromTokenAmount({
+			amount: new BN(amount),
+			cargoType: cargoTypeAccount,
+		});
 
 		const unloadAmountInCargoUnits = yield* computeWithdrawAmount({
 			fleetAddress: fleetAccount.key,
@@ -198,7 +195,7 @@ export const createWithdrawCargoFromFleetIx = ({
 		});
 
 		const resourceSpaceMultiplier =
-			cargoTypeAccount.stats[SAGE_CARGO_STAT_VALUE_INDEX] ?? new BN(1);
+			getCargoTypeResourceMultiplier(cargoTypeAccount);
 
 		const unloadAmount = unloadAmountInCargoUnits.div(resourceSpaceMultiplier);
 

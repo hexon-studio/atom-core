@@ -1,13 +1,13 @@
 import type BN from "bn.js";
 import { Effect } from "effect";
-import { getCargoPodsByAuthority } from "../cargo-utils";
-import { getGameContext } from "../services/GameService/utils";
-import { getStarbaseAccount } from "./accounts";
 import {
+	getCargoPodsByAuthority,
 	getSagePlayerProfileAddress,
-	getStarbaseAddressbyCoordinates,
+	getStarbaseAccount,
+	getStarbaseAddressByCoordinates,
 	getStarbasePlayerAddress,
-} from "./pdas";
+} from "~/libs/@staratlas/sage";
+import { getGameContext } from "../services/GameService/utils";
 
 export const getStarbaseInfoByCoords = ({
 	startbaseCoords,
@@ -22,7 +22,7 @@ export const getStarbaseInfoByCoords = ({
 			context.playerProfile.key,
 		);
 
-		const starbasePubkey = yield* getStarbaseAddressbyCoordinates(
+		const starbasePubkey = yield* getStarbaseAddressByCoordinates(
 			context.gameInfo.game.key,
 			startbaseCoords,
 		);

@@ -1,6 +1,7 @@
 import type { Fleet } from "@staratlas/sage";
 import { Effect, Record } from "effect";
 import type { UnknownException } from "effect/Cause";
+import type { ReadFromRPCError } from "~/libs/@staratlas/data-source/readFromSage";
 import type { CargoPodKind } from "../../../decoders";
 import {
 	type CargoPodEnhanced,
@@ -14,7 +15,6 @@ import type {
 	CreateProviderError,
 	SolanaService,
 } from "../../services/SolanaService";
-import type { ReadFromRPCError } from "../../utils/accounts";
 
 export const getFleetCargoPodInfosForItems = ({
 	fleetAccount,

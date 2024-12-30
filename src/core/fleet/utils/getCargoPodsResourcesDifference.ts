@@ -1,6 +1,5 @@
-import { SAGE_CARGO_STAT_VALUE_INDEX } from "@staratlas/sage";
-import { BN } from "bn.js";
 import { Array as EffectArray, Order, Record, pipe } from "effect";
+import { getCargoTypeResourceMultiplier } from "~/libs/@staratlas/sage/utils/getCargoTypeResourceMultiplier";
 import type { CargoPodEnhanced } from "../../cargo-utils";
 
 export const getCargoPodsResourcesDifference = ({
@@ -26,9 +25,9 @@ export const getCargoPodsResourcesDifference = ({
 		EffectArray.map(([afterRes, beforeRes]) => ({
 			mint: afterRes.mint,
 			cargoPodKind: after.type,
-			resourceMultiplier:
-				afterRes.cargoTypeAccount.stats[SAGE_CARGO_STAT_VALUE_INDEX] ??
-				new BN(1),
+			resourceMultiplier: getCargoTypeResourceMultiplier(
+				afterRes.cargoTypeAccount,
+			),
 			amountInCargoUnits: afterRes.amountInCargoUnits.sub(
 				beforeRes.amountInCargoUnits,
 			),

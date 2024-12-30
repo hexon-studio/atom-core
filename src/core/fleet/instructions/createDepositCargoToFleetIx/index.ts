@@ -2,17 +2,15 @@ import type { PublicKey } from "@solana/web3.js";
 import { Fleet } from "@staratlas/sage";
 import BN from "bn.js";
 import { Effect, pipe } from "effect";
+import { getCargoTypeAddress } from "~/libs/@staratlas/cargo";
+import { getProfileFactionAddress } from "~/libs/@staratlas/profile-faction";
 import type { CargoPodKind } from "../../../../decoders";
 import { isResourceAllowedForCargoPod } from "../../../../utils/resources/isResourceAllowedForCargoPod";
 import type { CargoPodEnhanced } from "../../../cargo-utils";
-import { SagePrograms } from "../../../programs";
+import { getSagePrograms } from "../../../programs";
 import { GameService } from "../../../services/GameService";
 import { getGameContext } from "../../../services/GameService/utils";
 import type { StarbaseInfo } from "../../../utils/getStarbaseInfo";
-import {
-	getCargoTypeAddress,
-	getProfileFactionAddress,
-} from "../../../utils/pdas";
 import {
 	InvalidAmountError,
 	InvalidResourceForPodKindError,
@@ -93,7 +91,7 @@ export const createDepositCargoToFleetIx = ({
 			context.gameInfo.cargoStatsDefinition.data.seqId,
 		);
 
-		const programs = yield* SagePrograms;
+		const programs = yield* getSagePrograms();
 		const signer = yield* gameService.signer;
 
 		const gameId = context.gameInfo.game.key;
