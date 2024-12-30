@@ -1,11 +1,11 @@
 import { PublicKey } from "@solana/web3.js";
 import BN from "bn.js";
 import { Effect, Option, Record } from "effect";
-import type { CargoPodEnhanced } from "~/core/cargo-utils";
 import { computeDepositAmount } from "~/core/fleet/instructions/createDepositCargoToFleetIx/computeDepositAmout";
 import { getGameContext } from "~/core/services/GameService/utils";
 import type { LoadResourceInput } from "~/decoders";
 import {
+	type CargoPodEnhanced,
 	getCargoTypeAccount,
 	getCargoTypeAddress,
 } from "~/libs/@staratlas/cargo";

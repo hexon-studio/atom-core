@@ -1,6 +1,6 @@
 import { Array as EffectArray, Order, Record, pipe } from "effect";
+import type { CargoPodEnhanced } from "~/libs/@staratlas/cargo";
 import { getCargoTypeResourceMultiplier } from "~/libs/@staratlas/sage/utils/getCargoTypeResourceMultiplier";
-import type { CargoPodEnhanced } from "../../cargo-utils";
 
 export const getCargoPodsResourcesDifference = ({
 	after,

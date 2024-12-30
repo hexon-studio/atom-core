@@ -353,7 +353,7 @@ const main = async () => {
 	program
 		.command("warp")
 		.argument("<fleetNameOrAddress>", "The fleet to stop mining")
-		.argument("<targetSector>", "Rhe coordinates of the target sector")
+		.argument("<targetSector>", "The coordinates of the target sector")
 		.action(async (fleetNameOrAddress: string, targetSectorArg: string) => {
 			const globalOpts = createOptionsWithWebhook(
 				program.opts<GlobalOptions>(),

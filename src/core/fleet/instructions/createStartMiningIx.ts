@@ -3,6 +3,7 @@ import { Fleet, PlanetType, StarbasePlayer } from "@staratlas/sage";
 import type BN from "bn.js";
 import { Effect, Option, Record } from "effect";
 import { isNone } from "effect/Option";
+import { getFleetCargoPodInfoByType } from "~/libs/@staratlas/cargo";
 import { getProfileFactionAddress } from "~/libs/@staratlas/profile-faction";
 import {
 	getMineItemAddress,
@@ -14,7 +15,6 @@ import {
 	getStarbasePlayerAddress,
 } from "~/libs/@staratlas/sage";
 import { resourceNameToMint } from "../../../constants/resources";
-import { getFleetCargoPodInfoByType } from "../../cargo-utils";
 import { getSagePrograms } from "../../programs";
 import { GameService } from "../../services/GameService";
 import { getGameContext } from "../../services/GameService/utils";
