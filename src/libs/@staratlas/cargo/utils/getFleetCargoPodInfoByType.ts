@@ -1,43 +1,18 @@
 import { PublicKey } from "@solana/web3.js";
 import type { CargoType } from "@staratlas/cargo";
-import {
-	type CargoStats,
-	type Fleet,
-	SAGE_CARGO_STAT_VALUE_INDEX,
-	getCargoSpaceUsedByTokenAmount,
-	getCargoPodsByAuthority as sageGetCargoPodsByAuthority,
-} from "@staratlas/sage";
+import type { CargoStats, Fleet } from "@staratlas/sage";
 import BN from "bn.js";
 import { Data, Effect, Match, Record } from "effect";
-import type { CargoPodKind } from "../../decoders";
-import { SagePrograms } from "../programs";
-import { GameService } from "../services/GameService";
-import { getGameContext } from "../services/GameService/utils";
-import { SolanaService } from "../services/SolanaService";
-import { getCargoPodAccount, getCargoTypeAccount } from "../utils/accounts";
-import { getCargoTypeAddress } from "../utils/pdas";
-
-export class GetCargoPodsByAuthorityError extends Data.TaggedError(
-	"GetCargoPodsByAuthorityError",
-)<{ error: unknown }> {}
-
-export const getCargoPodsByAuthority = (authority: PublicKey) =>
-	SolanaService.pipe(
-		Effect.flatMap((service) =>
-			Effect.all([service.anchorProvider, SagePrograms]),
-		),
-		Effect.flatMap(([provider, programs]) =>
-			Effect.tryPromise({
-				try: () =>
-					sageGetCargoPodsByAuthority(
-						provider.connection,
-						programs.cargo,
-						authority,
-					),
-				catch: (error) => new GetCargoPodsByAuthorityError({ error }),
-			}).pipe(Effect.head),
-		),
-	);
+import { GameService } from "~/core/services/GameService";
+import { getGameContext } from "~/core/services/GameService/utils";
+import type { CargoPodKind } from "~/decoders";
+import {
+	getCargoPodAccount,
+	getCargoTypeAccount,
+	getCargoTypeAddress,
+} from "~/libs/@staratlas/cargo";
+import { getCargoUnitsFromTokenAmount } from "~/libs/@staratlas/sage";
+import { getCargoTypeResourceMultiplier } from "~/libs/@staratlas/sage/utils/getCargoTypeResourceMultiplier";
 
 export class InvalidPodMaxCapacityError extends Data.TaggedError(
 	"InvalidPodMaxCapacityError",
@@ -72,9 +47,8 @@ export const getFleetCargoPodInfoByType = ({
 		const gameService = yield* GameService;
 		const context = yield* getGameContext();
 
-		const cargoPodTokenAccounts = cargoPod.data.openTokenAccounts
-			? yield* gameService.utils.getParsedTokenAccountsByOwner(cargoPod.key)
-			: [];
+		const cargoPodTokenAccounts =
+			yield* gameService.utils.getParsedTokenAccountsByOwner(cargoPod.key);
 
 		const resources = yield* Effect.reduce(
 			cargoPodTokenAccounts,
@@ -101,10 +75,10 @@ export const getFleetCargoPodInfoByType = ({
 					return Record.set(acc, cargoPodTokenAccount.mint.toString(), {
 						mint: cargoPodTokenAccount.mint,
 						amountInTokens: new BN(cargoPodTokenAccount.amount.toString()),
-						amountInCargoUnits: getCargoSpaceUsedByTokenAmount(
-							cargoTypeAccount,
-							new BN(cargoPodTokenAccount.amount.toString()),
-						),
+						amountInCargoUnits: getCargoUnitsFromTokenAmount({
+							amount: new BN(cargoPodTokenAccount.amount.toString()),
+							cargoType: cargoTypeAccount,
+						}),
 						cargoTypeAccount,
 						tokenAccountKey: cargoPodTokenAccount.address,
 					});
@@ -141,7 +115,7 @@ export const getFleetCargoPodInfoByType = ({
 							amountInCargoUnits: amountInCargoUnits.toString(),
 							amountInTokens: amountInTokens.toString(),
 							cargoTypeMultiplier:
-								cargoTypeAccount.stats[SAGE_CARGO_STAT_VALUE_INDEX]?.toString(),
+								getCargoTypeResourceMultiplier(cargoTypeAccount).toString(),
 							mint: mint.toString(),
 							tokenAccountKey: tokenAccountKey.toString(),
 						}),

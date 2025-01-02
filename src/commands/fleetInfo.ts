@@ -1,11 +1,9 @@
 import type { PublicKey } from "@solana/web3.js";
 import { Cause, Effect, Exit, LogLevel, Logger, Option } from "effect";
+import { getFleetAccountByNameOrAddress } from "~/libs/@staratlas/sage";
 import { GameService } from "../core/services/GameService";
-import { getFleetAccount } from "../core/utils/accounts";
-import { getFleetAddressByName } from "../core/utils/pdas";
 import type { GlobalOptionsWithWebhook } from "../types";
 import { createMainLiveService } from "../utils/createLiveService";
-import { isPublicKey } from "../utils/public-key";
 
 type Param = {
 	fleetNameOrAddress: string | PublicKey;
@@ -31,12 +29,7 @@ export const runFleetInfo = async ({
 			}),
 		),
 		Effect.tap(() => Effect.log("Game initialized.")),
-		Effect.flatMap(() =>
-			isPublicKey(fleetNameOrAddress)
-				? Effect.succeed(fleetNameOrAddress)
-				: getFleetAddressByName(fleetNameOrAddress),
-		),
-		Effect.flatMap((fleetAddress) => getFleetAccount(fleetAddress)),
+		Effect.flatMap(() => getFleetAccountByNameOrAddress(fleetNameOrAddress)),
 		Effect.tap((fleet) =>
 			Effect.logInfo("Fleet found").pipe(Effect.annotateLogs({ fleet })),
 		),

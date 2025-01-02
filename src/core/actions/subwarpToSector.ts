@@ -2,19 +2,19 @@ import type { PublicKey } from "@solana/web3.js";
 import type { InstructionReturn } from "@staratlas/data-source";
 import BN from "bn.js";
 import { Effect, Match, pipe } from "effect";
-import { isPublicKey } from "../../utils/public-key";
+import {
+	getFleetAccount,
+	getFleetAccountByNameOrAddress,
+	getMineItemAccount,
+	getResourceAccount,
+} from "~/libs/@staratlas/sage";
 import {
 	createStopMiningIx,
 	createSubwarpToCoordinateIx,
 	createUndockFromStarbaseIx,
 } from "../fleet/instructions";
 import { GameService } from "../services/GameService";
-import {
-	getFleetAccount,
-	getMineItemAccount,
-	getResourceAccount,
-} from "../utils/accounts";
-import { getFleetAddressByName } from "../utils/pdas";
+
 import { createDrainVaultIx } from "../vault/instructions/createDrainVaultIx";
 
 export const subwarpToSector = ({
@@ -25,13 +25,10 @@ export const subwarpToSector = ({
 	targetSector: [number, number];
 }) =>
 	Effect.gen(function* () {
-		const fleetAddress = yield* isPublicKey(fleetNameOrAddress)
-			? Effect.succeed(fleetNameOrAddress)
-			: getFleetAddressByName(fleetNameOrAddress);
-
 		yield* Effect.log("Start subwarp...");
 
-		let fleetAccount = yield* getFleetAccount(fleetAddress);
+		let fleetAccount =
+			yield* getFleetAccountByNameOrAddress(fleetNameOrAddress);
 
 		const ixs: InstructionReturn[] = [];
 
@@ -60,7 +57,7 @@ export const subwarpToSector = ({
 
 		if (preIxs.length) {
 			// NOTE: get a fresh fleet account
-			fleetAccount = yield* getFleetAccount(fleetAddress);
+			fleetAccount = yield* getFleetAccount(fleetAccount.key);
 		}
 
 		ixs.push(...preIxs);

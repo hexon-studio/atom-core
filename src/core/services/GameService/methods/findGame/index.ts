@@ -1,12 +1,12 @@
 import { Data, Effect, pipe } from "effect";
-import { SagePrograms } from "../../../../programs";
+import { getSagePrograms } from "../../../../programs";
 
 export class GameNotFoundError extends Data.TaggedError("FindGameError")<{
 	readonly error: unknown;
 }> {}
 
 export const findGame = pipe(
-	SagePrograms,
+	getSagePrograms(),
 	Effect.flatMap((programs) =>
 		Effect.tryPromise({
 			try: () => programs.sage.account.game.all(),

@@ -16,21 +16,23 @@ import {
 } from "effect";
 import { z } from "zod";
 import { version as packageJsonVersion } from "../package.json";
-import { runDock } from "./commands/dock";
-import { runFleetInfo } from "./commands/fleetInfo";
-import { runProfileInfo } from "./commands/profileInfo";
-import { runStartMining } from "./commands/startMining";
-import { runStopMining } from "./commands/stopMining";
-import { runSubwarp } from "./commands/subwarp";
-import { runUndock } from "./commands/undock";
-import { runUnloadCargo } from "./commands/unloadCargo";
-import { runWarp } from "./commands/warp";
+import {
+	runDock,
+	runFleetInfo,
+	runLoadCargo,
+	runProfileInfo,
+	runStartMining,
+	runStopMining,
+	runSubwarp,
+	runUndock,
+	runUnloadCargo,
+	runWarp,
+} from "./commands";
 import {
 	cargoPodKinds,
 	loadResourceDecoder,
 	unloadResourceDecoder,
 } from "./decoders";
-import { runLoadCargo } from "./main";
 import type { GlobalOptions } from "./types";
 import { createOptionsWithWebhook } from "./utils/creactOptionsWithWebhook";
 import { parseSecretKey } from "./utils/keypair";
@@ -353,7 +355,7 @@ const main = async () => {
 	program
 		.command("warp")
 		.argument("<fleetNameOrAddress>", "The fleet to stop mining")
-		.argument("<targetSector>", "Rhe coordinates of the target sector")
+		.argument("<targetSector>", "The coordinates of the target sector")
 		.action(async (fleetNameOrAddress: string, targetSectorArg: string) => {
 			const globalOpts = createOptionsWithWebhook(
 				program.opts<GlobalOptions>(),

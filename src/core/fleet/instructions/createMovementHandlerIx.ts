@@ -1,20 +1,20 @@
 import { PublicKey } from "@solana/web3.js";
 import { Fleet } from "@staratlas/sage";
 import { Effect, Match } from "effect";
+import { getCargoTypeAddress } from "~/libs/@staratlas/cargo";
 import { resourceNameToMint } from "../../../constants/resources";
 import {
 	getCouncilRankXpKey,
 	getPilotXpKey,
 } from "../../points-utils/accounts";
-import { SagePrograms } from "../../programs";
+import { getSagePrograms } from "../../programs";
 import { GameService } from "../../services/GameService";
 import { getGameContext } from "../../services/GameService/utils";
-import { getCargoTypeAddress } from "../../utils/pdas";
 
 export const createMovementHandlerIx = (fleetAccount: Fleet) =>
 	Effect.gen(function* () {
 		const gameService = yield* GameService;
-		const programs = yield* SagePrograms;
+		const programs = yield* getSagePrograms();
 		const context = yield* getGameContext();
 
 		const ixs = [];

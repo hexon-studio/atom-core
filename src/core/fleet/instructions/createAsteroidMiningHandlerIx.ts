@@ -2,17 +2,17 @@ import { PublicKey } from "@solana/web3.js";
 import type { InstructionReturn } from "@staratlas/data-source";
 import { Fleet } from "@staratlas/sage";
 import { Effect, Match } from "effect";
-import { resourceNameToMint } from "../../../constants/resources";
-import { getAssociatedTokenAddress } from "../../../utils/getAssociatedTokenAddress";
-import { SagePrograms } from "../../programs";
-import { GameService } from "../../services/GameService";
-import { getGameContext } from "../../services/GameService/utils";
+import { getCargoTypeAddress } from "~/libs/@staratlas/cargo";
 import {
-	getCargoTypeAddress,
 	getMineItemAddress,
 	getResourceAddress,
-	getStarbaseAddressbyCoordinates,
-} from "../../utils/pdas";
+	getStarbaseAddressByCoordinates,
+} from "~/libs/@staratlas/sage";
+import { resourceNameToMint } from "../../../constants/resources";
+import { getAssociatedTokenAddress } from "../../../utils/getAssociatedTokenAddress";
+import { getSagePrograms } from "../../programs";
+import { GameService } from "../../services/GameService";
+import { getGameContext } from "../../services/GameService/utils";
 import { getCurrentFleetSectorCoordinates } from "../utils/getCurrentFleetSectorCoordinates";
 
 type Param = {
@@ -27,7 +27,7 @@ export const createAsteroidMiningHandlerIx = ({
 	planetAddress,
 }: Param) =>
 	Effect.gen(function* () {
-		const programs = yield* SagePrograms;
+		const programs = yield* getSagePrograms();
 		const gameService = yield* GameService;
 		const context = yield* getGameContext();
 
@@ -82,7 +82,7 @@ export const createAsteroidMiningHandlerIx = ({
 			fleetAccount.state,
 		);
 
-		const starbaseAddress = yield* getStarbaseAddressbyCoordinates(
+		const starbaseAddress = yield* getStarbaseAddressByCoordinates(
 			fleetAccount.data.gameId,
 			fleetCoordinates,
 		);

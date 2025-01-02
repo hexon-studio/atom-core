@@ -1,18 +1,20 @@
 import { PublicKey } from "@solana/web3.js";
-import {
-	SAGE_CARGO_STAT_VALUE_INDEX,
-	getCargoSpaceUsedByTokenAmount,
-} from "@staratlas/sage";
 import BN from "bn.js";
 import { Effect, Option, Record } from "effect";
-import type { LoadResourceInput } from "../../decoders";
-import { getAssociatedTokenAccountBalance } from "../../utils/getAssociatedTokenAccountBalance";
-import { getAssociatedTokenAddress } from "../../utils/getAssociatedTokenAddress";
-import type { CargoPodEnhanced } from "../cargo-utils";
-import { computeDepositAmount } from "../fleet/instructions/createDepositCargoToFleetIx/computeDepositAmout";
-import { getGameContext } from "../services/GameService/utils";
-import { getCargoTypeAccount } from "./accounts";
-import { getCargoTypeAddress } from "./pdas";
+import { computeDepositAmount } from "~/core/fleet/instructions/createDepositCargoToFleetIx/computeDepositAmout";
+import { getGameContext } from "~/core/services/GameService/utils";
+import type { LoadResourceInput } from "~/decoders";
+import {
+	type CargoPodEnhanced,
+	getCargoTypeAccount,
+	getCargoTypeAddress,
+} from "~/libs/@staratlas/cargo";
+import {
+	getCargoTypeResourceMultiplier,
+	getCargoUnitsFromTokenAmount,
+} from "~/libs/@staratlas/sage";
+import { getAssociatedTokenAccountBalance } from "~/utils/getAssociatedTokenAccountBalance";
+import { getAssociatedTokenAddress } from "~/utils/getAssociatedTokenAddress";
 
 export const enrichLoadResourceInput = ({
 	item,
@@ -55,10 +57,10 @@ export const enrichLoadResourceInput = ({
 
 		const cargoTypeAccount = yield* getCargoTypeAccount(cargoTypeAddress);
 
-		const amountInCargoUnits = getCargoSpaceUsedByTokenAmount(
-			cargoTypeAccount,
-			new BN(amount),
-		);
+		const amountInCargoUnits = getCargoUnitsFromTokenAmount({
+			amount: new BN(amount),
+			cargoType: cargoTypeAccount,
+		});
 
 		const computedAmountInCargoUnits = yield* computeDepositAmount({
 			cargoPodKind,
@@ -68,16 +70,16 @@ export const enrichLoadResourceInput = ({
 			mode,
 			resourceFleetMaxCap: cargoPodInfo.maxCapacityInCargoUnits,
 			resourceAmountInFleet: resourceAmountInFleetInCargoUnits,
-			resourceAmountInStarbase: getCargoSpaceUsedByTokenAmount(
-				cargoTypeAccount,
-				starbaseResourceAmountInTokens,
-			),
+			resourceAmountInStarbase: getCargoUnitsFromTokenAmount({
+				amount: starbaseResourceAmountInTokens,
+				cargoType: cargoTypeAccount,
+			}),
 			totalResourcesAmountInFleet: totalResourcesAmountInCargoUnits,
 			value: amountInCargoUnits,
 		});
 
 		const resourceSpaceMultiplier =
-			cargoTypeAccount.stats[SAGE_CARGO_STAT_VALUE_INDEX] ?? new BN(1);
+			getCargoTypeResourceMultiplier(cargoTypeAccount);
 
 		yield* Effect.log(
 			`Load ${resourceMint.toString()} in ${cargoPodKind}`,

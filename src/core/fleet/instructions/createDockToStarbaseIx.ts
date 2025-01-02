@@ -3,20 +3,18 @@ import type { InstructionReturn } from "@staratlas/data-source";
 import { Fleet, StarbasePlayer } from "@staratlas/sage";
 import { Effect, Option } from "effect";
 import { isNone } from "effect/Option";
-import { getCargoPodsByAuthority } from "../../cargo-utils";
-import { SagePrograms } from "../../programs";
+import { getProfileFactionAddress } from "~/libs/@staratlas/profile-faction";
+import {
+	getSagePlayerProfileAddress,
+	getStarbaseAccount,
+	getStarbaseAddressByCoordinates,
+	getStarbasePlayerAccount,
+	getStarbasePlayerAddress,
+} from "~/libs/@staratlas/sage";
+import { getCargoPodsByAuthority } from "~/libs/@staratlas/sage/getCargoPodsByAuthority";
+import { getSagePrograms } from "../../programs";
 import { GameService } from "../../services/GameService";
 import { getGameContext } from "../../services/GameService/utils";
-import {
-	getStarbaseAccount,
-	getStarbasePlayerAccount,
-} from "../../utils/accounts";
-import {
-	getProfileFactionAddress,
-	getSagePlayerProfileAddress,
-	getStarbaseAddressbyCoordinates,
-	getStarbasePlayerAddress,
-} from "../../utils/pdas";
 import { InvalidFleetStateError } from "../errors";
 import { getCurrentFleetSectorCoordinates } from "../utils/getCurrentFleetSectorCoordinates";
 import { createMovementHandlerIx } from "./createMovementHandlerIx";
@@ -35,20 +33,17 @@ export const createDockToStarbaseIx = (fleetAccount: Fleet) =>
 		const gameService = yield* GameService;
 		const signer = yield* gameService.signer;
 
-		const sagePlayerProfileAddress = yield* getSagePlayerProfileAddress(
-			fleetAccount.data.gameId,
-			fleetAccount.data.ownerProfile,
-		);
+		const [sagePlayerProfileAddress, playerFactionAddress, fleetCoords] =
+			yield* Effect.all([
+				getSagePlayerProfileAddress(
+					fleetAccount.data.gameId,
+					fleetAccount.data.ownerProfile,
+				),
+				getProfileFactionAddress(fleetAccount.data.ownerProfile),
+				getCurrentFleetSectorCoordinates(fleetAccount.state),
+			]);
 
-		const playerFactionAddress = yield* getProfileFactionAddress(
-			fleetAccount.data.ownerProfile,
-		);
-
-		const fleetCoords = yield* getCurrentFleetSectorCoordinates(
-			fleetAccount.state,
-		);
-
-		const starbaseAddress = yield* getStarbaseAddressbyCoordinates(
+		const starbaseAddress = yield* getStarbaseAddressByCoordinates(
 			fleetAccount.data.gameId,
 			fleetCoords,
 		);
@@ -67,7 +62,7 @@ export const createDockToStarbaseIx = (fleetAccount: Fleet) =>
 
 		const ixs: InstructionReturn[] = [];
 
-		const programs = yield* SagePrograms;
+		const programs = yield* getSagePrograms();
 
 		const context = yield* getGameContext();
 

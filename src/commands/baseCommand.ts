@@ -1,19 +1,16 @@
 import { getAssociatedTokenAddressSync } from "@solana/spl-token";
 import { ProfileVault } from "@staratlas/profile-vault";
-import { Effect, Array as EffectArray } from "effect";
-import { constant, unsafeCoerce } from "effect/Function";
+import { Effect, Array as EffectArray, unsafeCoerce } from "effect";
+import { getAssociatedTokenAccountBalance } from "~/utils/getAssociatedTokenAccountBalance";
 import { MIN_ATLAS_QTY, tokenMints } from "../constants/tokens";
-import { SagePrograms } from "../core/programs";
+import { getSagePrograms } from "../core/programs";
 import { AtlasNotEnoughError } from "../core/services/GameService/methods/initGame";
 import { getGameContext } from "../core/services/GameService/utils";
-import { SolanaService } from "../core/services/SolanaService";
 import { fireWebhookEvent } from "../utils/fireWebhookEvent";
 
 const checkAtlasBalance = () =>
 	Effect.gen(function* () {
-		const solanaService = yield* SolanaService;
-
-		const programs = yield* SagePrograms;
+		const programs = yield* getSagePrograms();
 
 		const context = yield* getGameContext();
 
@@ -29,24 +26,9 @@ const checkAtlasBalance = () =>
 			true,
 		);
 
-		const provider = yield* solanaService.anchorProvider;
+		const atlasBalance = yield* getAssociatedTokenAccountBalance(funderVault);
 
-		const atlasBalance = yield* Effect.tryPromise(() =>
-			provider.connection.getTokenAccountBalance(funderVault, "confirmed"),
-		).pipe(
-			Effect.tapError((error) =>
-				Effect.logError("Cannot get atlas amount").pipe(
-					Effect.annotateLogs({ error }),
-				),
-			),
-			Effect.map((resp) => resp.value.uiAmount ?? 0),
-			Effect.orElseSucceed(constant(-1)),
-		);
-
-		if (
-			atlasBalance === 0 ||
-			(atlasBalance > 0 && atlasBalance < MIN_ATLAS_QTY)
-		) {
+		if (atlasBalance.ltn(MIN_ATLAS_QTY)) {
 			return yield* Effect.fail(new AtlasNotEnoughError());
 		}
 
@@ -65,42 +47,44 @@ export const runBaseCommand = <E, R>({
 		context?: Record<string, unknown>;
 	};
 }) =>
-	fireWebhookEvent({ type: "start" }).pipe(
-		Effect.flatMap(checkAtlasBalance),
-		Effect.tap((balance) =>
-			fireWebhookEvent({ type: "atlas-balance", payload: { balance } }),
-		),
-		Effect.flatMap(self),
-		Effect.tapBoth({
-			onFailure: (error) => {
-				const { message, tag, signatures, context } = normalizeError(
-					unsafeCoerce(error),
-				);
+	Effect.gen(function* () {
+		yield* fireWebhookEvent({ type: "start" });
 
-				return fireWebhookEvent({
-					type: "error",
-					payload: {
-						tag,
-						message,
-						signatures: EffectArray.ensure(signatures ?? []),
-						context,
-					},
-				});
+		const balance = yield* checkAtlasBalance();
+
+		// yield* fireWebhookEvent({
+		// 	type: "atlas-balance",
+		// 	payload: { balance: balance.toString() },
+		// });
+
+		const signatures = yield* self();
+
+		const context = yield* getGameContext();
+
+		yield* fireWebhookEvent({
+			type: "success",
+			payload: {
+				signatures,
+				removeCredit:
+					!!context.fees && !context.fees.feeAddress && signatures.length > 0,
 			},
-			onSuccess: (signatures) =>
-				getGameContext().pipe(
-					Effect.tap((context) =>
-						fireWebhookEvent({
-							type: "success",
-							payload: {
-								signatures,
-								removeCredit:
-									!!context.fees &&
-									!context.fees.feeAddress &&
-									signatures.length > 0,
-							},
-						}),
-					),
-				),
+		});
+
+		return signatures;
+	}).pipe(
+		Effect.tapError((error) => {
+			const { tag, message, signatures, context } = normalizeError(
+				unsafeCoerce(error),
+			);
+
+			return fireWebhookEvent({
+				type: "error",
+				payload: {
+					tag,
+					message,
+					signatures: EffectArray.ensure(signatures ?? []),
+					context,
+				},
+			});
 		}),
 	);

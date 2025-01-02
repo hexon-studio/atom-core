@@ -9,8 +9,13 @@ import {
 	pipe,
 } from "effect";
 import { constNull } from "effect/Function";
+import {
+	getFleetAccount,
+	getFleetAccountByNameOrAddress,
+	getMineItemAccount,
+	getResourceAccount,
+} from "~/libs/@staratlas/sage";
 import type { UnloadResourceInput } from "../../decoders";
-import { isPublicKey } from "../../utils/public-key";
 import { LoadUnloadPartiallyFailedError } from "../fleet/errors";
 import {
 	createDockToStarbaseIx,
@@ -20,12 +25,6 @@ import {
 import { getCargoPodsResourcesDifference } from "../fleet/utils/getCargoPodsResourcesDifference";
 import { getFleetCargoPodInfosForItems } from "../fleet/utils/getFleetCargoPodInfosForItems";
 import { GameService } from "../services/GameService";
-import {
-	getFleetAccount,
-	getMineItemAccount,
-	getResourceAccount,
-} from "../utils/accounts";
-import { getFleetAddressByName } from "../utils/pdas";
 import { createDrainVaultIx } from "../vault/instructions/createDrainVaultIx";
 
 export const unloadCargo = ({
@@ -36,15 +35,12 @@ export const unloadCargo = ({
 	items: Array<UnloadResourceInput>;
 }) =>
 	Effect.gen(function* () {
-		const fleetAddress = yield* isPublicKey(fleetNameOrAddress)
-			? Effect.succeed(fleetNameOrAddress)
-			: getFleetAddressByName(fleetNameOrAddress);
-
 		yield* Effect.log(
 			`Unloading cargo from fleet ${fleetNameOrAddress.toString()}`,
 		);
 
-		const fleetAccount = yield* getFleetAccount(fleetAddress);
+		const fleetAccount =
+			yield* getFleetAccountByNameOrAddress(fleetNameOrAddress);
 
 		const ixs: InstructionReturn[] = [];
 
@@ -123,7 +119,7 @@ export const unloadCargo = ({
 			fleetAccount,
 		});
 
-		const freshFleetAccount = yield* getFleetAccount(fleetAddress);
+		const freshFleetAccount = yield* getFleetAccount(fleetAccount.key);
 
 		const unloadCargoIxs = yield* Effect.all(
 			EffectArray.filterMap(items, (item) => {

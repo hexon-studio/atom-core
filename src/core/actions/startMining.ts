@@ -1,14 +1,12 @@
 import type { PublicKey } from "@solana/web3.js";
 import type { InstructionReturn } from "@staratlas/data-source";
 import { Effect, Match } from "effect";
-import { isPublicKey } from "../../utils/public-key";
+import { getFleetAccountByNameOrAddress } from "~/libs/@staratlas/sage";
 import {
 	createStartMiningIx,
 	createUndockFromStarbaseIx,
 } from "../fleet/instructions";
 import { GameService } from "../services/GameService";
-import { getFleetAccount } from "../utils/accounts";
-import { getFleetAddressByName } from "../utils/pdas";
 import { createDrainVaultIx } from "../vault/instructions/createDrainVaultIx";
 
 export const startMining = ({
@@ -19,13 +17,10 @@ export const startMining = ({
 	resourceMint: PublicKey;
 }) =>
 	Effect.gen(function* () {
-		const fleetAddress = yield* isPublicKey(fleetNameOrAddress)
-			? Effect.succeed(fleetNameOrAddress)
-			: getFleetAddressByName(fleetNameOrAddress);
-
 		yield* Effect.log(`Start mining ${resourceMint}...`);
 
-		const fleetAccount = yield* getFleetAccount(fleetAddress);
+		const fleetAccount =
+			yield* getFleetAccountByNameOrAddress(fleetNameOrAddress);
 
 		// TODO: Not enough resources to star mining (fuel, ammo, food)
 

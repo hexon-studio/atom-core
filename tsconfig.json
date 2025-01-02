@@ -3,6 +3,10 @@
 	"compilerOptions": {
 		"types": ["vitest/globals"],
 		"outDir": "dist",
-		"noErrorTruncation": true
+		"noErrorTruncation": true,
+		"baseUrl": ".",
+		"paths": {
+			"~/*": ["src/*"]
+		}
 	}
 }

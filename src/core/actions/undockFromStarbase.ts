@@ -1,22 +1,17 @@
 import type { PublicKey } from "@solana/web3.js";
 import type { InstructionReturn } from "@staratlas/data-source";
 import { Effect } from "effect";
-import { isPublicKey } from "../../utils/public-key";
+import { getFleetAccountByNameOrAddress } from "~/libs/@staratlas/sage";
 import { createUndockFromStarbaseIx } from "../fleet/instructions";
 import { GameService } from "../services/GameService";
-import { getFleetAccount } from "../utils/accounts";
-import { getFleetAddressByName } from "../utils/pdas";
 import { createDrainVaultIx } from "../vault/instructions/createDrainVaultIx";
 
 export const undockFromStarbase = ({
 	fleetNameOrAddress,
 }: { fleetNameOrAddress: string | PublicKey }) =>
 	Effect.gen(function* () {
-		const fleetAddress = yield* isPublicKey(fleetNameOrAddress)
-			? Effect.succeed(fleetNameOrAddress)
-			: getFleetAddressByName(fleetNameOrAddress);
-
-		const fleetAccount = yield* getFleetAccount(fleetAddress);
+		const fleetAccount =
+			yield* getFleetAccountByNameOrAddress(fleetNameOrAddress);
 
 		if (!fleetAccount.state.StarbaseLoadingBay) {
 			yield* Effect.log("Fleet can't be undocked from starbase");

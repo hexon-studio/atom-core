@@ -1,11 +1,9 @@
 import type { CargoStatsDefinition } from "@staratlas/cargo";
 import type { Game } from "@staratlas/sage";
 import { Effect } from "effect";
-import {
-	type ReadFromRPCError,
-	getCargoStatsDefinitionAccount,
-	getGameAccount,
-} from "../../../../utils/accounts";
+import { getCargoStatsDefinitionAccount } from "~/libs/@staratlas/cargo";
+import type { ReadFromRPCError } from "~/libs/@staratlas/data-source";
+import { getGameAccount } from "~/libs/@staratlas/sage";
 import type {
 	CreateKeypairError,
 	CreateProviderError,

@@ -1,14 +1,14 @@
 import { Fleet } from "@staratlas/sage";
 import { Effect } from "effect";
-import { SagePrograms } from "../../programs";
+import { getProfileFactionAddress } from "~/libs/@staratlas/profile-faction";
+import {
+	getSagePlayerProfileAddress,
+	getStarbaseAccount,
+	getStarbasePlayerAddress,
+} from "~/libs/@staratlas/sage";
+import { getSagePrograms } from "../../programs";
 import { GameService } from "../../services/GameService";
 import { getGameContext } from "../../services/GameService/utils";
-import { getStarbaseAccount } from "../../utils/accounts";
-import {
-	getProfileFactionAddress,
-	getSagePlayerProfileAddress,
-	getStarbasePlayerAddress,
-} from "../../utils/pdas";
 import { FleetNotInStarbaseError } from "../errors";
 
 export const createUndockFromStarbaseIx = (fleetAccount: Fleet) =>
@@ -19,7 +19,7 @@ export const createUndockFromStarbaseIx = (fleetAccount: Fleet) =>
 
 		const [programs, context, signer] = yield* GameService.pipe(
 			Effect.flatMap((service) =>
-				Effect.all([SagePrograms, getGameContext(), service.signer]),
+				Effect.all([getSagePrograms(), getGameContext(), service.signer]),
 			),
 		);
 

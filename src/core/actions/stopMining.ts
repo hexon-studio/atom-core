@@ -1,10 +1,8 @@
 import type { PublicKey } from "@solana/web3.js";
 import { Effect } from "effect";
-import { isPublicKey } from "../../utils/public-key";
+import { getFleetAccountByNameOrAddress } from "~/libs/@staratlas/sage";
 import { createStopMiningIx } from "../fleet/instructions";
 import { GameService } from "../services/GameService";
-import { getFleetAccount } from "../utils/accounts";
-import { getFleetAddressByName } from "../utils/pdas";
 import { createDrainVaultIx } from "../vault/instructions/createDrainVaultIx";
 
 export const stopMining = ({
@@ -15,11 +13,8 @@ export const stopMining = ({
 	resourceMint: PublicKey;
 }) =>
 	Effect.gen(function* () {
-		const fleetAddress = yield* isPublicKey(fleetNameOrAddress)
-			? Effect.succeed(fleetNameOrAddress)
-			: getFleetAddressByName(fleetNameOrAddress);
-
-		const fleetAccount = yield* getFleetAccount(fleetAddress);
+		const fleetAccount =
+			yield* getFleetAccountByNameOrAddress(fleetNameOrAddress);
 
 		if (!fleetAccount.state.MineAsteroid) {
 			yield* Effect.log("Fleet is not mining on asteroid");

@@ -102,3 +102,13 @@ export class LoadUnloadPartiallyFailedError extends Data.TaggedError(
 		return this.errors.map((error) => error.message).join("\n");
 	}
 }
+
+export class LoadUnloadFailedError extends Data.TaggedError(
+	"LoadUnloadFailedError",
+)<{
+	errors: Error[];
+}> {
+	override get message() {
+		return this.errors.map((error) => error.message).join("\n");
+	}
+}

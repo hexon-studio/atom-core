@@ -1,7 +1,7 @@
 import type { FleetStateData } from "@staratlas/sage";
 import type BN from "bn.js";
 import { Effect, Match } from "effect";
-import { getPlanetAccount, getStarbaseAccount } from "../../utils/accounts";
+import { getPlanetAccount, getStarbaseAccount } from "~/libs/@staratlas/sage";
 
 export const getCurrentFleetSectorCoordinates = (
 	fleetState: Readonly<FleetStateData>,

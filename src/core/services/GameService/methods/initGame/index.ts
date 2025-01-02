@@ -1,9 +1,9 @@
 import type { PublicKey } from "@solana/web3.js";
 import { Data, Effect, Option, Ref } from "effect";
 import { constNull } from "effect/Function";
-import type { GameContext } from "../..";
-import { programIds } from "../../../../../constants/programs";
-import { getPlayerProfileAccout } from "../../../../utils/accounts";
+import { programIds } from "~/constants/programs";
+import type { GameContext } from "~/core/services/GameService";
+import { getPlayerProfileAccout } from "~/libs/@staratlas/player-profile";
 import { fetchFees } from "./fetchFees";
 import { fetchGameInfoOrAccounts } from "./fetchGameInfoOrAccount";
 

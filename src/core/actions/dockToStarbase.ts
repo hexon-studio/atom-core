@@ -1,8 +1,8 @@
 import type { PublicKey } from "@solana/web3.js";
 import { Effect } from "effect";
+import { getFleetAccountByNameOrAddress } from "~/libs/@staratlas/sage";
 import { createDockToStarbaseIx } from "../fleet/instructions";
 import { GameService } from "../services/GameService";
-import { getFleetAccountByNameOrAddress } from "../utils/accounts";
 import { createDrainVaultIx } from "../vault/instructions/createDrainVaultIx";
 
 export const dockToStarbase = ({
@@ -24,11 +24,11 @@ export const dockToStarbase = ({
 
 		const ixs = yield* createDockToStarbaseIx(fleetAccount);
 
-		const gameService = yield* GameService;
-
 		const drainVaultIx = yield* createDrainVaultIx(ixs);
 
 		ixs.push(...drainVaultIx);
+
+		const gameService = yield* GameService;
 
 		const txs =
 			yield* gameService.utils.buildAndSignTransactionWithAtlasPrime(ixs);
