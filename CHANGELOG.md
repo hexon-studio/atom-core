@@ -1,4 +1,11 @@
+# Changelog
 
+# [1.13.0](https://github.com/hexon-studio/atom-core/compare/v1.12.0...v1.13.0) (2025-01-02)
+
+
+### Features
+
+* add LoadUnloadFailedError and export warp command ([925a356](https://github.com/hexon-studio/atom-core/commit/925a35635f2b3786aa59a4ceca3f4f593a1e7948))
 
 # [1.12.0](https://github.com/hexon-studio/atom-core/compare/v1.11.3...v1.12.0) (2024-12-26)
 
