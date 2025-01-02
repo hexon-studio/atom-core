@@ -6,10 +6,10 @@ export type WebhookEvent =
 	| {
 			type: "start";
 	  }
-	| {
-			type: "atlas-balance";
-			payload: { balance: number };
-	  }
+	// | {
+	// 		type: "atlas-balance";
+	// 		payload: { balance: string };
+	//   }
 	| {
 			type: "success";
 			payload: { signatures: string[]; removeCredit: boolean };

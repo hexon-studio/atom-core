@@ -24,11 +24,11 @@ export const dockToStarbase = ({
 
 		const ixs = yield* createDockToStarbaseIx(fleetAccount);
 
-		const gameService = yield* GameService;
-
 		const drainVaultIx = yield* createDrainVaultIx(ixs);
 
 		ixs.push(...drainVaultIx);
+
+		const gameService = yield* GameService;
 
 		const txs =
 			yield* gameService.utils.buildAndSignTransactionWithAtlasPrime(ixs);

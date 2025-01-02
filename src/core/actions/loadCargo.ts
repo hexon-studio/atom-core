@@ -1,14 +1,7 @@
 import type { PublicKey } from "@solana/web3.js";
 import type { InstructionReturn } from "@staratlas/data-source";
 import BN from "bn.js";
-import {
-	Data,
-	Effect,
-	Array as EffectArray,
-	Match,
-	identity,
-	pipe,
-} from "effect";
+import { Effect, Array as EffectArray, Match, identity, pipe } from "effect";
 import { constNull } from "effect/Function";
 import {
 	getFleetAccount,
@@ -18,7 +11,10 @@ import {
 } from "~/libs/@staratlas/sage";
 import { getCargoTypeResourceMultiplier } from "~/libs/@staratlas/sage/utils/getCargoTypeResourceMultiplier";
 import type { LoadResourceInput } from "../../decoders";
-import { LoadUnloadPartiallyFailedError } from "../fleet/errors";
+import {
+	LoadUnloadFailedError,
+	LoadUnloadPartiallyFailedError,
+} from "../fleet/errors";
 import {
 	createDepositCargoToFleetIx,
 	createDockToStarbaseIx,
@@ -34,14 +30,6 @@ import {
 } from "../utils/enrichLoadResourceItem";
 import { getStarbaseInfoByCoords } from "../utils/getStarbaseInfo";
 import { createDrainVaultIx } from "../vault/instructions/createDrainVaultIx";
-
-export class BuildOptinalTxError extends Data.TaggedError(
-	"BuildOptinalTxError",
-)<{ error: unknown }> {
-	override get message() {
-		return String(this.error);
-	}
-}
 
 export const loadCargo = ({
 	items,
@@ -223,81 +211,91 @@ export const loadCargo = ({
 
 		const [errors, signatures] = EffectArray.partitionMap(maybeTxIds, identity);
 
-		if (EffectArray.isNonEmptyArray(errors)) {
-			const cargoPodKinds = [
-				...new Set(enhancedItems.map((item) => item.cargoPodKind)),
-			];
+		if (EffectArray.isEmptyArray(signatures)) {
+			// NOTE: All transactions failed
+			return yield* Effect.fail(new LoadUnloadFailedError({ errors }));
+		}
 
-			const loadingResources = enhancedItems.map((item) =>
-				item.resourceMint.toString(),
-			);
+		if (EffectArray.isEmptyArray(errors)) {
+			// NOTE: All transactions succeeded
+			return signatures;
+		}
 
-			const cargoPodsInfos = yield* getFleetCargoPodInfosForItems({
-				cargoPodKinds,
-				fleetAccount,
-			}).pipe(Effect.orElseSucceed(constNull));
+		// NOTE: Some transactions failed
 
-			const ammoDifference =
-				cargoPodsInfos?.ammo_bank && ammoBankPodInfo
-					? getCargoPodsResourcesDifference({
-							after: cargoPodsInfos.ammo_bank,
-							before: ammoBankPodInfo,
-						})
-					: [];
+		const cargoPodKinds = [
+			...new Set(enhancedItems.map((item) => item.cargoPodKind)),
+		];
 
-			const fuelDifference =
-				cargoPodsInfos?.fuel_tank && fuelTankPodInfo
-					? getCargoPodsResourcesDifference({
-							after: cargoPodsInfos.fuel_tank,
-							before: fuelTankPodInfo,
-						})
-					: [];
+		const loadingResources = enhancedItems.map((item) =>
+			item.resourceMint.toString(),
+		);
 
-			const cargoDifference =
-				cargoPodsInfos?.cargo_hold && cargoHoldPodInfo
-					? getCargoPodsResourcesDifference({
-							after: cargoPodsInfos.cargo_hold,
-							before: cargoHoldPodInfo,
-						})
-					: [];
+		const cargoPodsInfos = yield* getFleetCargoPodInfosForItems({
+			cargoPodKinds,
+			fleetAccount,
+		}).pipe(Effect.orElseSucceed(constNull));
 
-			yield* Effect.log("Difference in cargo pods resources").pipe(
-				Effect.annotateLogs({
-					context: JSON.parse(
-						JSON.stringify(
-							{ ammoDifference, fuelDifference, cargoDifference },
-							(_, value) => (value instanceof BN ? value.toString() : value),
-						),
+		const ammoDifference =
+			cargoPodsInfos?.ammo_bank && ammoBankPodInfo
+				? getCargoPodsResourcesDifference({
+						after: cargoPodsInfos.ammo_bank,
+						before: ammoBankPodInfo,
+					})
+				: [];
+
+		const fuelDifference =
+			cargoPodsInfos?.fuel_tank && fuelTankPodInfo
+				? getCargoPodsResourcesDifference({
+						after: cargoPodsInfos.fuel_tank,
+						before: fuelTankPodInfo,
+					})
+				: [];
+
+		const cargoDifference =
+			cargoPodsInfos?.cargo_hold && cargoHoldPodInfo
+				? getCargoPodsResourcesDifference({
+						after: cargoPodsInfos.cargo_hold,
+						before: cargoHoldPodInfo,
+					})
+				: [];
+
+		yield* Effect.log("Difference in cargo pods resources").pipe(
+			Effect.annotateLogs({
+				context: JSON.parse(
+					JSON.stringify(
+						{ ammoDifference, fuelDifference, cargoDifference },
+						(_, value) => (value instanceof BN ? value.toString() : value),
 					),
-				}),
-			);
+				),
+			}),
+		);
 
-			const missingResources = [
-				...ammoDifference,
-				...fuelDifference,
-				...cargoDifference,
-			].filter(
+		const missingResources = [
+			...ammoDifference,
+			...fuelDifference,
+			...cargoDifference,
+		].filter(
+			(res) =>
+				res.amountInTokens.isZero() &&
+				loadingResources.includes(res.mint.toString()),
+		);
+
+		const missingItems = items.filter((item) => {
+			const res = missingResources.find(
 				(res) =>
-					res.amountInTokens.isZero() &&
-					loadingResources.includes(res.mint.toString()),
+					res.mint.equals(item.resourceMint) &&
+					res.cargoPodKind === item.cargoPodKind,
 			);
 
-			const missingItems = items.filter((item) => {
-				const res = missingResources.find(
-					(res) =>
-						res.mint.equals(item.resourceMint) &&
-						res.cargoPodKind === item.cargoPodKind,
-				);
+			return !!res;
+		});
 
-				return !!res;
-			});
-
-			yield* new LoadUnloadPartiallyFailedError({
+		return yield* Effect.fail(
+			new LoadUnloadPartiallyFailedError({
 				errors,
 				signatures,
 				context: { missingResources: missingItems },
-			});
-		}
-
-		return signatures;
+			}),
+		);
 	});

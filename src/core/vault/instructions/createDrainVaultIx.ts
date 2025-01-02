@@ -5,7 +5,6 @@ import { ProfileVault } from "@staratlas/profile-vault";
 import { BN } from "bn.js";
 import { Effect } from "effect";
 import { ATLAS_DECIMALS, tokenMints } from "../../../constants/tokens";
-
 import { getSagePrograms } from "../../programs";
 import { GameService } from "../../services/GameService";
 import { getGameContext } from "../../services/GameService/utils";

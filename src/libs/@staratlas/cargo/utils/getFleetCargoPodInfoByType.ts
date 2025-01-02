@@ -47,9 +47,8 @@ export const getFleetCargoPodInfoByType = ({
 		const gameService = yield* GameService;
 		const context = yield* getGameContext();
 
-		const cargoPodTokenAccounts = cargoPod.data.openTokenAccounts
-			? yield* gameService.utils.getParsedTokenAccountsByOwner(cargoPod.key)
-			: [];
+		const cargoPodTokenAccounts =
+			yield* gameService.utils.getParsedTokenAccountsByOwner(cargoPod.key);
 
 		const resources = yield* Effect.reduce(
 			cargoPodTokenAccounts,

@@ -1,4 +1,4 @@
-import { Data, Effect, Option, Ref } from "effect";
+import { Data, Effect, Ref, identity } from "effect";
 import { GameService } from "..";
 
 export class GameNotInitializedError extends Data.TaggedError(
@@ -8,10 +8,6 @@ export class GameNotInitializedError extends Data.TaggedError(
 export const getGameContext = () =>
 	GameService.pipe(
 		Effect.flatMap((service) => Ref.get(service.context)),
-		Effect.flatMap(
-			Option.match({
-				onSome: (context) => Effect.succeed(context),
-				onNone: () => Effect.fail(new GameNotInitializedError()),
-			}),
-		),
+		Effect.flatMap(identity),
+		Effect.mapError(() => new GameNotInitializedError()),
 	);

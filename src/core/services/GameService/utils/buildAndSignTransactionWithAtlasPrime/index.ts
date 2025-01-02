@@ -9,7 +9,6 @@ import { ProfileVault } from "@staratlas/profile-vault";
 import { Data, Effect, Array as EffectArray, Option } from "effect";
 import type { Result } from "neverthrow";
 import { tokenMints } from "~/constants/tokens";
-import type { FetchDummyKeysError } from "~/core/atlas-core-utils/dummy-keys";
 import { getSagePrograms } from "~/core/programs";
 import { GameService } from "~/core/services/GameService";
 import {
@@ -50,7 +49,6 @@ export const buildAndSignTransactionWithAtlasPrime = (
 	TransactionReturn[],
 	| BuildAndSignTransactionWithAtlasPrimeError
 	| BuildOptimalTxError
-	| FetchDummyKeysError
 	| CreateKeypairError
 	| ReadFromRPCError
 	| GameNotInitializedError
