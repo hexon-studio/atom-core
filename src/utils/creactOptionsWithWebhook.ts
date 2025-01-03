@@ -1,8 +1,8 @@
 import { InvalidOptionArgumentError } from "commander";
-import type { GlobalOptions, GlobalOptionsWithWebhook } from "../types";
+import type { CliGlobalOptions, GlobalOptionsWithWebhook } from "../types";
 
 export const createOptionsWithWebhook = (
-	globalOps: GlobalOptions,
+	globalOps: CliGlobalOptions,
 ): GlobalOptionsWithWebhook => {
 	const { webhookSecret, webhookUrl, taskId, ...rest } = globalOps;
 

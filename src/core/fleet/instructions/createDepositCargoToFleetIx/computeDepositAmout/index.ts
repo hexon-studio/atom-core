@@ -7,6 +7,15 @@ import {
 	ResourceNotEnoughError,
 } from "../../../errors";
 
+type Param = {
+	mode: LoadResourceInput["mode"];
+	value: BN;
+	resourceAmountInStarbase: BN;
+	resourceAmountInFleet: BN;
+	resourceFleetMaxCap: BN;
+	totalResourcesAmountInFleet: BN;
+};
+
 export const computeDepositAmount =
 	({
 		resourceMint,
@@ -17,14 +26,7 @@ export const computeDepositAmount =
 		starbaseAddress: PublicKey;
 		cargoPodKind: CargoPodKind;
 	}) =>
-	(param: {
-		mode: LoadResourceInput["mode"];
-		value: BN;
-		resourceAmountInStarbase: BN;
-		resourceAmountInFleet: BN;
-		resourceFleetMaxCap: BN;
-		totalResourcesAmountInFleet: BN;
-	}) => {
+	(param: Param) => {
 		const freeCargoUnitsInFleet = param.resourceFleetMaxCap.sub(
 			param.totalResourcesAmountInFleet,
 		);

@@ -26,8 +26,8 @@ import { getFleetCargoPodInfosForItems } from "../fleet/utils/getFleetCargoPodIn
 import { GameService } from "../services/GameService";
 import {
 	type EnhancedResourceItem,
-	enrichLoadResourceInput,
-} from "../utils/enrichLoadResourceItem";
+	enhanceLoadResourceItem,
+} from "../utils/enhanceLoadResourceItem";
 import { getStarbaseInfoByCoords } from "../utils/getStarbaseInfo";
 import { createDrainVaultIx } from "../vault/instructions/createDrainVaultIx";
 
@@ -129,14 +129,17 @@ export const loadCargo = ({
 				(acc, item) => acc.add(item.computedAmountInCargoUnits),
 			);
 
-			const enhancedItem = yield* enrichLoadResourceInput({
+			const enhancedItem = yield* enhanceLoadResourceItem({
 				item,
 				cargoPodInfo,
 				totalResourcesAmountInCargoUnits,
 				starbasePlayerCargoPodsPubkey:
 					starbaseInfo.starbasePlayerCargoPodsAccountPubkey,
 			}).pipe(
-				Effect.catchTag("FleetNotEnoughSpaceError", () => Effect.succeed(null)),
+				Effect.catchTags({
+					FleetNotEnoughSpaceError: () => Effect.succeed(null),
+					ResourceNotEnoughError: () => Effect.succeed(null),
+				}),
 			);
 
 			if (!enhancedItem) {

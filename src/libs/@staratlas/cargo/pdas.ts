@@ -1,7 +1,17 @@
 import type { PublicKey } from "@solana/web3.js";
 import { CargoPod, CargoType } from "@staratlas/cargo";
-import { Effect } from "effect";
+import { Data, Effect } from "effect";
 import { getSagePrograms } from "~/core/programs";
+
+export class FindAddressError extends Data.TaggedError("FindAddressError")<{
+	error: unknown;
+}> {
+	override get message() {
+		return this.error instanceof Error
+			? this.error.message
+			: String(this.error);
+	}
+}
 
 export const getCargoTypeAddress = (
 	mint: PublicKey,
@@ -10,15 +20,18 @@ export const getCargoTypeAddress = (
 ) =>
 	getSagePrograms().pipe(
 		Effect.flatMap((programs) =>
-			Effect.try(() => {
-				const [cargoType] = CargoType.findAddress(
-					programs.cargo,
-					cargoStatsDefinitionAddress,
-					mint,
-					cargoStatsDefinitionseqId,
-				);
+			Effect.try({
+				try: () => {
+					const [cargoType] = CargoType.findAddress(
+						programs.cargo,
+						cargoStatsDefinitionAddress,
+						mint,
+						cargoStatsDefinitionseqId,
+					);
 
-				return cargoType;
+					return cargoType;
+				},
+				catch: (error) => new FindAddressError({ error }),
 			}),
 		),
 	);

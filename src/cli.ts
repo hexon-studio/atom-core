@@ -33,7 +33,7 @@ import {
 	loadResourceDecoder,
 	unloadResourceDecoder,
 } from "./decoders";
-import type { GlobalOptions } from "./types";
+import type { CliGlobalOptions } from "./types";
 import { createOptionsWithWebhook } from "./utils/creactOptionsWithWebhook";
 import { parseSecretKey } from "./utils/keypair";
 import { isPublicKey, parsePublicKey } from "./utils/public-key";
@@ -145,7 +145,7 @@ const main = async () => {
 		.command("fleet-info <fleetNameOrAddress>")
 		.action(async (fleetNameOrAddress: string) => {
 			const globalOpts = createOptionsWithWebhook(
-				program.opts<GlobalOptions>(),
+				program.opts<CliGlobalOptions>(),
 			);
 
 			return runFleetInfo({
@@ -157,7 +157,9 @@ const main = async () => {
 		});
 
 	program.command("profile-info").action(async () => {
-		const globalOpts = createOptionsWithWebhook(program.opts<GlobalOptions>());
+		const globalOpts = createOptionsWithWebhook(
+			program.opts<CliGlobalOptions>(),
+		);
 
 		return runProfileInfo(globalOpts);
 	});
@@ -189,7 +191,7 @@ const main = async () => {
 				const resources = options.resources ?? [];
 
 				const globalOpts = createOptionsWithWebhook(
-					program.opts<GlobalOptions>(),
+					program.opts<CliGlobalOptions>(),
 				);
 
 				const items = pipe(
@@ -246,7 +248,7 @@ const main = async () => {
 				const resources = options.resources ?? [];
 
 				const globalOpts = createOptionsWithWebhook(
-					program.opts<GlobalOptions>(),
+					program.opts<CliGlobalOptions>(),
 				);
 
 				const items = pipe(
@@ -282,7 +284,7 @@ const main = async () => {
 		.command("dock <fleetNameOrAddress>")
 		.action(async (fleetNameOrAddress: string) => {
 			const globalOpts = createOptionsWithWebhook(
-				program.opts<GlobalOptions>(),
+				program.opts<CliGlobalOptions>(),
 			);
 
 			return runDock({
@@ -297,7 +299,7 @@ const main = async () => {
 		.command("undock <fleetNameOrAddress>")
 		.action(async (fleetNameOrAddress: string) => {
 			const globalOpts = createOptionsWithWebhook(
-				program.opts<GlobalOptions>(),
+				program.opts<CliGlobalOptions>(),
 			);
 
 			return runUndock({
@@ -318,7 +320,7 @@ const main = async () => {
 		)
 		.action(async (fleetNameOrAddress: string, resourceMint: PublicKey) => {
 			const globalOpts = createOptionsWithWebhook(
-				program.opts<GlobalOptions>(),
+				program.opts<CliGlobalOptions>(),
 			);
 
 			return runStartMining({
@@ -340,7 +342,7 @@ const main = async () => {
 		)
 		.action(async (fleetNameOrAddress: string, resourceMint: PublicKey) => {
 			const globalOpts = createOptionsWithWebhook(
-				program.opts<GlobalOptions>(),
+				program.opts<CliGlobalOptions>(),
 			);
 
 			return runStopMining({
@@ -358,7 +360,7 @@ const main = async () => {
 		.argument("<targetSector>", "The coordinates of the target sector")
 		.action(async (fleetNameOrAddress: string, targetSectorArg: string) => {
 			const globalOpts = createOptionsWithWebhook(
-				program.opts<GlobalOptions>(),
+				program.opts<CliGlobalOptions>(),
 			);
 
 			const maybeSector = EffectString.split(targetSectorArg, ",");
@@ -387,7 +389,7 @@ const main = async () => {
 		.argument("<targetSector>", "Rhe coordinates of the target sector")
 		.action(async (fleetNameOrAddress: string, targetSectorArg: string) => {
 			const globalOpts = createOptionsWithWebhook(
-				program.opts<GlobalOptions>(),
+				program.opts<CliGlobalOptions>(),
 			);
 
 			const maybeSector = EffectString.split(targetSectorArg, ",");

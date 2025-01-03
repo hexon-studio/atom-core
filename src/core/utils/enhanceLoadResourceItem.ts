@@ -16,7 +16,7 @@ import {
 import { getAssociatedTokenAccountBalance } from "~/utils/getAssociatedTokenAccountBalance";
 import { getAssociatedTokenAddress } from "~/utils/getAssociatedTokenAddress";
 
-export const enrichLoadResourceInput = ({
+export const enhanceLoadResourceItem = ({
 	item,
 	cargoPodInfo,
 	totalResourcesAmountInCargoUnits,
@@ -114,5 +114,5 @@ export const enrichLoadResourceInput = ({
 	});
 
 export type EnhancedResourceItem = Effect.Effect.Success<
-	ReturnType<typeof enrichLoadResourceInput>
+	ReturnType<typeof enhanceLoadResourceItem>
 >;
