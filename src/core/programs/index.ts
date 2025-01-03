@@ -12,8 +12,7 @@ import { programIds } from "../../constants/programs";
 import { SolanaService } from "../services/SolanaService";
 
 export const getSagePrograms = () =>
-	SolanaService.pipe(
-		Effect.flatMap((service) => service.anchorProvider),
+	SolanaService.anchorProvider.pipe(
 		Effect.map((anchorProvider) => ({
 			atlasPrime: new Program(
 				ATLAS_FEE_PAYER_IDL,

@@ -66,7 +66,6 @@ export const createWithdrawCargoFromFleetIx = ({
 			);
 		}
 
-		const gameService = yield* GameService;
 		const context = yield* getGameContext();
 
 		const playerProfilePubkey = fleetAccount.data.ownerProfile;
@@ -103,7 +102,8 @@ export const createWithdrawCargoFromFleetIx = ({
 		);
 
 		const programs = yield* getSagePrograms();
-		const signer = yield* gameService.signer;
+		const signer = yield* GameService.signer;
+
 		const gameId = context.gameInfo.game.key;
 		const gameState = context.gameInfo.game.data.gameState;
 
@@ -155,7 +155,7 @@ export const createWithdrawCargoFromFleetIx = ({
 		const {
 			address: starbasePlayerResourceMintAta,
 			instructions: createStarbasePlayerResourceMintAtaIx,
-		} = yield* gameService.utils.createAssociatedTokenAccountIdempotent(
+		} = yield* GameService.createAssociatedTokenAccountIdempotent(
 			resourceMint,
 			starbasePlayerCargoPodAddress,
 			true,

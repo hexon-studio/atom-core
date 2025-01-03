@@ -14,6 +14,7 @@ export type GlobalOptionsWithWebhook = Omit<
 export type FeeMode = "low" | "medium" | "high";
 
 export type RequiredOptions = {
+	logDisabled?: boolean;
 	feeMode: FeeMode;
 	keypair: Keypair;
 	owner: PublicKey;

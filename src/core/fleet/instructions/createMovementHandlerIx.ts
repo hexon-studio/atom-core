@@ -13,14 +13,13 @@ import { getGameContext } from "../../services/GameService/utils";
 
 export const createMovementHandlerIx = (fleetAccount: Fleet) =>
 	Effect.gen(function* () {
-		const gameService = yield* GameService;
 		const programs = yield* getSagePrograms();
 		const context = yield* getGameContext();
 
 		const ixs = [];
 
 		const { address: fuelFuelTankAta, instructions } =
-			yield* gameService.utils.createAssociatedTokenAccountIdempotent(
+			yield* GameService.createAssociatedTokenAccountIdempotent(
 				resourceNameToMint.Fuel,
 				fleetAccount.data.fuelTank,
 				true,

@@ -1,5 +1,13 @@
 import type { PublicKey } from "@solana/web3.js";
-import { Cause, Effect, Exit, LogLevel, Logger, Option } from "effect";
+import {
+	Cause,
+	Effect,
+	Exit,
+	LogLevel,
+	Logger,
+	ManagedRuntime,
+	Option,
+} from "effect";
 import { dockToStarbase } from "../core/actions/dockToStarbase";
 import { GameService } from "../core/services/GameService";
 import type { GlobalOptionsWithWebhook } from "../types";
@@ -16,10 +24,12 @@ export const runDock = async ({ fleetNameOrAddress, globalOpts }: Param) => {
 
 	const mainServiceLive = createMainLiveService(globalOpts);
 
+	const runtime = ManagedRuntime.make(mainServiceLive);
+
 	const program = GameService.pipe(
 		Effect.tap((service) =>
-			service.methods.initGame({
-				contextRef: service.context,
+			service.initGame({
+				contextRef: service.gameContext,
 				feeUrl,
 				owner,
 				playerProfile,
@@ -53,10 +63,11 @@ export const runDock = async ({ fleetNameOrAddress, globalOpts }: Param) => {
 				),
 		}),
 		Logger.withMinimumLogLevel(LogLevel.Debug),
-		Effect.provide(mainServiceLive),
 	);
 
-	const exit = await Effect.runPromiseExit(program);
+	const exit = await runtime.runPromiseExit(program);
+
+	await runtime.dispose();
 
 	exit.pipe(
 		Exit.match({

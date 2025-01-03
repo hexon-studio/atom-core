@@ -28,13 +28,12 @@ export const createAsteroidMiningHandlerIx = ({
 }: Param) =>
 	Effect.gen(function* () {
 		const programs = yield* getSagePrograms();
-		const gameService = yield* GameService;
 		const context = yield* getGameContext();
 
 		const ixs: InstructionReturn[] = [];
 
 		const { address: foodCargoHoldAta, instructions: foodIxs } =
-			yield* gameService.utils.createAssociatedTokenAccountIdempotent(
+			yield* GameService.createAssociatedTokenAccountIdempotent(
 				resourceNameToMint.Food,
 				fleetAccount.data.cargoHold,
 				true,
@@ -43,7 +42,7 @@ export const createAsteroidMiningHandlerIx = ({
 		ixs.push(foodIxs);
 
 		const { address: ammoAmmoBankAta, instructions: ammoIxs } =
-			yield* gameService.utils.createAssociatedTokenAccountIdempotent(
+			yield* GameService.createAssociatedTokenAccountIdempotent(
 				resourceNameToMint.Ammunition,
 				fleetAccount.data.ammoBank,
 				true,
@@ -52,7 +51,7 @@ export const createAsteroidMiningHandlerIx = ({
 		ixs.push(ammoIxs);
 
 		const { address: resourceCargoHoldAta, instructions: resourceIxs } =
-			yield* gameService.utils.createAssociatedTokenAccountIdempotent(
+			yield* GameService.createAssociatedTokenAccountIdempotent(
 				resourceMint,
 				fleetAccount.data.cargoHold,
 				true,

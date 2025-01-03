@@ -1,6 +1,15 @@
 import type { PublicKey } from "@solana/web3.js";
 import { BN } from "bn.js";
-import { Cause, Effect, Exit, LogLevel, Logger, Match, Option } from "effect";
+import {
+	Cause,
+	Effect,
+	Exit,
+	LogLevel,
+	Logger,
+	ManagedRuntime,
+	Match,
+	Option,
+} from "effect";
 import { constNull, constUndefined } from "effect/Function";
 import { unloadCargo } from "../core/actions/unloadCargo";
 import { GameService } from "../core/services/GameService";
@@ -24,13 +33,15 @@ export const runUnloadCargo = async ({
 
 	const mainServiceLive = createMainLiveService(globalOpts);
 
+	const runtime = ManagedRuntime.make(mainServiceLive);
+
 	const program = GameService.pipe(
 		Effect.tap((service) =>
-			service.methods.initGame({
+			service.initGame({
 				owner,
 				playerProfile,
 				signerAddress: keypair.publicKey,
-				contextRef: service.context,
+				contextRef: service.gameContext,
 				feeUrl,
 			}),
 		),
@@ -84,10 +95,11 @@ export const runUnloadCargo = async ({
 				),
 		}),
 		Logger.withMinimumLogLevel(LogLevel.Debug),
-		Effect.provide(mainServiceLive),
 	);
 
-	const exit = await Effect.runPromiseExit(program);
+	const exit = await runtime.runPromiseExit(program);
+
+	await runtime.dispose();
 
 	exit.pipe(
 		Exit.match({

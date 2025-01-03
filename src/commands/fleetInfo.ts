@@ -1,5 +1,13 @@
 import type { PublicKey } from "@solana/web3.js";
-import { Cause, Effect, Exit, LogLevel, Logger, Option } from "effect";
+import {
+	Cause,
+	Effect,
+	Exit,
+	LogLevel,
+	Logger,
+	ManagedRuntime,
+	Option,
+} from "effect";
 import { getFleetAccountByNameOrAddress } from "~/libs/@staratlas/sage";
 import { GameService } from "../core/services/GameService";
 import type { GlobalOptionsWithWebhook } from "../types";
@@ -18,13 +26,15 @@ export const runFleetInfo = async ({
 
 	const mainServiceLive = createMainLiveService(globalOpts);
 
+	const runtime = ManagedRuntime.make(mainServiceLive);
+
 	const program = GameService.pipe(
 		Effect.tap((service) =>
-			service.methods.initGame({
+			service.initGame({
 				owner,
 				playerProfile,
 				signerAddress: keypair.publicKey,
-				contextRef: service.context,
+				contextRef: service.gameContext,
 				feeUrl,
 			}),
 		),
@@ -34,10 +44,11 @@ export const runFleetInfo = async ({
 			Effect.logInfo("Fleet found").pipe(Effect.annotateLogs({ fleet })),
 		),
 		Logger.withMinimumLogLevel(LogLevel.Debug),
-		Effect.provide(mainServiceLive),
 	);
 
-	const exit = await Effect.runPromiseExit(program);
+	const exit = await runtime.runPromiseExit(program);
+
+	await runtime.dispose();
 
 	exit.pipe(
 		Exit.match({

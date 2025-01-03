@@ -30,8 +30,7 @@ export const createDockToStarbaseIx = (fleetAccount: Fleet) =>
 			);
 		}
 
-		const gameService = yield* GameService;
-		const signer = yield* gameService.signer;
+		const signer = yield* GameService.signer;
 
 		const [sagePlayerProfileAddress, playerFactionAddress, fleetCoords] =
 			yield* Effect.all([

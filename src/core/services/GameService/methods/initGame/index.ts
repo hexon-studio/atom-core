@@ -60,7 +60,7 @@ export const initGame = ({
 				item.scope.equals(programIds.profileVaultProgramId),
 		);
 
-		return yield* Ref.updateAndGet(contextRef, () =>
+		return yield* Ref.update(contextRef, () =>
 			Option.some({
 				gameInfo,
 				playerProfile,

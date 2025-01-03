@@ -96,13 +96,10 @@ export const warpToSector = ({
 
 		ixs.push(...drainVaultIx);
 
-		const gameService = yield* GameService;
-
-		const txs =
-			yield* gameService.utils.buildAndSignTransactionWithAtlasPrime(ixs);
+		const txs = yield* GameService.buildAndSignTransactionWithAtlasPrime(ixs);
 
 		const txId = yield* Effect.all(
-			txs.map((tx) => gameService.utils.sendTransaction(tx)),
+			txs.map((tx) => GameService.sendTransaction(tx)),
 		);
 
 		yield* Effect.log(`Warping to - X: ${targetSectorX} | Y: ${targetSectorY}`);

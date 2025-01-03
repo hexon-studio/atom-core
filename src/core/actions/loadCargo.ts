@@ -200,15 +200,10 @@ export const loadCargo = ({
 
 		ixs.push(...drainVaultIx);
 
-		const gameService = yield* GameService;
-
-		const txs =
-			yield* gameService.utils.buildAndSignTransactionWithAtlasPrime(ixs);
+		const txs = yield* GameService.buildAndSignTransactionWithAtlasPrime(ixs);
 
 		const maybeTxIds = yield* Effect.all(
-			txs.map((tx) =>
-				gameService.utils.sendTransaction(tx).pipe(Effect.either),
-			),
+			txs.map((tx) => GameService.sendTransaction(tx).pipe(Effect.either)),
 			{ concurrency: 5 },
 		);
 

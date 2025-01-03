@@ -56,10 +56,15 @@ const createLogger = (opts: GlobalOptionsWithWebhook) => {
 	});
 };
 
-export const createLoggerServiceLive = (opts: GlobalOptionsWithWebhook) =>
-	getEnv() === "production" && opts.loggingToken
+export const createLoggerServiceLive = (opts: GlobalOptionsWithWebhook) => {
+	if (opts.logDisabled) {
+		return Logger.remove(Logger.defaultLogger);
+	}
+
+	return getEnv() === "production" && opts.loggingToken
 		? Logger.replace(Logger.defaultLogger, createLogger(opts))
 		: Logger.replace(
 				Logger.defaultLogger,
 				Logger.prettyLogger({ mode: "auto" }),
 			);
+};

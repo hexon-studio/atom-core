@@ -44,8 +44,6 @@ export const unloadCargo = ({
 
 		const ixs: InstructionReturn[] = [];
 
-		const gameService = yield* GameService;
-
 		const { ixs: preIxs, txIds: stopMiningTxsIds } = yield* Match.value(
 			fleetAccount.state,
 		).pipe(
@@ -79,15 +77,13 @@ export const unloadCargo = ({
 						Effect.bind("dockIx", () => createDockToStarbaseIx(fleetAccount)),
 						// Sending the transactions before doing the next step
 						Effect.flatMap(({ stopMiningIx, dockIx }) =>
-							gameService.utils.buildAndSignTransactionWithAtlasPrime([
+							GameService.buildAndSignTransactionWithAtlasPrime([
 								...stopMiningIx,
 								...dockIx,
 							]),
 						),
 						Effect.flatMap((txs) =>
-							Effect.all(
-								txs.map((tx) => gameService.utils.sendTransaction(tx)),
-							),
+							Effect.all(txs.map((tx) => GameService.sendTransaction(tx))),
 						),
 						Effect.tap((txs) =>
 							Effect.log("Fleet stopped mining and docked to starbase.").pipe(
@@ -158,13 +154,10 @@ export const unloadCargo = ({
 
 		ixs.push(...drainVaultIx);
 
-		const txs =
-			yield* gameService.utils.buildAndSignTransactionWithAtlasPrime(ixs);
+		const txs = yield* GameService.buildAndSignTransactionWithAtlasPrime(ixs);
 
 		const maybeTxIds = yield* Effect.all(
-			txs.map((tx) =>
-				gameService.utils.sendTransaction(tx).pipe(Effect.either),
-			),
+			txs.map((tx) => GameService.sendTransaction(tx).pipe(Effect.either)),
 			{ concurrency: 5 },
 		);
 

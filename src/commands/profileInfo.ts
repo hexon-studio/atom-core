@@ -1,4 +1,12 @@
-import { Cause, Effect, Exit, LogLevel, Logger, Option } from "effect";
+import {
+	Cause,
+	Effect,
+	Exit,
+	LogLevel,
+	Logger,
+	ManagedRuntime,
+	Option,
+} from "effect";
 import { GameService } from "../core/services/GameService";
 import { getGameContext } from "../core/services/GameService/utils";
 import type { GlobalOptionsWithWebhook } from "../types";
@@ -9,13 +17,15 @@ export const runProfileInfo = async (globalOpts: GlobalOptionsWithWebhook) => {
 
 	const mainServiceLive = createMainLiveService(globalOpts);
 
+	const runtime = ManagedRuntime.make(mainServiceLive);
+
 	const program = GameService.pipe(
 		Effect.tap((service) =>
-			service.methods.initGame({
+			service.initGame({
 				owner,
 				playerProfile,
 				signerAddress: keypair.publicKey,
-				contextRef: service.context,
+				contextRef: service.gameContext,
 				feeUrl,
 			}),
 		),
@@ -26,10 +36,11 @@ export const runProfileInfo = async (globalOpts: GlobalOptionsWithWebhook) => {
 			Effect.log("Profile fetched.").pipe(Effect.annotateLogs({ profile })),
 		),
 		Logger.withMinimumLogLevel(LogLevel.Debug),
-		Effect.provide(mainServiceLive),
 	);
 
-	const exit = await Effect.runPromiseExit(program);
+	const exit = await runtime.runPromiseExit(program);
+
+	await runtime.dispose();
 
 	exit.pipe(
 		Exit.match({

@@ -1,5 +1,5 @@
-import { Keypair, PublicKey } from "@solana/web3.js";
-import { Effect } from "effect";
+import { PublicKey } from "@solana/web3.js";
+import { Effect, ManagedRuntime } from "effect";
 import { type ResourceName, resourceNameToMint } from "./constants/resources";
 import { dockToStarbase } from "./core/actions/dockToStarbase";
 import { loadCargo } from "./core/actions/loadCargo";
@@ -9,23 +9,41 @@ import { subwarpToSector } from "./core/actions/subwarpToSector";
 import { undockFromStarbase } from "./core/actions/undockFromStarbase";
 import { unloadCargo } from "./core/actions/unloadCargo";
 import { warpToSector } from "./core/actions/warpToSector";
-import type { GameService } from "./core/services/GameService";
-import type { SolanaService } from "./core/services/SolanaService";
+import { GameService } from "./core/services/GameService";
+import { getFleetAccountByNameOrAddress } from "./libs/@staratlas/sage";
 import type { RequiredOptions } from "./types";
 import { createMainLiveService } from "./utils/createLiveService";
+import { parseSecretKey } from "./utils/keypair";
 
-export const createAtomApi = (options: RequiredOptions) => {
-	const service = createMainLiveService(options);
+export const createAtomApi = (
+	options: Omit<RequiredOptions, "logDisabled">,
+) => {
+	const appLayer = createMainLiveService({ ...options, logDisabled: true });
 
-	const provideAndRun = <A, E>(
-		self: Effect.Effect<A, E, GameService | SolanaService>,
-	) => self.pipe(Effect.provide(service));
+	const runtime = ManagedRuntime.make(appLayer);
+
+	const { keypair, owner, playerProfile } = options;
 
 	return {
+		init: () =>
+			GameService.pipe(
+				Effect.flatMap((service) =>
+					service.initGame({
+						contextRef: service.gameContext,
+						owner,
+						playerProfile,
+						signerAddress: keypair.publicKey,
+					}),
+				),
+				runtime.runPromise,
+			),
+		dispose: () => runtime.dispose(),
+		getFleet: (...args: Parameters<typeof getFleetAccountByNameOrAddress>) =>
+			getFleetAccountByNameOrAddress(...args).pipe(runtime.runPromise),
 		dock: (...args: Parameters<typeof dockToStarbase>) =>
-			dockToStarbase(...args).pipe(provideAndRun),
+			dockToStarbase(...args).pipe(runtime.runPromise),
 		undock: (...args: Parameters<typeof undockFromStarbase>) =>
-			undockFromStarbase(...args).pipe(provideAndRun),
+			undockFromStarbase(...args).pipe(runtime.runPromise),
 		startMining: ({
 			fleetNameOrAddress,
 			resource,
@@ -39,7 +57,7 @@ export const createAtomApi = (options: RequiredOptions) => {
 					: resource;
 
 			return startMining({ fleetNameOrAddress, resourceMint }).pipe(
-				provideAndRun,
+				runtime.runPromise,
 			);
 		},
 		stopMining: ({
@@ -57,34 +75,51 @@ export const createAtomApi = (options: RequiredOptions) => {
 			return stopMining({ fleetNameOrAddress, resourceMint });
 		},
 		loadCargo: (...args: Parameters<typeof loadCargo>) =>
-			loadCargo(...args).pipe(provideAndRun),
+			loadCargo(...args).pipe(runtime.runPromise),
 		unloadCargo: (...args: Parameters<typeof unloadCargo>) =>
-			unloadCargo(...args).pipe(provideAndRun),
+			unloadCargo(...args).pipe(runtime.runPromise),
 		subwarp: (...args: Parameters<typeof subwarpToSector>) =>
-			subwarpToSector(...args).pipe(provideAndRun),
+			subwarpToSector(...args).pipe(runtime.runPromise),
 		warp: (...args: Parameters<typeof warpToSector>) =>
-			warpToSector(...args).pipe(provideAndRun),
+			warpToSector(...args).pipe(runtime.runPromise),
 	};
 };
 
-const apis = createAtomApi({
-	feeMode: "high",
-	keypair: Keypair.generate(),
-	owner: new PublicKey(""),
-	playerProfile: new PublicKey(""),
-	rpcUrl: "Some rpc url",
-});
+const run = async () => {
+	const apis = createAtomApi({
+		feeMode: "high",
+		keypair: parseSecretKey(
+			"2JdbAoSGBs3hT5vZDKjYKyrnbFPWNwT8gv2XGthqzoyLJVqJXoCDXJEKK3h1uvBJHNwfEy2UfQXbPrdFdrNpsHhz",
+		),
+		owner: new PublicKey("HhDDM3vAWQ5scee7jnsMrENXYnYjqxNgRQfuqkaVMaiR"),
+		playerProfile: new PublicKey(
+			"4pisnW7EH8jYmzLTCcYPiVKqaKtRR1Aki4rRnk8B6yAd",
+		),
+		rpcUrl:
+			"https://solana-mainnet.rpc.extrnode.com/0fc66c2a-d65e-4044-aa91-e8652c520ffc",
+	});
 
-const fleetNameOrAddress = "Hapuka Fleet";
+	const fleetNameOrAddress = "Hapuka Fleet";
 
-const signatures = await apis.undock({ fleetNameOrAddress });
+	await apis.init();
 
-const miningSignatures = await apis.startMining({
-	fleetNameOrAddress,
-	resource: "Hydrogen",
-});
+	const fleet = await apis.getFleet(fleetNameOrAddress);
 
-const stopMiningSignatures = await apis.stopMining({
-	fleetNameOrAddress,
-	resource: "Hydrogen",
-});
+	console.log({ fleet });
+
+	await apis.dispose();
+};
+
+run();
+
+// const signatures = await apis.undock({ fleetNameOrAddress });
+
+// const miningSignatures = await apis.startMining({
+// 	fleetNameOrAddress,
+// 	resource: "Hydrogen",
+// });
+
+// const stopMiningSignatures = await apis.stopMining({
+// 	fleetNameOrAddress,
+// 	resource: "Hydrogen",
+// });

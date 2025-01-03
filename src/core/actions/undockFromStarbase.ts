@@ -27,18 +27,14 @@ export const undockFromStarbase = ({
 
 		ixs.push(ix);
 
-		const gameService = yield* GameService;
-
 		const drainVaultIx = yield* createDrainVaultIx(ixs);
 
 		ixs.push(...drainVaultIx);
 
-		const txs = yield* gameService.utils.buildAndSignTransactionWithAtlasPrime([
-			ix,
-		]);
+		const txs = yield* GameService.buildAndSignTransactionWithAtlasPrime([ix]);
 
 		const txIds = yield* Effect.all(
-			txs.map((tx) => gameService.utils.sendTransaction(tx)),
+			txs.map((tx) => GameService.sendTransaction(tx)),
 		);
 
 		yield* Effect.log("Fleet undocked!");
