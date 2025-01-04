@@ -1,5 +1,13 @@
 # Changelog
 
+# [1.14.0](https://github.com/hexon-studio/atom-core/compare/v1.13.0...v1.14.0) (2025-01-04)
+
+
+### Features
+
+* add main createApi export ([9e65dc1](https://github.com/hexon-studio/atom-core/commit/9e65dc1d651325ae72980fa205369d172e0137f7))
+* improve load/unload cargo ([9f6d9ee](https://github.com/hexon-studio/atom-core/commit/9f6d9ee6206d63dcce9008c988653b02c906df58))
+
 # [1.13.0](https://github.com/hexon-studio/atom-core/compare/v1.12.0...v1.13.0) (2025-01-02)
 
 
