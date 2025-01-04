@@ -1,7 +1,14 @@
 import type { PublicKey } from "@solana/web3.js";
 import type { InstructionReturn } from "@staratlas/data-source";
 import BN from "bn.js";
-import { Effect, Array as EffectArray, Match, identity, pipe } from "effect";
+import {
+	Effect,
+	Array as EffectArray,
+	Match,
+	Record,
+	identity,
+	pipe,
+} from "effect";
 import { constNull } from "effect/Function";
 import {
 	getFleetAccount,
@@ -234,29 +241,23 @@ export const loadCargo = ({
 			fleetAccount,
 		}).pipe(Effect.orElseSucceed(constNull));
 
-		const ammoDifference =
-			cargoPodsInfos?.ammo_bank && ammoBankPodInfo
-				? getCargoPodsResourcesDifference({
-						after: cargoPodsInfos.ammo_bank,
-						before: ammoBankPodInfo,
-					})
-				: [];
+		const ammoDifference = getCargoPodsResourcesDifference({
+			cargoPodKind: "ammo_bank",
+			after: cargoPodsInfos?.ammo_bank?.resources ?? Record.empty(),
+			before: ammoBankPodInfo?.resources ?? Record.empty(),
+		});
 
-		const fuelDifference =
-			cargoPodsInfos?.fuel_tank && fuelTankPodInfo
-				? getCargoPodsResourcesDifference({
-						after: cargoPodsInfos.fuel_tank,
-						before: fuelTankPodInfo,
-					})
-				: [];
+		const fuelDifference = getCargoPodsResourcesDifference({
+			cargoPodKind: "fuel_tank",
+			after: cargoPodsInfos?.fuel_tank?.resources ?? Record.empty(),
+			before: fuelTankPodInfo?.resources ?? Record.empty(),
+		});
 
-		const cargoDifference =
-			cargoPodsInfos?.cargo_hold && cargoHoldPodInfo
-				? getCargoPodsResourcesDifference({
-						after: cargoPodsInfos.cargo_hold,
-						before: cargoHoldPodInfo,
-					})
-				: [];
+		const cargoDifference = getCargoPodsResourcesDifference({
+			cargoPodKind: "cargo_hold",
+			after: cargoPodsInfos?.cargo_hold?.resources ?? Record.empty(),
+			before: cargoHoldPodInfo?.resources ?? Record.empty(),
+		});
 
 		yield* Effect.log("Difference in cargo pods resources").pipe(
 			Effect.annotateLogs({
@@ -275,7 +276,7 @@ export const loadCargo = ({
 			...cargoDifference,
 		].filter(
 			(res) =>
-				res.amountInTokens.isZero() &&
+				res.diffAmountInTokens.isZero() &&
 				loadingResources.includes(res.mint.toString()),
 		);
 

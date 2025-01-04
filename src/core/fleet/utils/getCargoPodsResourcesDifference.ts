@@ -1,37 +1,40 @@
 import { Array as EffectArray, Order, Record, pipe } from "effect";
-import type { CargoPodEnhanced } from "~/libs/@staratlas/cargo";
+import type { CargoPodKind } from "~/decoders";
+import type { CargoPodEnhancedResource } from "~/libs/@staratlas/cargo";
 import { getCargoTypeResourceMultiplier } from "~/libs/@staratlas/sage/utils/getCargoTypeResourceMultiplier";
 
 export const getCargoPodsResourcesDifference = ({
+	cargoPodKind,
 	after,
 	before,
 }: {
-	before: CargoPodEnhanced;
-	after: CargoPodEnhanced;
+	cargoPodKind: CargoPodKind;
+	before: CargoPodEnhancedResource;
+	after: CargoPodEnhancedResource;
 }) =>
 	pipe(
 		EffectArray.zip(
 			EffectArray.sortWith(
-				Record.values(after.resources),
+				Record.values(after),
 				(res) => res.mint.toString(),
 				Order.string,
 			),
 			EffectArray.sortWith(
-				Record.values(before.resources),
+				Record.values(before),
 				(res) => res.mint.toString(),
 				Order.string,
 			),
 		),
 		EffectArray.map(([afterRes, beforeRes]) => ({
 			mint: afterRes.mint,
-			cargoPodKind: after.type,
+			cargoPodKind,
 			resourceMultiplier: getCargoTypeResourceMultiplier(
 				afterRes.cargoTypeAccount,
 			),
-			amountInCargoUnits: afterRes.amountInCargoUnits.sub(
+			diffAmountInCargoUnits: afterRes.amountInCargoUnits.sub(
 				beforeRes.amountInCargoUnits,
 			),
-			amountInTokens: afterRes.amountInTokens.sub(beforeRes.amountInTokens),
+			diffAmountInTokens: afterRes.amountInTokens.sub(beforeRes.amountInTokens),
 		})),
 	);
 

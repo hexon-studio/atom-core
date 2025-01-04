@@ -4,7 +4,7 @@ import type { CliGlobalOptions, GlobalOptionsWithWebhook } from "../types";
 export const createOptionsWithWebhook = (
 	globalOps: CliGlobalOptions,
 ): GlobalOptionsWithWebhook => {
-	const { webhookSecret, webhookUrl, taskId, ...rest } = globalOps;
+	const { webhookSecret, webhookUrl, contextId, ...rest } = globalOps;
 
 	if (rest.heliusRpcUrl) {
 		const isHeliusRpc = rest.heliusRpcUrl.includes("helius");
@@ -17,11 +17,11 @@ export const createOptionsWithWebhook = (
 	return {
 		...rest,
 		webhookArgs:
-			webhookSecret && webhookUrl && taskId
+			webhookSecret && webhookUrl
 				? {
 						webhookSecret,
 						webhookUrl,
-						taskId,
+						contextId,
 					}
 				: undefined,
 	};

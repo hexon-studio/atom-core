@@ -33,7 +33,7 @@ export class FireWebhookEventError extends Data.TaggedError(
 }
 
 const fireWebhookEvent =
-	({ taskId, webhookSecret, webhookUrl }: WebhookOptions) =>
+	({ contextId, webhookSecret, webhookUrl }: WebhookOptions) =>
 	(event: WebhookEvent) =>
 		getGameContext().pipe(
 			Effect.flatMap(({ owner, playerProfile }) =>
@@ -51,7 +51,7 @@ const fireWebhookEvent =
 									...event,
 									owner: owner.toString(),
 									playerProfile: playerProfile.key.toString(),
-									taskId,
+									contextId,
 								}),
 							});
 

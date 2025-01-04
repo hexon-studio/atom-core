@@ -37,7 +37,7 @@ const createLogger = (opts: GlobalOptionsWithWebhook) => {
 			context: {
 				annotations: Record.fromEntries(HashMap.toEntries(annotations)),
 				player_profile: opts.playerProfile,
-				task_id: opts.webhookArgs?.taskId,
+				context_id: opts.webhookArgs?.contextId,
 				user_id: opts.owner,
 				version: packageJsonVersion,
 			},

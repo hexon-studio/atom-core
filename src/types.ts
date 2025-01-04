@@ -1,12 +1,13 @@
 import type { Keypair, PublicKey } from "@solana/web3.js";
 
 export type WebhookOptions = Required<
-	Pick<CliGlobalOptions, "webhookSecret" | "webhookUrl" | "taskId">
->;
+	Pick<CliGlobalOptions, "webhookSecret" | "webhookUrl">
+> &
+	Pick<CliGlobalOptions, "contextId">;
 
 export type GlobalOptionsWithWebhook = Omit<
 	CliGlobalOptions,
-	"webhookSecret" | "webhookUrl" | "taskId"
+	"webhookSecret" | "webhookUrl" | "contextId"
 > & {
 	webhookArgs?: WebhookOptions;
 };
@@ -28,7 +29,7 @@ export type CliGlobalOptions = RequiredOptions & {
 	feeUrl?: string;
 	loggingToken?: string;
 	secondaryRpcUrl?: string;
-	taskId?: string;
+	contextId?: string;
 	webhookSecret?: string;
 	webhookUrl?: string;
 };

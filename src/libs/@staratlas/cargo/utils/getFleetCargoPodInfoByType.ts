@@ -131,3 +131,5 @@ export const getFleetCargoPodInfoByType = ({
 export type CargoPodEnhanced = Effect.Effect.Success<
 	ReturnType<typeof getFleetCargoPodInfoByType>
 >;
+
+export type CargoPodEnhancedResource = CargoPodEnhanced["resources"];

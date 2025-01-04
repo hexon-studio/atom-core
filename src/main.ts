@@ -1,4 +1,4 @@
-import { PublicKey } from "@solana/web3.js";
+import type { PublicKey } from "@solana/web3.js";
 import { Effect, ManagedRuntime } from "effect";
 import { type ResourceName, resourceNameToMint } from "./constants/resources";
 import { dockToStarbase } from "./core/actions/dockToStarbase";
@@ -13,7 +13,6 @@ import { GameService } from "./core/services/GameService";
 import { getFleetAccountByNameOrAddress } from "./libs/@staratlas/sage";
 import type { RequiredOptions } from "./types";
 import { createMainLiveService } from "./utils/createLiveService";
-import { parseSecretKey } from "./utils/keypair";
 
 export const createAtomApi = (
 	options: Omit<RequiredOptions, "logDisabled">,
@@ -43,7 +42,16 @@ export const createAtomApi = (
 		dock: (...args: Parameters<typeof dockToStarbase>) =>
 			dockToStarbase(...args).pipe(runtime.runPromise),
 		undock: (...args: Parameters<typeof undockFromStarbase>) =>
-			undockFromStarbase(...args).pipe(runtime.runPromise),
+			undockFromStarbase(...args).pipe(
+				// Effect.either,
+				// Effect.map(
+				// 	Either.match({
+				// 		onRight: (signatures) => [signatures, undefined] as const,
+				// 		onLeft: (error) => [undefined, error] as const,
+				// 	}),
+				// ),
+				runtime.runPromise,
+			),
 		startMining: ({
 			fleetNameOrAddress,
 			resource,
@@ -84,42 +92,3 @@ export const createAtomApi = (
 			warpToSector(...args).pipe(runtime.runPromise),
 	};
 };
-
-const run = async () => {
-	const apis = createAtomApi({
-		feeMode: "high",
-		keypair: parseSecretKey(
-			"2JdbAoSGBs3hT5vZDKjYKyrnbFPWNwT8gv2XGthqzoyLJVqJXoCDXJEKK3h1uvBJHNwfEy2UfQXbPrdFdrNpsHhz",
-		),
-		owner: new PublicKey("HhDDM3vAWQ5scee7jnsMrENXYnYjqxNgRQfuqkaVMaiR"),
-		playerProfile: new PublicKey(
-			"4pisnW7EH8jYmzLTCcYPiVKqaKtRR1Aki4rRnk8B6yAd",
-		),
-		rpcUrl:
-			"https://solana-mainnet.rpc.extrnode.com/0fc66c2a-d65e-4044-aa91-e8652c520ffc",
-	});
-
-	const fleetNameOrAddress = "Hapuka Fleet";
-
-	await apis.init();
-
-	const fleet = await apis.getFleet(fleetNameOrAddress);
-
-	console.log({ fleet });
-
-	await apis.dispose();
-};
-
-run();
-
-// const signatures = await apis.undock({ fleetNameOrAddress });
-
-// const miningSignatures = await apis.startMining({
-// 	fleetNameOrAddress,
-// 	resource: "Hydrogen",
-// });
-
-// const stopMiningSignatures = await apis.stopMining({
-// 	fleetNameOrAddress,
-// 	resource: "Hydrogen",
-// });

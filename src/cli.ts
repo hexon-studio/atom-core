@@ -69,6 +69,15 @@ const main = async () => {
 		)
 		.addOption(
 			new Option(
+				"-k, --keypair <secretKey>",
+				"The secret key of the hot wallet as a base58 string",
+			)
+				.argParser(parseSecretKey)
+				.env("ATOM_HOT_WALLET")
+				.makeOptionMandatory(true),
+		)
+		.addOption(
+			new Option(
 				"-sr, --secondaryRpcUrl <rpcUrl>",
 				"The secondary solona rpc url (used to build and send tx only)",
 			)
@@ -106,15 +115,6 @@ const main = async () => {
 				.makeOptionMandatory(false),
 		)
 		.addOption(
-			new Option(
-				"-k, --keypair <secretKey>",
-				"The secret key of the hot wallet as a base58 string",
-			)
-				.argParser(parseSecretKey)
-				.env("ATOM_HOT_WALLET")
-				.makeOptionMandatory(true),
-		)
-		.addOption(
 			new Option("-w, --webhookUrl <webhookUrl>", "The webhook url")
 				.env("ATOM_WEBHOOK_URL")
 				.makeOptionMandatory(false),
@@ -136,8 +136,8 @@ const main = async () => {
 		)
 		.addOption(
 			new Option(
-				"-t, --taskId <taskId>",
-				"The task to update",
+				"--contextId <contextId>",
+				"If passed the webhook will be called with the contextId",
 			).makeOptionMandatory(false),
 		);
 
