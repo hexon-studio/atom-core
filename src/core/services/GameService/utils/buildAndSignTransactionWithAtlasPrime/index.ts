@@ -2,6 +2,7 @@ import { getAssociatedTokenAddressSync } from "@solana/spl-token";
 import { PublicKey } from "@solana/web3.js";
 import { AtlasPrimeTransactionBuilder } from "@staratlas/atlas-prime";
 import type {
+	AfterIx,
 	InstructionReturn,
 	TransactionReturn,
 } from "@staratlas/data-source";
@@ -44,7 +45,8 @@ export class BuildOptimalTxError extends Data.TaggedError(
 }
 
 export const buildAndSignTransactionWithAtlasPrime = (
-	instructions: Array<InstructionReturn>,
+	mainInstructions: Array<InstructionReturn>,
+	afterMainInstructions: Array<InstructionReturn> = [],
 ): Effect.Effect<
 	TransactionReturn[],
 	| BuildAndSignTransactionWithAtlasPrimeError
@@ -82,11 +84,18 @@ export const buildAndSignTransactionWithAtlasPrime = (
 
 					let heliusFee: number;
 
+					const afterIxs: AfterIx[] = afterMainInstructions.map((ix) => ({
+						ix,
+						computeEstimate: 5_000,
+						maxTraceCount: 2,
+					}));
+
 					const builder = await AtlasPrimeTransactionBuilder.new({
 						afpUrl: "https://prime.staratlas.com/",
 						connection: provider.connection,
 						commitment: "confirmed",
 						lookupTables: lookupTable.value ? [lookupTable.value] : undefined,
+						afterIxs,
 						getFee: helius.pipe(
 							Option.map(
 								({ rpc: heliusRpcUrl, feeMode, feeLimit }) =>
@@ -123,12 +132,51 @@ export const buildAndSignTransactionWithAtlasPrime = (
 						program: programs.atlasPrime,
 					});
 
-					builder.add(instructions);
+					builder.add(mainInstructions);
+
+					// const ixSign = (
+					// 	await Promise.all(builder.instructions.map((ix) => ix(signer)))
+					// ).flat();
+					// const tmp = getTransactionSize(
+					// 	ixSign,
+					// 	signer.publicKey(),
+					// 	buildLookupTableSet(builder.lookupTables),
+					// );
+					// console.log("size", tmp.size);
 
 					const txs: Result<TransactionReturn, string>[] = [];
 
-					for await (const tx of builder.optimalTransactions()) {
+					// let i = 0;
+					// for await (let tx of builder.optimalTransactions()) {
+					// 	tx = await builder.rebuildLast(false);
+					// 	if (tx.isErr()) {
+					// 		throw new BuildOptimalTxError({ error: tx.error });
+					// 	}
+					// 	if (i > 100) {
+					// 		throw new BuildOptimalTxError({ error: "Too many iterations" });
+					// 	}
+					// 	txs.push(tx);
+					// 	i++;
+					// }
+
+					const generator = builder.optimalTransactions();
+
+					let i = 0;
+					while (true) {
+						if (i > 100) {
+							throw new BuildOptimalTxError({ error: "Too many iterations" });
+						}
+
+						const { value, done } = await generator.next();
+						if (done) break;
+
+						const tx = value;
+						if (tx.isErr()) {
+							throw new BuildOptimalTxError({ error: tx.error });
+						}
+
 						txs.push(tx);
+						i++;
 					}
 
 					return txs;

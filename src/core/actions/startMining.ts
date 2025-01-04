@@ -50,11 +50,12 @@ export const startMining = ({
 
 		ixs.push(...miningIxs);
 
-		const drainVaultIx = yield* createDrainVaultIx(ixs, resourceMint);
+		const drainVaultIx = yield* createDrainVaultIx();
 
-		ixs.push(...drainVaultIx);
-
-		const txs = yield* GameService.buildAndSignTransactionWithAtlasPrime(ixs);
+		const txs = yield* GameService.buildAndSignTransactionWithAtlasPrime(
+			ixs,
+			drainVaultIx,
+		);
 
 		const txIds = yield* Effect.all(
 			txs.map((tx) => GameService.sendTransaction(tx)),

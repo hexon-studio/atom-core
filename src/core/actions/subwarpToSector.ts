@@ -14,7 +14,6 @@ import {
 	createUndockFromStarbaseIx,
 } from "../fleet/instructions";
 import { GameService } from "../services/GameService";
-
 import { createDrainVaultIx } from "../vault/instructions/createDrainVaultIx";
 
 export const subwarpToSector = ({
@@ -75,11 +74,12 @@ export const subwarpToSector = ({
 
 		ixs.push(...subwarpIxs);
 
-		const drainVaultIx = yield* createDrainVaultIx(ixs);
+		const drainVaultIx = yield* createDrainVaultIx();
 
-		ixs.push(...drainVaultIx);
-
-		const txs = yield* GameService.buildAndSignTransactionWithAtlasPrime(ixs);
+		const txs = yield* GameService.buildAndSignTransactionWithAtlasPrime(
+			ixs,
+			drainVaultIx,
+		);
 
 		const txId = yield* Effect.all(
 			txs.map((tx) => GameService.sendTransaction(tx)),

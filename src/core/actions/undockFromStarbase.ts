@@ -27,11 +27,12 @@ export const undockFromStarbase = ({
 
 		ixs.push(ix);
 
-		const drainVaultIx = yield* createDrainVaultIx(ixs);
+		const drainVaultIx = yield* createDrainVaultIx();
 
-		ixs.push(...drainVaultIx);
-
-		const txs = yield* GameService.buildAndSignTransactionWithAtlasPrime([ix]);
+		const txs = yield* GameService.buildAndSignTransactionWithAtlasPrime(
+			ixs,
+			drainVaultIx,
+		);
 
 		const txIds = yield* Effect.all(
 			txs.map((tx) => GameService.sendTransaction(tx)),

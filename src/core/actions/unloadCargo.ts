@@ -79,12 +79,13 @@ export const unloadCargo = ({
 								),
 							),
 							Effect.bind("dockIx", () => createDockToStarbaseIx(fleetAccount)),
+							Effect.bind("drainVaultIx", () => createDrainVaultIx()),
 							// Sending the transactions before doing the next step
-							Effect.flatMap(({ stopMiningIx, dockIx }) =>
-								GameService.buildAndSignTransactionWithAtlasPrime([
-									...stopMiningIx,
-									...dockIx,
-								]),
+							Effect.flatMap(({ stopMiningIx, dockIx, drainVaultIx }) =>
+								GameService.buildAndSignTransactionWithAtlasPrime(
+									[...stopMiningIx, ...dockIx],
+									drainVaultIx,
+								),
 							),
 							Effect.flatMap((txs) =>
 								Effect.all(txs.map((tx) => GameService.sendTransaction(tx))),
@@ -156,11 +157,12 @@ export const unloadCargo = ({
 
 		ixs.push(...unloadCargoIxs);
 
-		const drainVaultIx = yield* createDrainVaultIx(ixs);
+		const drainVaultIx = yield* createDrainVaultIx();
 
-		ixs.push(...drainVaultIx);
-
-		const txs = yield* GameService.buildAndSignTransactionWithAtlasPrime(ixs);
+		const txs = yield* GameService.buildAndSignTransactionWithAtlasPrime(
+			ixs,
+			drainVaultIx,
+		);
 
 		const maybeSignatures = yield* Effect.all(
 			txs.map((tx) => GameService.sendTransaction(tx).pipe(Effect.either)),
@@ -183,6 +185,7 @@ export const unloadCargo = ({
 		}
 
 		// NOTE: Some transactions failed
+		yield* Effect.sleep("10 seconds");
 
 		const postCargoPodInfos = yield* getFleetCargoPodInfosForItems({
 			cargoPodKinds: itemsCargoPodsKinds,
