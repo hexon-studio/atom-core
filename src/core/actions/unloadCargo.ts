@@ -1,10 +1,12 @@
 import type { PublicKey } from "@solana/web3.js";
 import type { InstructionReturn } from "@staratlas/data-source";
+import { BN } from "bn.js";
 import {
 	Effect,
 	Array as EffectArray,
 	Match,
 	Option,
+	Record,
 	identity,
 	pipe,
 } from "effect";
@@ -16,7 +18,10 @@ import {
 	getResourceAccount,
 } from "~/libs/@staratlas/sage";
 import type { UnloadResourceInput } from "../../decoders";
-import { LoadUnloadPartiallyFailedError } from "../fleet/errors";
+import {
+	LoadUnloadFailedError,
+	LoadUnloadPartiallyFailedError,
+} from "../fleet/errors";
 import {
 	createDockToStarbaseIx,
 	createStopMiningIx,
@@ -44,65 +49,62 @@ export const unloadCargo = ({
 
 		const ixs: InstructionReturn[] = [];
 
-		const gameService = yield* GameService;
-
-		const { ixs: preIxs, txIds: stopMiningTxsIds } = yield* Match.value(
-			fleetAccount.state,
-		).pipe(
-			Match.whenOr(
-				{ Idle: Match.defined },
-				{ MoveWarp: Match.defined },
-				{ MoveSubwarp: Match.defined },
-				() =>
-					createDockToStarbaseIx(fleetAccount).pipe(
-						Effect.map((ixs) => ({ txIds: [] as string[], ixs })),
-					),
-			),
-			Match.when(
-				{ MineAsteroid: Match.defined },
-				({ MineAsteroid: { resource } }) =>
-					Effect.Do.pipe(
-						Effect.bind("stopMiningIx", () =>
-							pipe(
-								getResourceAccount(resource),
-								Effect.flatMap((resource) =>
-									getMineItemAccount(resource.data.mineItem),
-								),
-								Effect.flatMap((mineItem) =>
-									createStopMiningIx({
-										resourceMint: mineItem.data.mint,
-										fleetAccount,
-									}),
+		const { ixs: preIxs, signatures: stopMiningSignatures } =
+			yield* Match.value(fleetAccount.state).pipe(
+				Match.whenOr(
+					{ Idle: Match.defined },
+					{ MoveWarp: Match.defined },
+					{ MoveSubwarp: Match.defined },
+					() =>
+						createDockToStarbaseIx(fleetAccount).pipe(
+							Effect.map((ixs) => ({ signatures: [] as string[], ixs })),
+						),
+				),
+				Match.when(
+					{ MineAsteroid: Match.defined },
+					({ MineAsteroid: { resource } }) =>
+						Effect.Do.pipe(
+							Effect.bind("stopMiningIx", () =>
+								pipe(
+									getResourceAccount(resource),
+									Effect.flatMap((resource) =>
+										getMineItemAccount(resource.data.mineItem),
+									),
+									Effect.flatMap((mineItem) =>
+										createStopMiningIx({
+											resourceMint: mineItem.data.mint,
+											fleetAccount,
+										}),
+									),
 								),
 							),
-						),
-						Effect.bind("dockIx", () => createDockToStarbaseIx(fleetAccount)),
-						// Sending the transactions before doing the next step
-						Effect.flatMap(({ stopMiningIx, dockIx }) =>
-							gameService.utils.buildAndSignTransactionWithAtlasPrime([
-								...stopMiningIx,
-								...dockIx,
-							]),
-						),
-						Effect.flatMap((txs) =>
-							Effect.all(
-								txs.map((tx) => gameService.utils.sendTransaction(tx)),
+							Effect.bind("dockIx", () => createDockToStarbaseIx(fleetAccount)),
+							// Sending the transactions before doing the next step
+							Effect.flatMap(({ stopMiningIx, dockIx }) =>
+								GameService.buildAndSignTransactionWithAtlasPrime([
+									...stopMiningIx,
+									...dockIx,
+								]),
+							),
+							Effect.flatMap((txs) =>
+								Effect.all(txs.map((tx) => GameService.sendTransaction(tx))),
+							),
+							Effect.tap((txs) =>
+								Effect.log("Fleet stopped mining and docked to starbase.").pipe(
+									Effect.annotateLogs({ txs }),
+								),
+							),
+							Effect.flatMap((signatures) =>
+								Effect.sleep("10 seconds").pipe(
+									Effect.map(() => ({ signatures, ixs: [] })),
+								),
 							),
 						),
-						Effect.tap((txs) =>
-							Effect.log("Fleet stopped mining and docked to starbase.").pipe(
-								Effect.annotateLogs({ txs }),
-							),
-						),
-						Effect.flatMap((txIds) =>
-							Effect.sleep("10 seconds").pipe(
-								Effect.map(() => ({ txIds, ixs: [] })),
-							),
-						),
-					),
-			),
-			Match.orElse(() => Effect.succeed({ txIds: [] as string[], ixs: [] })),
-		);
+				),
+				Match.orElse(() =>
+					Effect.succeed({ signatures: [] as string[], ixs: [] }),
+				),
+			);
 
 		ixs.push(...preIxs);
 
@@ -111,9 +113,9 @@ export const unloadCargo = ({
 		];
 
 		const {
-			ammo_bank: ammoBankPodInfo,
-			cargo_hold: cargoHoldPodInfo,
-			fuel_tank: fuelTankPodInfo,
+			ammo_bank: initialAmmoBankPodInfo,
+			cargo_hold: initialCargoHoldPodInfo,
+			fuel_tank: initialFuelTankPodInfo,
 		} = yield* getFleetCargoPodInfosForItems({
 			cargoPodKinds: itemsCargoPodsKinds,
 			fleetAccount,
@@ -124,9 +126,9 @@ export const unloadCargo = ({
 		const unloadCargoIxs = yield* Effect.all(
 			EffectArray.filterMap(items, (item) => {
 				const cargoPodInfo = Match.value(item.cargoPodKind).pipe(
-					Match.when("ammo_bank", () => ammoBankPodInfo),
-					Match.when("fuel_tank", () => fuelTankPodInfo),
-					Match.when("cargo_hold", () => cargoHoldPodInfo),
+					Match.when("ammo_bank", () => initialAmmoBankPodInfo),
+					Match.when("fuel_tank", () => initialFuelTankPodInfo),
+					Match.when("cargo_hold", () => initialCargoHoldPodInfo),
 					Match.exhaustive,
 				);
 
@@ -146,7 +148,7 @@ export const unloadCargo = ({
 			}),
 		).pipe(Effect.map(EffectArray.flatten));
 
-		if (!unloadCargoIxs.length) {
+		if (EffectArray.isEmptyArray(unloadCargoIxs)) {
 			yield* Effect.log("Nothing to unload. Skipping");
 
 			return [];
@@ -158,72 +160,83 @@ export const unloadCargo = ({
 
 		ixs.push(...drainVaultIx);
 
-		const txs =
-			yield* gameService.utils.buildAndSignTransactionWithAtlasPrime(ixs);
+		const txs = yield* GameService.buildAndSignTransactionWithAtlasPrime(ixs);
 
-		const maybeTxIds = yield* Effect.all(
-			txs.map((tx) =>
-				gameService.utils.sendTransaction(tx).pipe(Effect.either),
-			),
+		const maybeSignatures = yield* Effect.all(
+			txs.map((tx) => GameService.sendTransaction(tx).pipe(Effect.either)),
 			{ concurrency: 5 },
 		);
 
-		const [errors, signatures] = EffectArray.partitionMap(maybeTxIds, identity);
+		const [errors, signatures] = EffectArray.partitionMap(
+			maybeSignatures,
+			identity,
+		);
 
-		if (EffectArray.isNonEmptyArray(errors)) {
-			const cargoPodKinds = [
-				...new Set(items.map((item) => item.cargoPodKind)),
-			];
-
-			const cargoPodsInfos = yield* getFleetCargoPodInfosForItems({
-				cargoPodKinds,
-				fleetAccount,
-			}).pipe(Effect.orElseSucceed(constNull));
-
-			const ammoDifference =
-				cargoPodsInfos?.ammo_bank && ammoBankPodInfo
-					? getCargoPodsResourcesDifference({
-							after: cargoPodsInfos.ammo_bank,
-							before: ammoBankPodInfo,
-						})
-					: [];
-			const fuelDifference =
-				cargoPodsInfos?.fuel_tank && fuelTankPodInfo
-					? getCargoPodsResourcesDifference({
-							after: cargoPodsInfos.fuel_tank,
-							before: fuelTankPodInfo,
-						})
-					: [];
-			const cargoDifference =
-				cargoPodsInfos?.cargo_hold && cargoHoldPodInfo
-					? getCargoPodsResourcesDifference({
-							after: cargoPodsInfos.cargo_hold,
-							before: cargoHoldPodInfo,
-						})
-					: [];
-
-			const missingResources = [
-				...ammoDifference,
-				...fuelDifference,
-				...cargoDifference,
-			].filter((item) => item.amountInTokens.isZero());
-
-			const missingItems = items.filter((item) => {
-				const res = missingResources.find(
-					(res) =>
-						res.mint.equals(item.resourceMint) &&
-						res.cargoPodKind === item.cargoPodKind,
-				);
-
-				return !!res;
-			});
-
-			yield* new LoadUnloadPartiallyFailedError({
-				errors,
-				signatures,
-				context: { missingResources: missingItems },
-			});
+		// NOTE: All transactions failed
+		if (EffectArray.isEmptyArray(signatures)) {
+			return yield* Effect.fail(new LoadUnloadFailedError({ errors }));
 		}
 
-		return [...stopMiningTxsIds, ...signatures];
+		// NOTE: All transactions succeeded
+		if (EffectArray.isEmptyArray(errors)) {
+			return signatures;
+		}
+
+		// NOTE: Some transactions failed
+
+		const postCargoPodInfos = yield* getFleetCargoPodInfosForItems({
+			cargoPodKinds: itemsCargoPodsKinds,
+			fleetAccount,
+		}).pipe(Effect.orElseSucceed(constNull));
+
+		const ammoDifference = getCargoPodsResourcesDifference({
+			cargoPodKind: "ammo_bank",
+			after: postCargoPodInfos?.ammo_bank?.resources ?? Record.empty(),
+			before: initialAmmoBankPodInfo?.resources ?? Record.empty(),
+		});
+
+		const fuelDifference = getCargoPodsResourcesDifference({
+			cargoPodKind: "fuel_tank",
+			after: postCargoPodInfos?.fuel_tank?.resources ?? Record.empty(),
+			before: initialFuelTankPodInfo?.resources ?? Record.empty(),
+		});
+
+		const cargoDifference = getCargoPodsResourcesDifference({
+			cargoPodKind: "cargo_hold",
+			after: postCargoPodInfos?.cargo_hold?.resources ?? Record.empty(),
+			before: initialCargoHoldPodInfo?.resources ?? Record.empty(),
+		});
+
+		yield* Effect.log("Difference in cargo pods resources").pipe(
+			Effect.annotateLogs({
+				context: JSON.parse(
+					JSON.stringify(
+						{ ammoDifference, fuelDifference, cargoDifference },
+						(_, value) => (value instanceof BN ? value.toString() : value),
+					),
+				),
+			}),
+		);
+
+		const missingResources = [
+			...ammoDifference,
+			...fuelDifference,
+			...cargoDifference,
+		].filter((item) => item.diffAmountInTokens.isZero());
+
+		const missingItems = items.filter((item) => {
+			const res = missingResources.find(
+				(res) =>
+					res.mint.equals(item.resourceMint) &&
+					res.cargoPodKind === item.cargoPodKind,
+			);
+
+			return !!res;
+		});
+
+		return yield* new LoadUnloadPartiallyFailedError({
+			errors,
+			signatures,
+			context: { missingResources: missingItems },
+		});
 	});

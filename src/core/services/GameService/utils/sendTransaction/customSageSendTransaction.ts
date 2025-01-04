@@ -8,6 +8,7 @@ import {
 	verifySignatures,
 } from "@staratlas/data-source";
 import { Data, Effect } from "effect";
+import { z } from "zod";
 
 export class SendRawTransactionError extends Data.TaggedError(
 	"SendRawTransactionError",
@@ -43,7 +44,9 @@ export class TransactionFailedError extends Data.TaggedError(
 )<{ error: TransactionError; signature: string }> {
 	override get message() {
 		try {
-			return JSON.stringify(this.error);
+			return JSON.stringify(
+				z.record(z.string(), z.unknown()).parse(this.error),
+			);
 		} catch {
 			return String(this.error);
 		}

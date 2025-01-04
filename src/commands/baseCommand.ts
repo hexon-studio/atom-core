@@ -50,7 +50,7 @@ export const runBaseCommand = <E, R>({
 	Effect.gen(function* () {
 		yield* fireWebhookEvent({ type: "start" });
 
-		const balance = yield* checkAtlasBalance();
+		yield* checkAtlasBalance();
 
 		// yield* fireWebhookEvent({
 		// 	type: "atlas-balance",

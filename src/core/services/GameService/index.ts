@@ -1,7 +1,7 @@
 import type { Keypair, PublicKey } from "@solana/web3.js";
 import { type AsyncSigner, keypairToAsyncSigner } from "@staratlas/data-source";
 import type { PlayerProfile } from "@staratlas/player-profile";
-import { Context, Effect, Layer, Option, Ref } from "effect";
+import { Effect, Layer, Option, Ref } from "effect";
 import { type CreateKeypairError, SolanaService } from "../SolanaService";
 import { type FindFleets, findFleets } from "./methods/findFleets";
 import { type FindGame, findGame } from "./methods/findGame";
@@ -39,28 +39,26 @@ export interface GameContext {
 	fees: Fees | null;
 }
 
-export class GameService extends Context.Tag("app/GameService")<
+export class GameService extends Effect.Tag("app/GameService")<
 	GameService,
 	{
-		context: Ref.Ref<Option.Option<GameContext>>;
+		gameContext: Ref.Ref<Option.Option<GameContext>>;
 		signer: Effect.Effect<
 			AsyncSigner<Keypair>,
 			CreateKeypairError,
 			SolanaService
 		>;
-		methods: {
-			initGame: InitGame;
-			findFleets: FindFleets;
-			findGame: FindGame;
-			findPlanets: FindPlanets;
-		};
-		utils: {
-			getParsedTokenAccountsByOwner: GetParsedTokenAccountsByOwner;
-			createAssociatedTokenAccountIdempotent: CreateAssociatedTokenAccountIdempotent;
-			buildAndSignTransaction: BuildAndSignTransaction;
-			buildAndSignTransactionWithAtlasPrime: BuildAndSignTransactionWithAtlasPrime;
-			sendTransaction: SendTransaction;
-		};
+
+		initGame: InitGame;
+		findFleets: FindFleets;
+		findGame: FindGame;
+		findPlanets: FindPlanets;
+
+		getParsedTokenAccountsByOwner: GetParsedTokenAccountsByOwner;
+		createAssociatedTokenAccountIdempotent: CreateAssociatedTokenAccountIdempotent;
+		buildAndSignTransaction: BuildAndSignTransaction;
+		buildAndSignTransactionWithAtlasPrime: BuildAndSignTransactionWithAtlasPrime;
+		sendTransaction: SendTransaction;
 	}
 >() {}
 
@@ -70,23 +68,19 @@ export const GameServiceLive = Layer.effect(
 	GameService,
 	Effect.map(SolanaService, () =>
 		GameService.of({
-			context: gameContextRef,
-			methods: {
-				initGame,
-				findFleets,
-				findPlanets: findAllPlanets,
-				findGame,
-			},
+			gameContext: gameContextRef,
+			initGame,
+			findFleets,
+			findPlanets: findAllPlanets,
+			findGame,
 			signer: SolanaService.pipe(
 				Effect.map((service) => keypairToAsyncSigner(service.signer)),
 			),
-			utils: {
-				buildAndSignTransaction,
-				buildAndSignTransactionWithAtlasPrime,
-				getParsedTokenAccountsByOwner,
-				createAssociatedTokenAccountIdempotent,
-				sendTransaction,
-			},
+			buildAndSignTransaction,
+			buildAndSignTransactionWithAtlasPrime,
+			getParsedTokenAccountsByOwner,
+			createAssociatedTokenAccountIdempotent,
+			sendTransaction,
 		}),
 	),
 );

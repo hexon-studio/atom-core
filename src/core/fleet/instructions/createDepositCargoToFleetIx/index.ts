@@ -68,7 +68,6 @@ export const createDepositCargoToFleetIx = ({
 			);
 		}
 
-		const gameService = yield* GameService;
 		const context = yield* getGameContext();
 
 		const playerProfilePubkey = fleetAccount.data.ownerProfile;
@@ -77,7 +76,7 @@ export const createDepositCargoToFleetIx = ({
 			yield* getProfileFactionAddress(playerProfilePubkey);
 
 		const targetTokenAccount =
-			yield* gameService.utils.createAssociatedTokenAccountIdempotent(
+			yield* GameService.createAssociatedTokenAccountIdempotent(
 				resourceMint,
 				cargoPodInfo.cargoPod.key,
 				true,
@@ -94,7 +93,7 @@ export const createDepositCargoToFleetIx = ({
 		);
 
 		const programs = yield* getSagePrograms();
-		const signer = yield* gameService.signer;
+		const signer = yield* GameService.signer;
 
 		const gameId = context.gameInfo.game.key;
 		const gameState = context.gameInfo.game.data.gameState;

@@ -4,7 +4,7 @@ import { keypairToAsyncSigner } from "@staratlas/data-source";
 import type { PlayerProfile } from "@staratlas/player-profile";
 import type { Fleet } from "@staratlas/sage";
 import { BN } from "bn.js";
-import { Effect, Exit, Layer, Option, Ref } from "effect";
+import { Effect, Exit, Layer, ManagedRuntime, Option, Ref } from "effect";
 import { constant, unsafeCoerce } from "effect/Function";
 import mock from "mock-fs";
 import type { CargoPodEnhanced } from "~/libs/@staratlas/cargo";
@@ -56,29 +56,21 @@ const MockedGameService = Layer.effect(
 	GameService,
 	Effect.map(SolanaService, () =>
 		GameService.of({
-			context: gameContextRef,
-			methods: {
-				initGame,
-				findFleets,
-				findPlanets: findAllPlanets,
-				findGame,
-			},
-			signer: SolanaService.pipe(
-				Effect.map((service) => keypairToAsyncSigner(service.signer)),
+			gameContext: gameContextRef,
+			initGame,
+			findFleets,
+			findPlanets: findAllPlanets,
+			findGame,
+			signer: SolanaService.signer.pipe(Effect.map(keypairToAsyncSigner)),
+			buildAndSignTransaction: constant(Effect.succeed(unsafeCoerce([]))),
+			buildAndSignTransactionWithAtlasPrime: constant(
+				Effect.succeed(unsafeCoerce([])),
 			),
-			utils: {
-				buildAndSignTransaction: constant(Effect.succeed(unsafeCoerce([]))),
-				buildAndSignTransactionWithAtlasPrime: constant(
-					Effect.succeed(unsafeCoerce([])),
-				),
-				getParsedTokenAccountsByOwner: constant(
-					Effect.succeed(unsafeCoerce([])),
-				),
-				createAssociatedTokenAccountIdempotent: constant(
-					Effect.succeed(unsafeCoerce({})),
-				),
-				sendTransaction: constant(Effect.succeed("")),
-			},
+			getParsedTokenAccountsByOwner: constant(Effect.succeed(unsafeCoerce([]))),
+			createAssociatedTokenAccountIdempotent: constant(
+				Effect.succeed(unsafeCoerce({})),
+			),
+			sendTransaction: constant(Effect.succeed("")),
 		}),
 	),
 );
@@ -111,6 +103,8 @@ describe("createDepositCargoToFleetIx", () => {
 	it("returns an InvalidAmountError if the amount is less than or equal to 0", async () => {
 		const mainLive = createMockServiceLive(signer);
 
+		const runtime = ManagedRuntime.make(mainLive);
+
 		const program = createDepositCargoToFleetIx({
 			starbaseInfo: {
 				starbasePlayerCargoPodsAccountPubkey: PublicKey.default,
@@ -126,9 +120,9 @@ describe("createDepositCargoToFleetIx", () => {
 				starbaseResourceTokenAccount: PublicKey.default,
 			},
 			fleetAccount: {} as Fleet,
-		}).pipe(Effect.provide(mainLive));
+		});
 
-		const result = await Effect.runPromiseExit(program);
+		const result = await runtime.runPromiseExit(program);
 
 		expect(result).toStrictEqual(
 			Exit.fail(
@@ -148,6 +142,8 @@ describe("createDepositCargoToFleetIx", () => {
 		async (cargoPodKind, resourceMint) => {
 			const mainLive = createMockServiceLive(signer);
 
+			const runtime = ManagedRuntime.make(mainLive);
+
 			const program = createDepositCargoToFleetIx({
 				starbaseInfo: {
 					starbasePlayerCargoPodsAccountPubkey: PublicKey.default,
@@ -163,9 +159,9 @@ describe("createDepositCargoToFleetIx", () => {
 					resourceMint: new PublicKey(resourceMint),
 				},
 				fleetAccount: {} as Fleet,
-			}).pipe(Effect.provide(mainLive));
+			});
 
-			const result = await Effect.runPromiseExit(program);
+			const result = await runtime.runPromiseExit(program);
 
 			expect(result).toStrictEqual(
 				Exit.fail(

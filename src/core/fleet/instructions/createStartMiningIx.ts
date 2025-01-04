@@ -33,9 +33,7 @@ export const createStartMiningIx = ({
 	resourceMint: PublicKey;
 }) =>
 	Effect.gen(function* () {
-		const gameService = yield* GameService;
-
-		const signer = yield* gameService.signer;
+		const signer = yield* GameService.signer;
 
 		const programs = yield* getSagePrograms();
 
@@ -48,7 +46,7 @@ export const createStartMiningIx = ({
 			fleetAccount.state,
 		);
 
-		const maybePlanet = yield* gameService.methods.findPlanets().pipe(
+		const maybePlanet = yield* GameService.findPlanets().pipe(
 			Effect.flatMap(
 				Effect.findFirst((planet) => {
 					const [fleetX, fleetY] = fleetCoordinates;

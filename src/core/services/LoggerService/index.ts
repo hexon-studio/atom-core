@@ -37,7 +37,7 @@ const createLogger = (opts: GlobalOptionsWithWebhook) => {
 			context: {
 				annotations: Record.fromEntries(HashMap.toEntries(annotations)),
 				player_profile: opts.playerProfile,
-				task_id: opts.webhookArgs?.taskId,
+				context_id: opts.webhookArgs?.contextId,
 				user_id: opts.owner,
 				version: packageJsonVersion,
 			},
@@ -56,10 +56,15 @@ const createLogger = (opts: GlobalOptionsWithWebhook) => {
 	});
 };
 
-export const createLoggerServiceLive = (opts: GlobalOptionsWithWebhook) =>
-	getEnv() === "production" && opts.loggingToken
+export const createLoggerServiceLive = (opts: GlobalOptionsWithWebhook) => {
+	if (opts.logDisabled) {
+		return Logger.remove(Logger.defaultLogger);
+	}
+
+	return getEnv() === "production" && opts.loggingToken
 		? Logger.replace(Logger.defaultLogger, createLogger(opts))
 		: Logger.replace(
 				Logger.defaultLogger,
 				Logger.prettyLogger({ mode: "auto" }),
 			);
+};

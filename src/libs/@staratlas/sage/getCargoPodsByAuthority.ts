@@ -9,10 +9,7 @@ export class GetCargoPodsByAuthorityError extends Data.TaggedError(
 )<{ error: unknown }> {}
 
 export const getCargoPodsByAuthority = (authority: PublicKey) =>
-	SolanaService.pipe(
-		Effect.flatMap((service) =>
-			Effect.all([service.anchorProvider, getSagePrograms()]),
-		),
+	Effect.all([SolanaService.anchorProvider, getSagePrograms()]).pipe(
 		Effect.flatMap(([provider, programs]) =>
 			Effect.tryPromise({
 				try: () =>

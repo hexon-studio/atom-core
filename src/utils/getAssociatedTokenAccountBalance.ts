@@ -7,8 +7,7 @@ export const getAssociatedTokenAccountBalance = (
 	tokenAccount: PublicKey,
 	commitment: Commitment = "confirmed",
 ) =>
-	SolanaService.pipe(
-		Effect.flatMap((service) => service.anchorProvider),
+	SolanaService.anchorProvider.pipe(
 		Effect.flatMap((provider) =>
 			Effect.tryPromise(() =>
 				provider.connection.getTokenAccountBalance(tokenAccount, commitment),

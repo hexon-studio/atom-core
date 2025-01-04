@@ -1,9 +1,9 @@
 import { Connection, type Keypair } from "@solana/web3.js";
 import { AnchorProvider, Wallet } from "@staratlas/anchor";
-import { Context, Data, Effect, Layer, Option } from "effect";
+import { Data, Effect, Layer, Option } from "effect";
 import type { FeeMode, GlobalOptionsWithWebhook } from "../../../types";
 
-export class SolanaService extends Context.Tag("app/SolanaService")<
+export class SolanaService extends Effect.Tag("app/SolanaService")<
 	SolanaService,
 	{
 		signer: Keypair;

@@ -1,7 +1,14 @@
 import type { PublicKey } from "@solana/web3.js";
 import type { InstructionReturn } from "@staratlas/data-source";
 import BN from "bn.js";
-import { Effect, Array as EffectArray, Match, identity, pipe } from "effect";
+import {
+	Effect,
+	Array as EffectArray,
+	Match,
+	Record,
+	identity,
+	pipe,
+} from "effect";
 import { constNull } from "effect/Function";
 import {
 	getFleetAccount,
@@ -26,8 +33,8 @@ import { getFleetCargoPodInfosForItems } from "../fleet/utils/getFleetCargoPodIn
 import { GameService } from "../services/GameService";
 import {
 	type EnhancedResourceItem,
-	enrichLoadResourceInput,
-} from "../utils/enrichLoadResourceItem";
+	enhanceLoadResourceItem,
+} from "../utils/enhanceLoadResourceItem";
 import { getStarbaseInfoByCoords } from "../utils/getStarbaseInfo";
 import { createDrainVaultIx } from "../vault/instructions/createDrainVaultIx";
 
@@ -129,14 +136,17 @@ export const loadCargo = ({
 				(acc, item) => acc.add(item.computedAmountInCargoUnits),
 			);
 
-			const enhancedItem = yield* enrichLoadResourceInput({
+			const enhancedItem = yield* enhanceLoadResourceItem({
 				item,
 				cargoPodInfo,
 				totalResourcesAmountInCargoUnits,
 				starbasePlayerCargoPodsPubkey:
 					starbaseInfo.starbasePlayerCargoPodsAccountPubkey,
 			}).pipe(
-				Effect.catchTag("FleetNotEnoughSpaceError", () => Effect.succeed(null)),
+				Effect.catchTags({
+					FleetNotEnoughSpaceError: () => Effect.succeed(null),
+					ResourceNotEnoughError: () => Effect.succeed(null),
+				}),
 			);
 
 			if (!enhancedItem) {
@@ -197,15 +207,10 @@ export const loadCargo = ({
 
 		ixs.push(...drainVaultIx);
 
-		const gameService = yield* GameService;
-
-		const txs =
-			yield* gameService.utils.buildAndSignTransactionWithAtlasPrime(ixs);
+		const txs = yield* GameService.buildAndSignTransactionWithAtlasPrime(ixs);
 
 		const maybeTxIds = yield* Effect.all(
-			txs.map((tx) =>
-				gameService.utils.sendTransaction(tx).pipe(Effect.either),
-			),
+			txs.map((tx) => GameService.sendTransaction(tx).pipe(Effect.either)),
 			{ concurrency: 5 },
 		);
 
@@ -236,29 +241,23 @@ export const loadCargo = ({
 			fleetAccount,
 		}).pipe(Effect.orElseSucceed(constNull));
 
-		const ammoDifference =
-			cargoPodsInfos?.ammo_bank && ammoBankPodInfo
-				? getCargoPodsResourcesDifference({
-						after: cargoPodsInfos.ammo_bank,
-						before: ammoBankPodInfo,
-					})
-				: [];
+		const ammoDifference = getCargoPodsResourcesDifference({
+			cargoPodKind: "ammo_bank",
+			after: cargoPodsInfos?.ammo_bank?.resources ?? Record.empty(),
+			before: ammoBankPodInfo?.resources ?? Record.empty(),
+		});
 
-		const fuelDifference =
-			cargoPodsInfos?.fuel_tank && fuelTankPodInfo
-				? getCargoPodsResourcesDifference({
-						after: cargoPodsInfos.fuel_tank,
-						before: fuelTankPodInfo,
-					})
-				: [];
+		const fuelDifference = getCargoPodsResourcesDifference({
+			cargoPodKind: "fuel_tank",
+			after: cargoPodsInfos?.fuel_tank?.resources ?? Record.empty(),
+			before: fuelTankPodInfo?.resources ?? Record.empty(),
+		});
 
-		const cargoDifference =
-			cargoPodsInfos?.cargo_hold && cargoHoldPodInfo
-				? getCargoPodsResourcesDifference({
-						after: cargoPodsInfos.cargo_hold,
-						before: cargoHoldPodInfo,
-					})
-				: [];
+		const cargoDifference = getCargoPodsResourcesDifference({
+			cargoPodKind: "cargo_hold",
+			after: cargoPodsInfos?.cargo_hold?.resources ?? Record.empty(),
+			before: cargoHoldPodInfo?.resources ?? Record.empty(),
+		});
 
 		yield* Effect.log("Difference in cargo pods resources").pipe(
 			Effect.annotateLogs({
@@ -277,7 +276,7 @@ export const loadCargo = ({
 			...cargoDifference,
 		].filter(
 			(res) =>
-				res.amountInTokens.isZero() &&
+				res.diffAmountInTokens.isZero() &&
 				loadingResources.includes(res.mint.toString()),
 		);
 
