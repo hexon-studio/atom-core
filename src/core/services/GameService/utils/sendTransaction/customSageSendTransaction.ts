@@ -31,7 +31,7 @@ export class VerifySignaturesError extends Data.TaggedError(
 
 export class ConfirmTransactionError extends Data.TaggedError(
 	"ConfirmTransactionError",
-)<{ error: unknown; signature: string }> {
+)<{ error: unknown }> {
 	override get message() {
 		return this.error instanceof Error
 			? this.error.message
@@ -87,7 +87,7 @@ export const customSageSendTransaction = (
 					{ signature, ...transaction.rbh },
 					commitment,
 				),
-			catch: (error) => new ConfirmTransactionError({ error, signature }),
+			catch: (error) => new ConfirmTransactionError({ error }),
 		}).pipe(Effect.retry({ times: 5 }));
 
 		if (result.value.err !== null) {
