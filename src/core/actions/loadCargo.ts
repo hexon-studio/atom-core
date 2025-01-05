@@ -86,10 +86,10 @@ export const loadCargo = ({
 							Effect.bind("drainVaultIx", () => createDrainVaultIx()),
 							// Sending the transactions before doing the next step
 							Effect.flatMap(({ stopMiningIx, dockIx, drainVaultIx }) =>
-								GameService.buildAndSignTransactionWithAtlasPrime(
-									[...stopMiningIx, ...dockIx],
-									drainVaultIx,
-								),
+								GameService.buildAndSignTransactionWithAtlasPrime({
+									ixs: [...stopMiningIx, ...dockIx],
+									afterIxs: drainVaultIx,
+								}),
 							),
 							Effect.flatMap((txs) =>
 								Effect.all(txs.map((tx) => GameService.sendTransaction(tx))),
@@ -228,10 +228,10 @@ export const loadCargo = ({
 
 		const drainVaultIx = yield* createDrainVaultIx();
 
-		const txs = yield* GameService.buildAndSignTransactionWithAtlasPrime(
+		const txs = yield* GameService.buildAndSignTransactionWithAtlasPrime({
 			ixs,
-			drainVaultIx,
-		);
+			afterIxs: drainVaultIx,
+		});
 
 		const maybeTxIds = yield* Effect.all(
 			txs.map((tx) => GameService.sendTransaction(tx).pipe(Effect.either)),
@@ -247,7 +247,7 @@ export const loadCargo = ({
 
 		if (EffectArray.isEmptyArray(errors)) {
 			// NOTE: All transactions succeeded
-			return signatures;
+			return [...stopMiningSignatures, ...signatures];
 		}
 
 		// NOTE: Some transactions failed
@@ -318,7 +318,7 @@ export const loadCargo = ({
 		return yield* Effect.fail(
 			new LoadUnloadPartiallyFailedError({
 				errors,
-				signatures,
+				signatures: [...stopMiningSignatures, ...signatures],
 				context: { missingResources: missingItems },
 			}),
 		);

@@ -1,6 +1,6 @@
 import { Connection, type Keypair } from "@solana/web3.js";
 import { AnchorProvider, Wallet } from "@staratlas/anchor";
-import { Data, Effect, Layer, Option } from "effect";
+import { Data, Effect, Layer, type Option } from "effect";
 import type { FeeMode, GlobalOptionsWithWebhook } from "../../../types";
 
 export class SolanaService extends Effect.Tag("app/SolanaService")<
@@ -8,16 +8,12 @@ export class SolanaService extends Effect.Tag("app/SolanaService")<
 	{
 		signer: Keypair;
 		anchorProvider: Effect.Effect<AnchorProvider, CreateProviderError>;
-		secondaryAnchorProvider: Effect.Effect<AnchorProvider, CreateProviderError>;
 		helius: Effect.Effect<
 			Option.Option<{ rpc: string; feeMode: FeeMode; feeLimit?: number }>
 		>;
 	}
 >() {}
 
-export class SecondaryRpcNotPassed extends Data.TaggedError(
-	"SecondaryRpcNotPassed",
-) {}
 export class CreateKeypairError extends Data.TaggedError("CreateKeypairError")<{
 	error: unknown;
 }> {}
@@ -45,7 +41,6 @@ const createAnchorProvider = ({
 export const createSolanaServiceLive = ({
 	keypair,
 	rpcUrl,
-	secondaryRpcUrl,
 	heliusRpcUrl,
 	feeMode,
 	feeLimit,
@@ -55,13 +50,6 @@ export const createSolanaServiceLive = ({
 		SolanaService.of({
 			signer: keypair,
 			anchorProvider: createAnchorProvider({ rpcUrl, keypair }),
-			secondaryAnchorProvider: Option.fromNullable(secondaryRpcUrl).pipe(
-				Option.match({
-					onNone: () => createAnchorProvider({ rpcUrl, keypair }),
-					onSome: (secondaryRpcUrl) =>
-						createAnchorProvider({ rpcUrl: secondaryRpcUrl, keypair }),
-				}),
-			),
 			helius: Effect.fromNullable(heliusRpcUrl).pipe(
 				Effect.map((rpc) => ({ rpc, feeMode, feeLimit })),
 				Effect.option,

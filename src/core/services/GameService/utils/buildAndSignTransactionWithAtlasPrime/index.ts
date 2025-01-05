@@ -7,7 +7,7 @@ import type {
 	TransactionReturn,
 } from "@staratlas/data-source";
 import { ProfileVault } from "@staratlas/profile-vault";
-import { Data, Effect, Array as EffectArray, Option } from "effect";
+import { type Cause, Data, Effect, Array as EffectArray, Option } from "effect";
 import type { Result } from "neverthrow";
 import { tokenMints } from "~/constants/tokens";
 import { getSagePrograms } from "~/core/programs";
@@ -44,31 +44,32 @@ export class BuildOptimalTxError extends Data.TaggedError(
 	}
 }
 
-export const buildAndSignTransactionWithAtlasPrime = (
-	mainInstructions: Array<InstructionReturn>,
-	afterMainInstructions: Array<InstructionReturn> = [],
-): Effect.Effect<
+export const buildAndSignTransactionWithAtlasPrime = ({
+	ixs,
+	afterIxs: afterIxsParam = [],
+}: {
+	ixs: Array<InstructionReturn>;
+	afterIxs?: Array<InstructionReturn>;
+}): Effect.Effect<
 	TransactionReturn[],
 	| BuildAndSignTransactionWithAtlasPrimeError
 	| BuildOptimalTxError
 	| CreateKeypairError
 	| ReadFromRPCError
 	| GameNotInitializedError
-	| CreateProviderError,
+	| CreateProviderError
+	| Cause.TimeoutException,
 	SolanaService | GameService
 > =>
-	Effect.all([SolanaService, GameService]).pipe(
-		Effect.flatMap(([solanaService, gameService]) =>
-			Effect.all([
-				getSagePrograms(),
-				solanaService.helius,
-				solanaService.secondaryAnchorProvider,
-				gameService.signer,
-				getGameContext(),
-			]),
-		),
+	Effect.all([
+		getSagePrograms(),
+		getGameContext(),
+		SolanaService.helius,
+		SolanaService.anchorProvider,
+		GameService.signer,
+	]).pipe(
 		Effect.tap(() => Effect.log("Building ixs")),
-		Effect.flatMap(([programs, helius, provider, signer, context]) =>
+		Effect.flatMap(([programs, context, helius, provider, signer]) =>
 			Effect.tryPromise({
 				try: async () => {
 					const [vaultAuthority] = ProfileVault.findVaultSigner(
@@ -84,7 +85,7 @@ export const buildAndSignTransactionWithAtlasPrime = (
 
 					let heliusFee: number;
 
-					const afterIxs: AfterIx[] = afterMainInstructions.map((ix) => ({
+					const afterIxs: AfterIx[] = afterIxsParam.map((ix) => ({
 						ix,
 						computeEstimate: 5_000,
 						maxTraceCount: 2,
@@ -132,61 +133,21 @@ export const buildAndSignTransactionWithAtlasPrime = (
 						program: programs.atlasPrime,
 					});
 
-					builder.add(mainInstructions);
-
-					// const ixSign = (
-					// 	await Promise.all(builder.instructions.map((ix) => ix(signer)))
-					// ).flat();
-					// const tmp = getTransactionSize(
-					// 	ixSign,
-					// 	signer.publicKey(),
-					// 	buildLookupTableSet(builder.lookupTables),
-					// );
-					// console.log("size", tmp.size);
+					builder.add(ixs);
 
 					const txs: Result<TransactionReturn, string>[] = [];
 
-					// let i = 0;
-					// for await (let tx of builder.optimalTransactions()) {
-					// 	tx = await builder.rebuildLast(false);
-					// 	if (tx.isErr()) {
-					// 		throw new BuildOptimalTxError({ error: tx.error });
-					// 	}
-					// 	if (i > 100) {
-					// 		throw new BuildOptimalTxError({ error: "Too many iterations" });
-					// 	}
-					// 	txs.push(tx);
-					// 	i++;
-					// }
-
-					const generator = builder.optimalTransactions();
-
-					let i = 0;
-					while (true) {
-						if (i > 100) {
-							throw new BuildOptimalTxError({ error: "Too many iterations" });
-						}
-
-						const { value, done } = await generator.next();
-						if (done) break;
-
-						const tx = value;
-						if (tx.isErr()) {
-							throw new BuildOptimalTxError({ error: tx.error });
-						}
-
+					for await (const tx of builder.optimalTransactions()) {
 						txs.push(tx);
-						i++;
 					}
 
 					return txs;
 				},
 				catch: (error) =>
-					new BuildAndSignTransactionWithAtlasPrimeError({
-						error,
-					}),
+					new BuildAndSignTransactionWithAtlasPrimeError({ error }),
 			}),
 		),
+		Effect.timeout("30 seconds"),
 		Effect.flatMap((txs) =>
 			Effect.all(
 				EffectArray.map(txs, (result) =>

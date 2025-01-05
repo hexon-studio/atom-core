@@ -59,6 +59,26 @@ export const runBaseCommand = <E, R>({
 
 		const signatures = yield* self();
 
+		// const provider = yield* SolanaService.anchorProvider;
+
+		// const txs = yield* Effect.all(
+		// 	signatures.map((signature) =>
+		// 		Effect.tryPromise(() =>
+		// 			provider.connection.getTransaction(signature, {
+		// 				commitment: "confirmed",
+		// 				maxSupportedTransactionVersion: 0,
+		// 			}),
+		// 		),
+		// 	),
+		// ).pipe(
+		// 	Effect.orElseSucceed(EffectArray.empty),
+		// 	Effect.map(EffectArray.map(Option.fromNullable)),
+		// 	Effect.map(EffectArray.getSomes),
+		// 	Effect.map(EffectArray.map(tx => tx.transaction.message.)),
+		// );
+
+		// console.dir({ txs }, { depth: null });
+
 		const context = yield* getGameContext();
 
 		yield* fireWebhookEvent({

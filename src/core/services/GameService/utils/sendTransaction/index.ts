@@ -5,7 +5,7 @@ import { customSageSendTransaction } from "./customSageSendTransaction";
 
 export const sendTransaction = (tx: TransactionReturn) =>
 	SolanaService.pipe(
-		Effect.flatMap((solanaService) => solanaService.secondaryAnchorProvider),
+		Effect.flatMap((solanaService) => solanaService.anchorProvider),
 		Effect.flatMap((provider) =>
 			customSageSendTransaction(tx, provider.connection, {
 				commitment: "confirmed",
