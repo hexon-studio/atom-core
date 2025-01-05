@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.14.1](https://github.com/hexon-studio/atom-core/compare/v1.14.0...v1.14.1) (2025-01-05)
+
+
+### Bug Fixes
+
+* fees and actions ([e473689](https://github.com/hexon-studio/atom-core/commit/e473689f2ed3a4af0817ef8cd92340bd85fea17c))
+
 # [1.14.0](https://github.com/hexon-studio/atom-core/compare/v1.13.0...v1.14.0) (2025-01-04)
 
 
