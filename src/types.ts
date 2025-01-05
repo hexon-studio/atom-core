@@ -28,7 +28,6 @@ export type RequiredOptions = {
 export type CliGlobalOptions = RequiredOptions & {
 	feeUrl?: string;
 	loggingToken?: string;
-	secondaryRpcUrl?: string;
 	contextId?: string;
 	webhookSecret?: string;
 	webhookUrl?: string;

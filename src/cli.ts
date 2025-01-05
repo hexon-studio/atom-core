@@ -78,14 +78,6 @@ const main = async () => {
 		)
 		.addOption(
 			new Option(
-				"-sr, --secondaryRpcUrl <rpcUrl>",
-				"The secondary solona rpc url (used to build and send tx only)",
-			)
-				.env("ATOM_SECONDARY_RPC_URL")
-				.makeOptionMandatory(false),
-		)
-		.addOption(
-			new Option(
 				"-hr, --heliusRpcUrl <heliusRpc>",
 				"Helius rpc url (used to calculate priority fees)",
 			)

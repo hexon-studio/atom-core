@@ -77,10 +77,6 @@ export const runUnloadCargo = async ({
 							{ _tag: "TransactionFailedError" },
 							({ signature }) => signature,
 						),
-						Match.when(
-							{ _tag: "ConfirmTransactionError" },
-							({ signature }) => signature,
-						),
 						Match.orElse(constNull),
 					),
 				}),

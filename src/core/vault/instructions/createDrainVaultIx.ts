@@ -1,6 +1,4 @@
 import { getAssociatedTokenAddressSync } from "@solana/spl-token";
-import type { PublicKey } from "@solana/web3.js";
-import type { InstructionReturn } from "@staratlas/data-source";
 import { ProfileVault } from "@staratlas/profile-vault";
 import { BN } from "bn.js";
 import { Effect } from "effect";
@@ -9,17 +7,10 @@ import { getSagePrograms } from "../../programs";
 import { GameService } from "../../services/GameService";
 import { getGameContext } from "../../services/GameService/utils";
 
-const minimumFee = 10 * ATLAS_DECIMALS;
+const maxFee = 1 * ATLAS_DECIMALS;
 
-export const createDrainVaultIx = (
-	ixs: InstructionReturn[],
-	resourceMint?: PublicKey,
-) =>
+export const createDrainVaultIx = () =>
 	Effect.gen(function* () {
-		if (!ixs.length) {
-			return [];
-		}
-
 		const programs = yield* getSagePrograms();
 
 		const context = yield* getGameContext();
@@ -28,21 +19,13 @@ export const createDrainVaultIx = (
 			return [];
 		}
 
-		const ixsFee = context.fees.defaultFee * ixs.length * ATLAS_DECIMALS;
+		const maybeFee = context.fees.defaultFee * ATLAS_DECIMALS;
 
-		const { fee: mintFee } = context.fees.mintFees.find(
-			(item) => resourceMint && item.mint.equals(resourceMint),
-		) ?? { fee: 0 };
-
-		const miningFee = mintFee * ATLAS_DECIMALS;
-
-		const estimatedFee = ixsFee + miningFee;
-
-		if (estimatedFee <= 0) {
+		if (!maybeFee || maybeFee <= 0) {
 			return [];
 		}
 
-		const totalFee = estimatedFee < minimumFee ? estimatedFee : 0;
+		const fee = maybeFee < maxFee ? maybeFee : maxFee;
 
 		const [vaultAuthority] = ProfileVault.findVaultSigner(
 			programs.profileVaultProgram,
@@ -72,7 +55,7 @@ export const createDrainVaultIx = (
 				vault,
 				vaultAuthority,
 				atlasTokenAccount,
-				new BN(totalFee),
+				new BN(fee),
 				{
 					playerProfileProgram: programs.playerProfile,
 					key: signer,

@@ -2,11 +2,12 @@ import { getAssociatedTokenAddressSync } from "@solana/spl-token";
 import { PublicKey } from "@solana/web3.js";
 import { AtlasPrimeTransactionBuilder } from "@staratlas/atlas-prime";
 import type {
+	AfterIx,
 	InstructionReturn,
 	TransactionReturn,
 } from "@staratlas/data-source";
 import { ProfileVault } from "@staratlas/profile-vault";
-import { Data, Effect, Array as EffectArray, Option } from "effect";
+import { type Cause, Data, Effect, Array as EffectArray, Option } from "effect";
 import type { Result } from "neverthrow";
 import { tokenMints } from "~/constants/tokens";
 import { getSagePrograms } from "~/core/programs";
@@ -43,30 +44,32 @@ export class BuildOptimalTxError extends Data.TaggedError(
 	}
 }
 
-export const buildAndSignTransactionWithAtlasPrime = (
-	instructions: Array<InstructionReturn>,
-): Effect.Effect<
+export const buildAndSignTransactionWithAtlasPrime = ({
+	ixs,
+	afterIxs: afterIxsParam = [],
+}: {
+	ixs: Array<InstructionReturn>;
+	afterIxs?: Array<InstructionReturn>;
+}): Effect.Effect<
 	TransactionReturn[],
 	| BuildAndSignTransactionWithAtlasPrimeError
 	| BuildOptimalTxError
 	| CreateKeypairError
 	| ReadFromRPCError
 	| GameNotInitializedError
-	| CreateProviderError,
+	| CreateProviderError
+	| Cause.TimeoutException,
 	SolanaService | GameService
 > =>
-	Effect.all([SolanaService, GameService]).pipe(
-		Effect.flatMap(([solanaService, gameService]) =>
-			Effect.all([
-				getSagePrograms(),
-				solanaService.helius,
-				solanaService.secondaryAnchorProvider,
-				gameService.signer,
-				getGameContext(),
-			]),
-		),
+	Effect.all([
+		getSagePrograms(),
+		getGameContext(),
+		SolanaService.helius,
+		SolanaService.anchorProvider,
+		GameService.signer,
+	]).pipe(
 		Effect.tap(() => Effect.log("Building ixs")),
-		Effect.flatMap(([programs, helius, provider, signer, context]) =>
+		Effect.flatMap(([programs, context, helius, provider, signer]) =>
 			Effect.tryPromise({
 				try: async () => {
 					const [vaultAuthority] = ProfileVault.findVaultSigner(
@@ -82,11 +85,18 @@ export const buildAndSignTransactionWithAtlasPrime = (
 
 					let heliusFee: number;
 
+					const afterIxs: AfterIx[] = afterIxsParam.map((ix) => ({
+						ix,
+						computeEstimate: 5_000,
+						maxTraceCount: 2,
+					}));
+
 					const builder = await AtlasPrimeTransactionBuilder.new({
 						afpUrl: "https://prime.staratlas.com/",
 						connection: provider.connection,
 						commitment: "confirmed",
 						lookupTables: lookupTable.value ? [lookupTable.value] : undefined,
+						afterIxs,
 						getFee: helius.pipe(
 							Option.map(
 								({ rpc: heliusRpcUrl, feeMode, feeLimit }) =>
@@ -123,7 +133,7 @@ export const buildAndSignTransactionWithAtlasPrime = (
 						program: programs.atlasPrime,
 					});
 
-					builder.add(instructions);
+					builder.add(ixs);
 
 					const txs: Result<TransactionReturn, string>[] = [];
 
@@ -134,11 +144,10 @@ export const buildAndSignTransactionWithAtlasPrime = (
 					return txs;
 				},
 				catch: (error) =>
-					new BuildAndSignTransactionWithAtlasPrimeError({
-						error,
-					}),
+					new BuildAndSignTransactionWithAtlasPrimeError({ error }),
 			}),
 		),
+		Effect.timeout("30 seconds"),
 		Effect.flatMap((txs) =>
 			Effect.all(
 				EffectArray.map(txs, (result) =>
