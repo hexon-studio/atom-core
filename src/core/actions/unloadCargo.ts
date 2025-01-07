@@ -192,22 +192,70 @@ export const unloadCargo = ({
 			fleetAccount,
 		}).pipe(Effect.orElseSucceed(constNull));
 
+		const ammoBankResourceMissingItems = pipe(
+			Record.difference(
+				postCargoPodInfos?.ammo_bank?.resources ?? {},
+				initialAmmoBankPodInfo?.resources ?? {},
+			),
+			Record.map((item) => ({
+				...item,
+				amountInCargoUnits: new BN(0),
+				amountInTokens: new BN(0),
+			})),
+		);
+
 		const ammoDifference = getCargoPodsResourcesDifference({
 			cargoPodKind: "ammo_bank",
-			after: postCargoPodInfos?.ammo_bank?.resources ?? Record.empty(),
-			before: initialAmmoBankPodInfo?.resources ?? Record.empty(),
+			after: Record.union(
+				postCargoPodInfos?.ammo_bank?.resources ?? {},
+				ammoBankResourceMissingItems,
+				(a, b) => ({ ...a, ...b }),
+			),
+			before: initialAmmoBankPodInfo?.resources ?? {},
 		});
+
+		const fuelTankResourceMissingItems = pipe(
+			Record.difference(
+				postCargoPodInfos?.fuel_tank?.resources ?? {},
+				initialFuelTankPodInfo?.resources ?? {},
+			),
+			Record.map((item) => ({
+				...item,
+				amountInCargoUnits: new BN(0),
+				amountInTokens: new BN(0),
+			})),
+		);
 
 		const fuelDifference = getCargoPodsResourcesDifference({
 			cargoPodKind: "fuel_tank",
-			after: postCargoPodInfos?.fuel_tank?.resources ?? Record.empty(),
-			before: initialFuelTankPodInfo?.resources ?? Record.empty(),
+			after: Record.union(
+				postCargoPodInfos?.fuel_tank?.resources ?? {},
+				fuelTankResourceMissingItems,
+				(a, b) => ({ ...a, ...b }),
+			),
+			before: initialFuelTankPodInfo?.resources ?? {},
 		});
+
+		const cargoHoldResourceMissingItems = pipe(
+			Record.difference(
+				postCargoPodInfos?.cargo_hold?.resources ?? {},
+				initialCargoHoldPodInfo?.resources ?? {},
+			),
+			Record.map((item) => ({
+				...item,
+				amountInCargoUnits: new BN(0),
+				amountInTokens: new BN(0),
+			})),
+		);
 
 		const cargoDifference = getCargoPodsResourcesDifference({
 			cargoPodKind: "cargo_hold",
-			after: postCargoPodInfos?.cargo_hold?.resources ?? Record.empty(),
-			before: initialCargoHoldPodInfo?.resources ?? Record.empty(),
+			after: Record.union(
+				postCargoPodInfos?.cargo_hold?.resources ?? {},
+				cargoHoldResourceMissingItems,
+				(a, b) => ({ ...a, ...b }),
+			),
+			before: initialCargoHoldPodInfo?.resources ?? {},
 		});
 
 		yield* Effect.log("Difference in cargo pods resources").pipe(
