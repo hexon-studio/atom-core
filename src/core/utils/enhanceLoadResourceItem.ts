@@ -104,12 +104,12 @@ export const enhanceLoadResourceItem = ({
 		);
 
 		return {
-			...item,
-			cargoPodInfo,
-			starbaseResourceTokenAccount,
-			amount,
-			computedAmountInCargoUnits,
+			cargoPodKind,
+			cargoPodPublicKey: cargoPodInfo.cargoPod.key,
 			cargoTypeAccount,
+			computedAmountInCargoUnits,
+			resourceMint,
+			starbaseResourceTokenAccount,
 		};
 	});
 

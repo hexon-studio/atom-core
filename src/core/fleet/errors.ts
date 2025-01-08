@@ -96,7 +96,9 @@ export class LoadUnloadPartiallyFailedError extends Data.TaggedError(
 )<{
 	signatures: string[];
 	errors: Error[];
-	context: { missingResources: Array<LoadResourceInput | UnloadResourceInput> };
+	context: {
+		missingResources: Array<LoadResourceInput | UnloadResourceInput>;
+	};
 }> {
 	override get message() {
 		return this.errors.map((error) => error.message).join("\n");
