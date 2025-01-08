@@ -1,5 +1,12 @@
 # Changelog
 
+# [1.15.0](https://github.com/hexon-studio/atom-core/compare/v1.14.3...v1.15.0) (2025-01-08)
+
+
+### Features
+
+* add UUID generation for cargo items and update related logic ([485dd26](https://github.com/hexon-studio/atom-core/commit/485dd268309a2f7ccc9bfb4f113f49db75da59ee))
+
 ## [1.14.3](https://github.com/hexon-studio/atom-core/compare/v1.14.2...v1.14.3) (2025-01-08)
 
 ## [1.14.2](https://github.com/hexon-studio/atom-core/compare/v1.14.1...v1.14.2) (2025-01-07)
