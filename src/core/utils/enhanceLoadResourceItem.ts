@@ -22,7 +22,7 @@ export const enhanceLoadResourceItem = ({
 	totalResourcesAmountInCargoUnits,
 	starbasePlayerCargoPodsPubkey,
 }: {
-	item: LoadResourceInput;
+	item: LoadResourceInput & { id: string };
 	totalResourcesAmountInCargoUnits: BN;
 	cargoPodInfo: CargoPodEnhanced;
 	starbasePlayerCargoPodsPubkey: PublicKey;
@@ -104,6 +104,7 @@ export const enhanceLoadResourceItem = ({
 		);
 
 		return {
+			id: item.id,
 			cargoPodKind,
 			cargoPodPublicKey: cargoPodInfo.cargoPod.key,
 			cargoTypeAccount,

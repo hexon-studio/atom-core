@@ -11,6 +11,7 @@ import {
 	pipe,
 } from "effect";
 import { constNull } from "effect/Function";
+import { createItemUuid } from "~/constants/uuid";
 import {
 	getFleetAccount,
 	getFleetAccountByNameOrAddress,
@@ -43,13 +44,26 @@ import { getStarbaseInfoByCoords } from "../utils/getStarbaseInfo";
 import { createDrainVaultIx } from "../vault/instructions/createDrainVaultIx";
 
 export const loadCargo = ({
-	items,
+	items: itemsParam,
 	fleetNameOrAddress,
 }: {
 	fleetNameOrAddress: string | PublicKey;
 	items: Array<LoadResourceInput>;
 }) =>
 	Effect.gen(function* () {
+		const items = itemsParam.map(
+			({ cargoPodKind, resourceMint, amount, mode }) => ({
+				id: createItemUuid({
+					cargoPodKind,
+					resourceMint,
+				}),
+				cargoPodKind,
+				resourceMint,
+				amount,
+				mode,
+			}),
+		);
+
 		const fleetAccount =
 			yield* getFleetAccountByNameOrAddress(fleetNameOrAddress);
 
@@ -169,7 +183,7 @@ export const loadCargo = ({
 
 			if (!enhancedItem) {
 				yield* Effect.log(
-					`Not enough space to load ${item.resourceMint.toString()}, reachedCapacity (${totalResourcesAmountInCargoUnits.toString()}) >= maxCapacity (${cargoPodInfo.maxCapacityInCargoUnits.toString()})`,
+					`Not enough space to load ${item.resourceMint.toString()} in ${item.cargoPodKind}, reachedCapacity (${totalResourcesAmountInCargoUnits.toString()}) >= maxCapacity (${cargoPodInfo.maxCapacityInCargoUnits.toString()})`,
 				);
 
 				continue;
@@ -183,28 +197,25 @@ export const loadCargo = ({
 				continue;
 			}
 
-			const enhancedItemWithSameResource = EffectArray.findFirst(
+			const enhancedItemWithSameResourceIndex = EffectArray.findFirstIndex(
 				enhancedItems,
-				(enhancedItem) => enhancedItem.resourceMint.equals(item.resourceMint),
+				(enhancedItem) => enhancedItem.id === item.id,
 			);
 
-			if (
-				Option.isSome(enhancedItemWithSameResource) &&
-				enhancedItemWithSameResource.value.cargoPodKind ===
-					enhancedItem.cargoPodKind
-			) {
-				enhancedItems = EffectArray.map(enhancedItems, (enhancedItem) =>
-					enhancedItem.resourceMint.equals(
-						enhancedItemWithSameResource.value.resourceMint,
-					)
-						? enhancedItem
-						: {
-								...enhancedItem,
-								computedAmountInCargoUnits:
-									enhancedItemWithSameResource.value.computedAmountInCargoUnits.add(
-										enhancedItem.computedAmountInCargoUnits,
-									),
-							},
+			if (Option.isSome(enhancedItemWithSameResourceIndex)) {
+				const enhancedItemWithSameResource =
+					// biome-ignore lint/style/noNonNullAssertion: we know it's defined
+					enhancedItems[enhancedItemWithSameResourceIndex.value]!;
+
+				enhancedItems = pipe(
+					enhancedItems,
+					EffectArray.replace(enhancedItemWithSameResourceIndex.value, {
+						...enhancedItem,
+						computedAmountInCargoUnits:
+							enhancedItemWithSameResource.computedAmountInCargoUnits.add(
+								enhancedItem.computedAmountInCargoUnits,
+							),
+					}),
 				);
 
 				continue;
@@ -279,10 +290,6 @@ export const loadCargo = ({
 			...new Set(enhancedItems.map((item) => item.cargoPodKind)),
 		];
 
-		const loadingResources = enhancedItems.map((item) =>
-			item.resourceMint.toString(),
-		);
-
 		const postCargoPodsInfos = yield* getFleetCargoPodInfosForItems({
 			cargoPodKinds,
 			fleetAccount,
@@ -307,35 +314,46 @@ export const loadCargo = ({
 			Record.fromEntries,
 		);
 
-		yield* Effect.log("Difference in cargo pods resources").pipe(
-			Effect.annotateLogs({
-				context: JSON.parse(
-					JSON.stringify(differences, (_, value) =>
-						value instanceof BN ? value.toString() : value,
+		for (const kind of cargoPodKinds) {
+			yield* Effect.log(`Difference in ${kind} resources`).pipe(
+				Effect.annotateLogs({
+					context: JSON.parse(
+						JSON.stringify(differences[kind], (_, value) =>
+							value instanceof BN ? value.toString() : value,
+						),
 					),
-				),
-			}),
-		);
-
-		const missingResources = [
-			...Record.values(differences.ammo_bank),
-			...Record.values(differences.fuel_tank),
-			...Record.values(differences.cargo_hold),
-		].filter(
-			(res) =>
-				res.diffAmountInCargoUnits.isZero() &&
-				loadingResources.includes(res.mint.toString()),
-		);
-
-		const missingItems = items.filter((item) => {
-			const res = missingResources.find(
-				(res) =>
-					res.mint.equals(item.resourceMint) &&
-					res.cargoPodKind === item.cargoPodKind,
+				}),
 			);
+		}
 
-			return !!res;
-		});
+		const enhancedItemsIds = enhancedItems.map((item) => item.id);
+
+		const missingResources = EffectArray.filterMap(
+			[
+				...Record.values(differences.ammo_bank),
+				...Record.values(differences.fuel_tank),
+				...Record.values(differences.cargo_hold),
+			],
+			(res) => {
+				const itemId = createItemUuid({
+					cargoPodKind: res.cargoPodKind,
+					resourceMint: res.mint,
+				});
+
+				if (
+					res.diffAmountInCargoUnits.isZero() &&
+					enhancedItemsIds.includes(itemId)
+				) {
+					return Option.some({ ...res, id: itemId });
+				}
+
+				return Option.none();
+			},
+		);
+
+		const missingItems = items.filter((item) =>
+			missingResources.some((res) => res.id === item.id),
+		);
 
 		return yield* Effect.fail(
 			new LoadUnloadPartiallyFailedError({
