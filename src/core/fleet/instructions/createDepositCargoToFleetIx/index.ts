@@ -8,7 +8,6 @@ import { getGameContext } from "~/core/services/GameService/utils";
 import type { StarbaseInfo } from "~/core/utils/getStarbaseInfo";
 import type { CargoPodKind } from "~/decoders";
 import {
-	type CargoPodEnhanced,
 	getCargoTypeAddress,
 	isResourceAllowedForCargoPod,
 } from "~/libs/@staratlas/cargo";
@@ -19,14 +18,15 @@ import {
 } from "../../errors";
 
 export const createDepositCargoToFleetIx = ({
+	cargoPodPublicKey,
 	item,
 	fleetAccount,
 	starbaseInfo,
 }: {
+	cargoPodPublicKey: PublicKey;
 	starbaseInfo: Omit<StarbaseInfo, "starbaseAccount">;
 	item: {
 		amount: BN;
-		cargoPodInfo: CargoPodEnhanced;
 		cargoPodKind: CargoPodKind;
 		resourceMint: PublicKey;
 		starbaseResourceTokenAccount: PublicKey;
@@ -34,13 +34,8 @@ export const createDepositCargoToFleetIx = ({
 	fleetAccount: Fleet;
 }) =>
 	Effect.gen(function* () {
-		const {
-			amount,
-			cargoPodKind,
-			resourceMint,
-			cargoPodInfo,
-			starbaseResourceTokenAccount,
-		} = item;
+		const { amount, cargoPodKind, resourceMint, starbaseResourceTokenAccount } =
+			item;
 
 		const {
 			starbasePlayerPubkey,
@@ -78,7 +73,7 @@ export const createDepositCargoToFleetIx = ({
 		const targetTokenAccount =
 			yield* GameService.createAssociatedTokenAccountIdempotent(
 				resourceMint,
-				cargoPodInfo.cargoPod.key,
+				cargoPodPublicKey,
 				true,
 			);
 
@@ -118,7 +113,7 @@ export const createDepositCargoToFleetIx = ({
 			starbasePlayerPubkey,
 			fleetAccount.key,
 			starbasePlayerCargoPodsAccountPubkey,
-			cargoPodInfo.cargoPod.key,
+			cargoPodPublicKey,
 			cargoTypeAddress,
 			context.gameInfo.cargoStatsDefinition.key,
 			starbaseResourceTokenAccount,

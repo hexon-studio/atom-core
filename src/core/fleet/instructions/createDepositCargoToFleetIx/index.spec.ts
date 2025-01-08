@@ -7,7 +7,6 @@ import { BN } from "bn.js";
 import { Effect, Exit, Layer, ManagedRuntime, Option, Ref } from "effect";
 import { constant, unsafeCoerce } from "effect/Function";
 import mock from "mock-fs";
-import type { CargoPodEnhanced } from "~/libs/@staratlas/cargo";
 import { createDepositCargoToFleetIx } from ".";
 import { resourceNameToMint } from "../../../../constants/resources";
 import { noopPublicKey } from "../../../../constants/tokens";
@@ -111,9 +110,9 @@ describe("createDepositCargoToFleetIx", () => {
 				starbasePlayerPubkey: PublicKey.default,
 				starbasePubkey: PublicKey.default,
 			},
+			cargoPodPublicKey: PublicKey.default,
 			item: {
 				amount: new BN(0),
-				cargoPodInfo: {} as CargoPodEnhanced,
 				cargoPodKind: "ammo_bank",
 				resourceMint: resourceNameToMint.Carbon,
 				starbaseResourceTokenAccount: PublicKey.default,
@@ -150,9 +149,9 @@ describe("createDepositCargoToFleetIx", () => {
 					starbasePlayerPubkey: PublicKey.default,
 					starbasePubkey: PublicKey.default,
 				},
+				cargoPodPublicKey: PublicKey.default,
 				item: {
 					starbaseResourceTokenAccount: PublicKey.default,
-					cargoPodInfo: {} as CargoPodEnhanced,
 					amount: new BN(1),
 					cargoPodKind,
 					resourceMint: new PublicKey(resourceMint),

@@ -5,6 +5,7 @@ import {
 	Effect,
 	Array as EffectArray,
 	Match,
+	Option,
 	Record,
 	identity,
 	pipe,
@@ -17,7 +18,7 @@ import {
 	getResourceAccount,
 } from "~/libs/@staratlas/sage";
 import { getCargoTypeResourceMultiplier } from "~/libs/@staratlas/sage/utils/getCargoTypeResourceMultiplier";
-import type { LoadResourceInput } from "../../decoders";
+import type { CargoPodKind, LoadResourceInput } from "../../decoders";
 import {
 	LoadUnloadFailedError,
 	LoadUnloadPartiallyFailedError,
@@ -27,7 +28,10 @@ import {
 	createDockToStarbaseIx,
 	createStopMiningIx,
 } from "../fleet/instructions";
-import { getCargoPodsResourcesDifference } from "../fleet/utils/getCargoPodsResourcesDifference";
+import {
+	type CargoPodsDifference,
+	getCargoPodsResourcesDifference,
+} from "../fleet/utils/getCargoPodsResourcesDifference";
 import { getCurrentFleetSectorCoordinates } from "../fleet/utils/getCurrentFleetSectorCoordinates";
 import { getFleetCargoPodInfosForItems } from "../fleet/utils/getFleetCargoPodInfosForItems";
 import { GameService } from "../services/GameService";
@@ -117,11 +121,7 @@ export const loadCargo = ({
 			...new Set(items.map((item) => item.cargoPodKind)),
 		];
 
-		const {
-			ammo_bank: initialAmmoBankPodInfo,
-			cargo_hold: initialCargoHoldPodInfo,
-			fuel_tank: initialFuelTankPodInfo,
-		} = yield* getFleetCargoPodInfosForItems({
+		const initialCargoPodsInfos = yield* getFleetCargoPodInfosForItems({
 			cargoPodKinds: itemsCargoPodsKinds,
 			fleetAccount,
 		});
@@ -134,15 +134,10 @@ export const loadCargo = ({
 			startbaseCoords: fleetCoords,
 		});
 
-		const enhancedItems: EnhancedResourceItem[] = [];
+		let enhancedItems: EnhancedResourceItem[] = [];
 
 		for (const item of items) {
-			const cargoPodInfo = Match.value(item.cargoPodKind).pipe(
-				Match.when("ammo_bank", () => initialAmmoBankPodInfo),
-				Match.when("fuel_tank", () => initialFuelTankPodInfo),
-				Match.when("cargo_hold", () => initialCargoHoldPodInfo),
-				Match.exhaustive,
-			);
+			const cargoPodInfo = initialCargoPodsInfos[item.cargoPodKind];
 
 			if (!cargoPodInfo) {
 				continue;
@@ -188,6 +183,33 @@ export const loadCargo = ({
 				continue;
 			}
 
+			const enhancedItemWithSameResource = EffectArray.findFirst(
+				enhancedItems,
+				(enhancedItem) => enhancedItem.resourceMint.equals(item.resourceMint),
+			);
+
+			if (
+				Option.isSome(enhancedItemWithSameResource) &&
+				enhancedItemWithSameResource.value.cargoPodKind ===
+					enhancedItem.cargoPodKind
+			) {
+				enhancedItems = EffectArray.map(enhancedItems, (enhancedItem) =>
+					enhancedItem.resourceMint.equals(
+						enhancedItemWithSameResource.value.resourceMint,
+					)
+						? enhancedItem
+						: {
+								...enhancedItem,
+								computedAmountInCargoUnits:
+									enhancedItemWithSameResource.value.computedAmountInCargoUnits.add(
+										enhancedItem.computedAmountInCargoUnits,
+									),
+							},
+				);
+
+				continue;
+			}
+
 			enhancedItems.push(enhancedItem);
 		}
 
@@ -207,9 +229,9 @@ export const loadCargo = ({
 				return createDepositCargoToFleetIx({
 					fleetAccount: freshFleetAccount,
 					starbaseInfo,
+					cargoPodPublicKey: item.cargoPodPublicKey,
 					item: {
 						amount: finalAmountToDeposit,
-						cargoPodInfo: item.cargoPodInfo,
 						cargoPodKind: item.cargoPodKind,
 						resourceMint: item.resourceMint,
 						starbaseResourceTokenAccount: item.starbaseResourceTokenAccount,
@@ -266,90 +288,42 @@ export const loadCargo = ({
 			fleetAccount,
 		}).pipe(Effect.orElseSucceed(constNull));
 
-		const ammoBankResourceMissingItems = pipe(
-			Record.difference(
-				postCargoPodsInfos?.ammo_bank?.resources ?? {},
-				initialAmmoBankPodInfo?.resources ?? {},
+		const differences: Record<CargoPodKind, CargoPodsDifference> = pipe(
+			cargoPodKinds,
+			EffectArray.map(
+				(cargoPodKind) =>
+					[
+						cargoPodKind,
+						getCargoPodsResourcesDifference({
+							cargoPodKind,
+							after:
+								postCargoPodsInfos?.[cargoPodKind]?.resources ?? Record.empty(),
+							before:
+								initialCargoPodsInfos?.[cargoPodKind]?.resources ??
+								Record.empty(),
+						}),
+					] as const,
 			),
-			Record.map((item) => ({
-				...item,
-				amountInCargoUnits: new BN(0),
-				amountInTokens: new BN(0),
-			})),
+			Record.fromEntries,
 		);
-
-		const ammoDifference = getCargoPodsResourcesDifference({
-			cargoPodKind: "ammo_bank",
-			after: postCargoPodsInfos?.ammo_bank?.resources ?? Record.empty(),
-			before: Record.union(
-				initialAmmoBankPodInfo?.resources ?? {},
-				ammoBankResourceMissingItems,
-				(a, b) => ({ ...a, ...b }),
-			),
-		});
-
-		const fuelTankResourceMissingItems = pipe(
-			Record.difference(
-				postCargoPodsInfos?.fuel_tank?.resources ?? {},
-				initialFuelTankPodInfo?.resources ?? {},
-			),
-			Record.map((item) => ({
-				...item,
-				amountInCargoUnits: new BN(0),
-				amountInTokens: new BN(0),
-			})),
-		);
-
-		const fuelDifference = getCargoPodsResourcesDifference({
-			cargoPodKind: "fuel_tank",
-			after: postCargoPodsInfos?.fuel_tank?.resources ?? Record.empty(),
-			before: Record.union(
-				initialFuelTankPodInfo?.resources ?? {},
-				fuelTankResourceMissingItems,
-				(a, b) => ({ ...a, ...b }),
-			),
-		});
-
-		const cargoHoldResourceMissingItems = pipe(
-			Record.difference(
-				postCargoPodsInfos?.cargo_hold?.resources ?? {},
-				initialCargoHoldPodInfo?.resources ?? {},
-			),
-			Record.map((item) => ({
-				...item,
-				amountInCargoUnits: new BN(0),
-				amountInTokens: new BN(0),
-			})),
-		);
-
-		const cargoDifference = getCargoPodsResourcesDifference({
-			cargoPodKind: "cargo_hold",
-			after: postCargoPodsInfos?.cargo_hold?.resources ?? Record.empty(),
-			before: Record.union(
-				initialCargoHoldPodInfo?.resources ?? {},
-				cargoHoldResourceMissingItems,
-				(a, b) => ({ ...a, ...b }),
-			),
-		});
 
 		yield* Effect.log("Difference in cargo pods resources").pipe(
 			Effect.annotateLogs({
 				context: JSON.parse(
-					JSON.stringify(
-						{ ammoDifference, fuelDifference, cargoDifference },
-						(_, value) => (value instanceof BN ? value.toString() : value),
+					JSON.stringify(differences, (_, value) =>
+						value instanceof BN ? value.toString() : value,
 					),
 				),
 			}),
 		);
 
 		const missingResources = [
-			...ammoDifference,
-			...fuelDifference,
-			...cargoDifference,
+			...Record.values(differences.ammo_bank),
+			...Record.values(differences.fuel_tank),
+			...Record.values(differences.cargo_hold),
 		].filter(
 			(res) =>
-				res.diffAmountInTokens.isZero() &&
+				res.diffAmountInCargoUnits.isZero() &&
 				loadingResources.includes(res.mint.toString()),
 		);
 
