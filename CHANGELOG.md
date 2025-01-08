@@ -1,5 +1,7 @@
 # Changelog
 
+## [1.14.3](https://github.com/hexon-studio/atom-core/compare/v1.14.2...v1.14.3) (2025-01-08)
+
 ## [1.14.2](https://github.com/hexon-studio/atom-core/compare/v1.14.1...v1.14.2) (2025-01-07)
 
 ## [1.14.1](https://github.com/hexon-studio/atom-core/compare/v1.14.0...v1.14.1) (2025-01-05)
