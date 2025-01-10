@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.15.1](https://github.com/hexon-studio/atom-core/compare/v1.15.0...v1.15.1) (2025-01-10)
+
+
+### Bug Fixes
+
+* loadCargo type error ([140da27](https://github.com/hexon-studio/atom-core/commit/140da27cb92461780a3303642aafa9e1fdb050b4))
+
 # [1.15.0](https://github.com/hexon-studio/atom-core/compare/v1.14.3...v1.15.0) (2025-01-08)
 
 
