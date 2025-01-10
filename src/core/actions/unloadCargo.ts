@@ -192,20 +192,34 @@ export const unloadCargo = ({
 
 		const differences: Record<CargoPodKind, CargoPodsDifference> = pipe(
 			cargoPodKinds,
-			EffectArray.map(
-				(cargoPodKind) =>
-					[
+			EffectArray.map((cargoPodKind) => {
+				const resourceMissingItems = pipe(
+					Record.difference(
+						postCargoPodsInfos?.[cargoPodKind]?.resources ?? {},
+						initialCargoPodsInfos?.[cargoPodKind]?.resources ?? {},
+					),
+					Record.map((item) => ({
+						...item,
+						amountInCargoUnits: new BN(0),
+						amountInTokens: new BN(0),
+					})),
+				);
+
+				return [
+					cargoPodKind,
+					getCargoPodsResourcesDifference({
 						cargoPodKind,
-						getCargoPodsResourcesDifference({
-							cargoPodKind,
-							after:
-								postCargoPodsInfos?.[cargoPodKind]?.resources ?? Record.empty(),
-							before:
-								initialCargoPodsInfos?.[cargoPodKind]?.resources ??
-								Record.empty(),
-						}),
-					] as const,
-			),
+						after: Record.union(
+							postCargoPodsInfos?.[cargoPodKind]?.resources ?? {},
+							resourceMissingItems,
+							(a, b) => ({ ...a, ...b }),
+						),
+						before:
+							initialCargoPodsInfos?.[cargoPodKind]?.resources ??
+							Record.empty(),
+					}),
+				] as const;
+			}),
 			Record.fromEntries,
 		);
 
