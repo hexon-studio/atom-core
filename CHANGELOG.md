@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.15.2](https://github.com/hexon-studio/atom-core/compare/v1.15.1...v1.15.2) (2025-01-10)
+
+
+### Bug Fixes
+
+* improve resource difference calculation in loadCargo and unloadCargo actions ([d646c10](https://github.com/hexon-studio/atom-core/commit/d646c10985190d0507bfef8ff3eb004bc65b9bf2))
+
 ## [1.15.1](https://github.com/hexon-studio/atom-core/compare/v1.15.0...v1.15.1) (2025-01-10)
 
 
