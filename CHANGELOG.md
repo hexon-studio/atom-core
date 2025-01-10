@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.15.3](https://github.com/hexon-studio/atom-core/compare/v1.15.2...v1.15.3) (2025-01-10)
+
+
+### Bug Fixes
+
+* refactor missing resource calculation in loadCargo action to enhance clarity and accuracy ([3a4ac03](https://github.com/hexon-studio/atom-core/commit/3a4ac030d4ae084bcf48987140e1d4f096bebebf))
+
 ## [1.15.2](https://github.com/hexon-studio/atom-core/compare/v1.15.1...v1.15.2) (2025-01-10)
 
 
