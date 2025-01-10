@@ -19,7 +19,11 @@ import {
 	getResourceAccount,
 } from "~/libs/@staratlas/sage";
 import { getCargoTypeResourceMultiplier } from "~/libs/@staratlas/sage/utils/getCargoTypeResourceMultiplier";
-import type { CargoPodKind, LoadResourceInput } from "../../decoders";
+import {
+	type CargoPodKind,
+	type LoadResourceInput,
+	cargoPodKinds,
+} from "../../decoders";
 import {
 	LoadUnloadFailedError,
 	LoadUnloadPartiallyFailedError,
@@ -286,12 +290,12 @@ export const loadCargo = ({
 		// NOTE: Some transactions failed
 		yield* Effect.sleep("10 seconds");
 
-		const cargoPodKinds = [
+		const itemsCargoPodKinds = [
 			...new Set(enhancedItems.map((item) => item.cargoPodKind)),
 		];
 
 		const postCargoPodsInfos = yield* getFleetCargoPodInfosForItems({
-			cargoPodKinds,
+			cargoPodKinds: itemsCargoPodKinds,
 			fleetAccount,
 		}).pipe(Effect.orElseSucceed(constNull));
 
@@ -314,7 +318,7 @@ export const loadCargo = ({
 			Record.fromEntries,
 		);
 
-		for (const kind of cargoPodKinds) {
+		for (const kind of itemsCargoPodKinds) {
 			yield* Effect.log(`Difference in ${kind} resources`).pipe(
 				Effect.annotateLogs({
 					context: JSON.parse(
