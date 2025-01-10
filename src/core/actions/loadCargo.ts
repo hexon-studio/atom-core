@@ -345,28 +345,28 @@ export const loadCargo = ({
 
 		const enhancedItemsIds = enhancedItems.map((item) => item.id);
 
-		const missingResources = EffectArray.filterMap(
-			[
-				...Record.values(differences.ammo_bank),
-				...Record.values(differences.fuel_tank),
-				...Record.values(differences.cargo_hold),
-			],
-			(res) => {
-				const itemId = createItemUuid({
-					cargoPodKind: res.cargoPodKind,
-					resourceMint: res.mint,
+		const missingResources = EffectArray.filterMap(enhancedItems, (item) => {
+			const podDifferences = differences[item.cargoPodKind];
+			const resourceDiff = podDifferences[item.resourceMint.toString()];
+
+			// La risorsa è mancante se:
+			// - Non appare nelle differenze (resourceDiff è undefined)
+			// - O appare ma con differenza zero
+			if (!resourceDiff || resourceDiff.diffAmountInCargoUnits.isZero()) {
+				return Option.some({
+					mint: item.resourceMint,
+					cargoPodKind: item.cargoPodKind,
+					id: item.id,
+					resourceMultiplier: getCargoTypeResourceMultiplier(
+						item.cargoTypeAccount,
+					),
+					diffAmountInCargoUnits: new BN(0),
+					diffAmountInTokens: new BN(0),
 				});
+			}
 
-				if (
-					res.diffAmountInCargoUnits.isZero() &&
-					enhancedItemsIds.includes(itemId)
-				) {
-					return Option.some({ ...res, id: itemId });
-				}
-
-				return Option.none();
-			},
-		);
+			return Option.none();
+		});
 
 		const missingItems = items.filter((item) =>
 			missingResources.some((res) => res.id === item.id),
