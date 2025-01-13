@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.15.5](https://github.com/hexon-studio/atom-core/compare/v1.15.4...v1.15.5) (2025-01-13)
+
+
+### Reverts
+
+* Revert "fix: simplify loadCargo action by removing unnecessary error handling and logging" ([18fd0f6](https://github.com/hexon-studio/atom-core/commit/18fd0f6d8a7ac85a09fab9f5c3aa689ce5c96a3b))
+
 ## [1.15.4](https://github.com/hexon-studio/atom-core/compare/v1.15.3...v1.15.4) (2025-01-13)
 
 
