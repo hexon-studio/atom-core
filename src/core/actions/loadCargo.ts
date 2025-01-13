@@ -178,7 +178,17 @@ export const loadCargo = ({
 				totalResourcesAmountInCargoUnits,
 				starbasePlayerCargoPodsPubkey:
 					starbaseInfo.starbasePlayerCargoPodsAccountPubkey,
-			});
+			}).pipe(
+				Effect.catchTag("FleetNotEnoughSpaceError", () => Effect.succeed(null)),
+			);
+
+			if (!enhancedItem) {
+				yield* Effect.log(
+					`Not enough space to load ${item.resourceMint.toString()} in ${item.cargoPodKind}, reachedCapacity (${totalResourcesAmountInCargoUnits.toString()}) >= maxCapacity (${cargoPodInfo.maxCapacityInCargoUnits.toString()})`,
+				);
+
+				continue;
+			}
 
 			if (enhancedItem.computedAmountInCargoUnits.lten(0)) {
 				yield* Effect.log(
@@ -330,33 +340,25 @@ export const loadCargo = ({
 			);
 		}
 
-		const enhancedItemsIds = enhancedItems.map((item) => item.id);
+		const missingItems = EffectArray.filterMap(
+			enhancedItems,
+			(enhancedItem) => {
+				const podDifferences = differences[enhancedItem.cargoPodKind];
+				const resourceDiff =
+					podDifferences[enhancedItem.resourceMint.toString()];
 
-		const missingResources = EffectArray.filterMap(enhancedItems, (item) => {
-			const podDifferences = differences[item.cargoPodKind];
-			const resourceDiff = podDifferences[item.resourceMint.toString()];
+				// The resource is missing if:
+				// - It does not appear in the differences (resourceDiff is undefined)
+				// - Or it appears but with zero difference
+				if (!resourceDiff || resourceDiff.diffAmountInCargoUnits.isZero()) {
+					return EffectArray.findFirst(
+						items,
+						(item) => item.id === enhancedItem.id,
+					);
+				}
 
-			// La risorsa è mancante se:
-			// - Non appare nelle differenze (resourceDiff è undefined)
-			// - O appare ma con differenza zero
-			if (!resourceDiff || resourceDiff.diffAmountInCargoUnits.isZero()) {
-				return Option.some({
-					mint: item.resourceMint,
-					cargoPodKind: item.cargoPodKind,
-					id: item.id,
-					resourceMultiplier: getCargoTypeResourceMultiplier(
-						item.cargoTypeAccount,
-					),
-					diffAmountInCargoUnits: new BN(0),
-					diffAmountInTokens: new BN(0),
-				});
-			}
-
-			return Option.none();
-		});
-
-		const missingItems = items.filter((item) =>
-			missingResources.some((res) => res.id === item.id),
+				return Option.none();
+			},
 		);
 
 		return yield* Effect.fail(
