@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.15.4](https://github.com/hexon-studio/atom-core/compare/v1.15.3...v1.15.4) (2025-01-13)
+
+
+### Bug Fixes
+
+* simplify loadCargo action by removing unnecessary error handling and logging ([d500d69](https://github.com/hexon-studio/atom-core/commit/d500d69e1d38bd93226aae327661a4554f202b58))
+
 ## [1.15.3](https://github.com/hexon-studio/atom-core/compare/v1.15.2...v1.15.3) (2025-01-10)
 
 
