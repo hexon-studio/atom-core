@@ -178,20 +178,7 @@ export const loadCargo = ({
 				totalResourcesAmountInCargoUnits,
 				starbasePlayerCargoPodsPubkey:
 					starbaseInfo.starbasePlayerCargoPodsAccountPubkey,
-			}).pipe(
-				Effect.catchTags({
-					FleetNotEnoughSpaceError: () => Effect.succeed(null),
-					ResourceNotEnoughError: () => Effect.succeed(null),
-				}),
-			);
-
-			if (!enhancedItem) {
-				yield* Effect.log(
-					`Not enough space to load ${item.resourceMint.toString()} in ${item.cargoPodKind}, reachedCapacity (${totalResourcesAmountInCargoUnits.toString()}) >= maxCapacity (${cargoPodInfo.maxCapacityInCargoUnits.toString()})`,
-				);
-
-				continue;
-			}
+			});
 
 			if (enhancedItem.computedAmountInCargoUnits.lten(0)) {
 				yield* Effect.log(
