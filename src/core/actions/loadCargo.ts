@@ -307,10 +307,10 @@ export const loadCargo = ({
 			ixs.map((ix) =>
 				GameService.buildAndSignTransactionWithAtlasPrime({
 					ixs: [ix],
-					afterIxs: drainVaultIx,
+					afterIxs: [drainVaultIx],
 				}),
 			),
-		);
+		).pipe(Effect.map(EffectArray.flatten));
 
 		const maybeTxIds = yield* Effect.all(
 			txs.map((tx) => GameService.sendTransaction(tx).pipe(Effect.either)),
