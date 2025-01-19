@@ -76,7 +76,7 @@ export const subwarpToSector = ({
 
 		const drainVaultIx = yield* createDrainVaultIx();
 
-		const txs = yield* GameService.buildAndSignTransactionWithAtlasPrime({
+		const txs = yield* GameService.buildAndSignTransaction({
 			ixs,
 			afterIxs: drainVaultIx,
 		});

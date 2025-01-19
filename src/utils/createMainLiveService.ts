@@ -1,5 +1,5 @@
 import { Layer } from "effect";
-import { GameServiceLive } from "../core/services/GameService";
+import { createGameServiceLive } from "../core/services/GameService";
 import { createLoggerServiceLive } from "../core/services/LoggerService";
 import { createSolanaServiceLive } from "../core/services/SolanaService";
 import { createWebhookServiceLive } from "../core/services/WebhookService";
@@ -13,6 +13,8 @@ export const createMainLiveService = (opts: GlobalOptionsWithWebhook) => {
 		: Layer.empty;
 
 	const LoggerServiceLive = createLoggerServiceLive(opts);
+
+	const GameServiceLive = createGameServiceLive(opts.atlasPrime);
 
 	return Layer.mergeAll(
 		SolanaServiceLive,

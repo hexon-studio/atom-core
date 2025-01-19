@@ -16,12 +16,14 @@ export class AtlasNotEnoughError extends Data.TaggedError(
 ) {}
 
 export const initGame = ({
+	atlasPrime,
 	owner,
 	playerProfile: playerProfileAddress,
 	signerAddress,
 	contextRef,
 	feeUrl,
 }: {
+	atlasPrime: boolean;
 	owner: PublicKey;
 	playerProfile: PublicKey;
 	signerAddress: PublicKey;
@@ -62,6 +64,7 @@ export const initGame = ({
 
 		return yield* Ref.update(contextRef, () =>
 			Option.some({
+				atlasPrime,
 				gameInfo,
 				playerProfile,
 				keyIndexes: {

@@ -11,7 +11,7 @@ import {
 import { getFleetAccountByNameOrAddress } from "~/libs/@staratlas/sage";
 import { GameService } from "../core/services/GameService";
 import type { GlobalOptionsWithWebhook } from "../types";
-import { createMainLiveService } from "../utils/createLiveService";
+import { createMainLiveService } from "../utils/createMainLiveService";
 
 type Param = {
 	fleetNameOrAddress: string | PublicKey;
@@ -31,6 +31,7 @@ export const runFleetInfo = async ({
 	const program = GameService.pipe(
 		Effect.tap((service) =>
 			service.initGame({
+				atlasPrime: globalOpts.atlasPrime,
 				owner,
 				playerProfile,
 				signerAddress: keypair.publicKey,

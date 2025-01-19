@@ -15,6 +15,7 @@ export type GlobalOptionsWithWebhook = Omit<
 export type FeeMode = "low" | "medium" | "high";
 
 export type RequiredOptions = {
+	atlasPrime: boolean;
 	logDisabled?: boolean;
 	feeMode: FeeMode;
 	keypair: Keypair;

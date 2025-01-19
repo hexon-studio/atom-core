@@ -1,21 +1,14 @@
-import { getAssociatedTokenAddressSync } from "@solana/spl-token";
 import { PublicKey } from "@solana/web3.js";
-import { AtlasPrimeTransactionBuilder } from "@staratlas/atlas-prime";
-import type {
-	AfterIx,
-	InstructionReturn,
-	TransactionReturn,
+import {
+	type AfterIx,
+	type InstructionReturn,
+	TransactionBuilder,
+	type TransactionReturn,
 } from "@staratlas/data-source";
-import { ProfileVault } from "@staratlas/profile-vault";
 import { type Cause, Effect, Array as EffectArray, Option } from "effect";
 import type { Result } from "neverthrow";
-import { tokenMints } from "~/constants/tokens";
-import { getSagePrograms } from "~/core/programs";
 import { GameService } from "~/core/services/GameService";
-import {
-	type GameNotInitializedError,
-	getGameContext,
-} from "~/core/services/GameService/utils";
+import type { GameNotInitializedError } from "~/core/services/GameService/utils";
 import {
 	type CreateKeypairError,
 	type CreateProviderError,
@@ -28,7 +21,7 @@ import {
 	BuildOptimalTxError,
 } from "../buildAndSignTransaction";
 
-export const buildAndSignTransactionWithAtlasPrime = ({
+export const buildAndSignTransactionWithSol = ({
 	ixs,
 	afterIxs: afterIxsParam = [],
 }: {
@@ -46,28 +39,18 @@ export const buildAndSignTransactionWithAtlasPrime = ({
 	SolanaService | GameService
 > =>
 	Effect.all([
-		getSagePrograms(),
-		getGameContext(),
 		SolanaService.helius,
 		SolanaService.anchorProvider,
 		GameService.signer,
 	]).pipe(
 		Effect.tap(() => Effect.log("Building ixs")),
-		Effect.flatMap(([programs, context, helius, provider, signer]) =>
+		Effect.flatMap(([helius, provider, feePayer]) =>
 			Effect.tryPromise({
 				try: async () => {
-					const [vaultAuthority] = ProfileVault.findVaultSigner(
-						programs.profileVaultProgram,
-						context.playerProfile.key,
-						context.owner,
-					);
-
 					const lookupTable = await provider.connection.getAddressLookupTable(
 						// TODO: remove hardcode
 						new PublicKey("5NrYTRkLRsSSJGgfX2vNRbSXiEFi9yUHV5n7bs7VM9P2"),
 					);
-
-					let heliusFee: number;
 
 					const afterIxs: AfterIx[] = afterIxsParam.map((ix) => ({
 						ix,
@@ -75,10 +58,12 @@ export const buildAndSignTransactionWithAtlasPrime = ({
 						maxTraceCount: 2,
 					}));
 
-					const builder = await AtlasPrimeTransactionBuilder.new({
-						afpUrl: "https://prime.staratlas.com/",
+					let heliusFee: number;
+
+					const builder = new TransactionBuilder({
 						connection: provider.connection,
 						commitment: "confirmed",
+						feePayer,
 						lookupTables: lookupTable.value ? [lookupTable.value] : undefined,
 						afterIxs,
 						getFee: helius.pipe(
@@ -87,9 +72,9 @@ export const buildAndSignTransactionWithAtlasPrime = ({
 									async (writableAccounts: PublicKey[]) => {
 										if (!heliusFee) {
 											heliusFee = await getHeliusEstimatedTransactionFee({
+												feeMode,
 												heliusRpcUrl,
 												writableAccounts,
-												feeMode,
 											});
 										}
 
@@ -98,23 +83,6 @@ export const buildAndSignTransactionWithAtlasPrime = ({
 							),
 							Option.getOrUndefined,
 						),
-						postArgs: {
-							vault: {
-								funderVaultAuthority: vaultAuthority,
-								funderVault: getAssociatedTokenAddressSync(
-									tokenMints.atlas,
-									vaultAuthority,
-									true,
-								),
-								keyInput: {
-									key: signer,
-									profile: context.playerProfile,
-									playerProfileProgram: programs.playerProfile,
-								},
-								vaultProgram: programs.profileVaultProgram,
-							},
-						},
-						program: programs.atlasPrime,
 					});
 
 					builder.add(ixs);
@@ -142,5 +110,5 @@ export const buildAndSignTransactionWithAtlasPrime = ({
 		),
 	);
 
-export type BuildAndSignTransactionWithAtlasPrime =
-	typeof buildAndSignTransactionWithAtlasPrime;
+export type BuildAndSignTransactionWithSol =
+	typeof buildAndSignTransactionWithSol;

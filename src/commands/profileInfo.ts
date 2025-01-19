@@ -10,7 +10,7 @@ import {
 import { GameService } from "../core/services/GameService";
 import { getGameContext } from "../core/services/GameService/utils";
 import type { GlobalOptionsWithWebhook } from "../types";
-import { createMainLiveService } from "../utils/createLiveService";
+import { createMainLiveService } from "../utils/createMainLiveService";
 
 export const runProfileInfo = async (globalOpts: GlobalOptionsWithWebhook) => {
 	const { keypair, owner, playerProfile, feeUrl } = globalOpts;
@@ -22,6 +22,7 @@ export const runProfileInfo = async (globalOpts: GlobalOptionsWithWebhook) => {
 	const program = GameService.pipe(
 		Effect.tap((service) =>
 			service.initGame({
+				atlasPrime: globalOpts.atlasPrime,
 				owner,
 				playerProfile,
 				signerAddress: keypair.publicKey,

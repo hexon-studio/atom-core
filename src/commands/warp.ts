@@ -11,7 +11,7 @@ import {
 import { warpToSector } from "../core/actions/warpToSector";
 import { GameService } from "../core/services/GameService";
 import type { GlobalOptionsWithWebhook } from "../types";
-import { createMainLiveService } from "../utils/createLiveService";
+import { createMainLiveService } from "../utils/createMainLiveService";
 import { runBaseCommand } from "./baseCommand";
 
 type Param = {
@@ -34,6 +34,7 @@ export const runWarp = async ({
 	const program = GameService.pipe(
 		Effect.tap((service) =>
 			service.initGame({
+				atlasPrime: globalOpts.atlasPrime,
 				owner,
 				playerProfile,
 				signerAddress: keypair.publicKey,

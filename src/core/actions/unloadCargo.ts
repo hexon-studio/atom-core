@@ -89,7 +89,7 @@ export const unloadCargo = ({
 							Effect.bind("drainVaultIx", () => createDrainVaultIx()),
 							// Sending the transactions before doing the next step
 							Effect.flatMap(({ stopMiningIx, dockIx, drainVaultIx }) =>
-								GameService.buildAndSignTransactionWithAtlasPrime({
+								GameService.buildAndSignTransaction({
 									ixs: [...stopMiningIx, ...dockIx],
 									afterIxs: drainVaultIx,
 								}),
@@ -157,7 +157,7 @@ export const unloadCargo = ({
 
 		const drainVaultIx = yield* createDrainVaultIx();
 
-		const txs = yield* GameService.buildAndSignTransactionWithAtlasPrime({
+		const txs = yield* GameService.buildAndSignTransaction({
 			ixs,
 			afterIxs: drainVaultIx,
 		});
