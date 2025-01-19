@@ -28,6 +28,7 @@ vi.mock("../../../utils/accounts");
 
 const gameContextRef = Ref.unsafeMake(
 	Option.some<GameContext>({
+		atlasPrime: false,
 		gameInfo: {} as GameInfo,
 		fees: {} as Fees,
 		owner: noopPublicKey,
@@ -61,9 +62,6 @@ const MockedGameService = Layer.effect(
 			findGame,
 			signer: SolanaService.signer.pipe(Effect.map(keypairToAsyncSigner)),
 			buildAndSignTransaction: constant(Effect.succeed(unsafeCoerce([]))),
-			buildAndSignTransactionWithAtlasPrime: constant(
-				Effect.succeed(unsafeCoerce([])),
-			),
 			getParsedTokenAccountsByOwner: constant(Effect.succeed(unsafeCoerce([]))),
 			createAssociatedTokenAccountIdempotent: constant(
 				Effect.succeed(unsafeCoerce({})),

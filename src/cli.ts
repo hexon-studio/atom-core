@@ -44,6 +44,7 @@ const main = async () => {
 	const program = commander
 		.name("atom")
 		.version(packageJsonVersion)
+		.option("--no-atlas-prime", "Disable the use of Atlas Prime")
 		.addOption(
 			new Option(
 				"-o, --owner <publickKey>",

@@ -11,12 +11,8 @@ import type { Fees } from "./methods/initGame/fetchFees";
 import type { GameInfo } from "./methods/initGame/fetchGameInfo";
 import {
 	type BuildAndSignTransaction,
-	buildAndSignTransaction,
+	createBuildAndSignTransaction,
 } from "./utils/buildAndSignTransaction";
-import {
-	type BuildAndSignTransactionWithAtlasPrime,
-	buildAndSignTransactionWithAtlasPrime,
-} from "./utils/buildAndSignTransactionWithAtlasPrime";
 import {
 	type CreateAssociatedTokenAccountIdempotent,
 	createAssociatedTokenAccountIdempotent,
@@ -28,6 +24,7 @@ import {
 import { type SendTransaction, sendTransaction } from "./utils/sendTransaction";
 
 export interface GameContext {
+	atlasPrime: boolean;
 	gameInfo: GameInfo;
 	owner: PublicKey;
 	playerProfile: PlayerProfile;
@@ -57,30 +54,29 @@ export class GameService extends Effect.Tag("app/GameService")<
 		getParsedTokenAccountsByOwner: GetParsedTokenAccountsByOwner;
 		createAssociatedTokenAccountIdempotent: CreateAssociatedTokenAccountIdempotent;
 		buildAndSignTransaction: BuildAndSignTransaction;
-		buildAndSignTransactionWithAtlasPrime: BuildAndSignTransactionWithAtlasPrime;
 		sendTransaction: SendTransaction;
 	}
 >() {}
 
 const gameContextRef = Ref.unsafeMake(Option.none<GameContext>());
 
-export const GameServiceLive = Layer.effect(
-	GameService,
-	Effect.map(SolanaService, () =>
-		GameService.of({
-			gameContext: gameContextRef,
-			initGame,
-			findFleets,
-			findPlanets: findAllPlanets,
-			findGame,
-			signer: SolanaService.pipe(
-				Effect.map((service) => keypairToAsyncSigner(service.signer)),
-			),
-			buildAndSignTransaction,
-			buildAndSignTransactionWithAtlasPrime,
-			getParsedTokenAccountsByOwner,
-			createAssociatedTokenAccountIdempotent,
-			sendTransaction,
-		}),
-	),
-);
+export const createGameServiceLive = (withAtlasPrime: boolean) =>
+	Layer.effect(
+		GameService,
+		Effect.map(SolanaService, () =>
+			GameService.of({
+				gameContext: gameContextRef,
+				initGame,
+				findFleets,
+				findPlanets: findAllPlanets,
+				findGame,
+				signer: SolanaService.pipe(
+					Effect.map((service) => keypairToAsyncSigner(service.signer)),
+				),
+				buildAndSignTransaction: createBuildAndSignTransaction(withAtlasPrime),
+				getParsedTokenAccountsByOwner,
+				createAssociatedTokenAccountIdempotent,
+				sendTransaction,
+			}),
+		),
+	);

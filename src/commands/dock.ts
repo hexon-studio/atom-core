@@ -11,7 +11,7 @@ import {
 import { dockToStarbase } from "../core/actions/dockToStarbase";
 import { GameService } from "../core/services/GameService";
 import type { GlobalOptionsWithWebhook } from "../types";
-import { createMainLiveService } from "../utils/createLiveService";
+import { createMainLiveService } from "../utils/createMainLiveService";
 import { runBaseCommand } from "./baseCommand";
 
 type Param = {
@@ -29,6 +29,7 @@ export const runDock = async ({ fleetNameOrAddress, globalOpts }: Param) => {
 	const program = GameService.pipe(
 		Effect.tap((service) =>
 			service.initGame({
+				atlasPrime: globalOpts.atlasPrime,
 				contextRef: service.gameContext,
 				feeUrl,
 				owner,

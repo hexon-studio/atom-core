@@ -12,12 +12,15 @@ import { warpToSector } from "./core/actions/warpToSector";
 import { GameService } from "./core/services/GameService";
 import { getFleetAccountByNameOrAddress } from "./libs/@staratlas/sage";
 import type { RequiredOptions } from "./types";
-import { createMainLiveService } from "./utils/createLiveService";
+import { createMainLiveService } from "./utils/createMainLiveService";
 
 export const createAtomApi = (
 	options: Omit<RequiredOptions, "logDisabled">,
 ) => {
-	const appLayer = createMainLiveService({ ...options, logDisabled: true });
+	const appLayer = createMainLiveService({
+		...options,
+		logDisabled: true,
+	});
 
 	const runtime = ManagedRuntime.make(appLayer);
 
@@ -28,6 +31,7 @@ export const createAtomApi = (
 			GameService.pipe(
 				Effect.flatMap((service) =>
 					service.initGame({
+						atlasPrime: options.atlasPrime,
 						contextRef: service.gameContext,
 						owner,
 						playerProfile,

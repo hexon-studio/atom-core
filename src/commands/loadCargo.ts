@@ -13,7 +13,7 @@ import { loadCargo } from "../core/actions/loadCargo";
 import { GameService } from "../core/services/GameService";
 import type { LoadResourceInput } from "../decoders";
 import type { GlobalOptionsWithWebhook } from "../types";
-import { createMainLiveService } from "../utils/createLiveService";
+import { createMainLiveService } from "../utils/createMainLiveService";
 import { runBaseCommand } from "./baseCommand";
 
 type Param = {
@@ -36,6 +36,7 @@ export const runLoadCargo = async ({
 	const program = GameService.pipe(
 		Effect.tap((service) =>
 			service.initGame({
+				atlasPrime: globalOpts.atlasPrime,
 				owner,
 				playerProfile,
 				signerAddress: keypair.publicKey,

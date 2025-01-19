@@ -1,42 +1,32 @@
-import {
-	type InstructionReturn,
-	type TransactionReturn,
-	buildAndSignTransaction as sageBuildAndSignTransaction,
-} from "@staratlas/data-source";
-import { Data, Effect } from "effect";
-import { GameService } from "../..";
-import {
-	type CreateKeypairError,
-	type CreateProviderError,
-	SolanaService,
-} from "../../../SolanaService";
+import { Data } from "effect";
+import { buildAndSignTransactionWithAtlasPrime } from "../buildAndSignTransactionWithAtlasPrime";
+import { buildAndSignTransactionWithSol } from "../buildAndSignTransactionWithSol";
 
 export class BuildAndSignTransactionError extends Data.TaggedError(
 	"BuildAndSignTransactionError",
-)<{ error: unknown }> {}
+)<{ error: unknown }> {
+	override get message() {
+		return String(this.error);
+	}
+}
 
-export const buildAndSignTransaction = (
-	instructions: Array<InstructionReturn>,
-): Effect.Effect<
-	TransactionReturn,
-	BuildAndSignTransactionError | CreateKeypairError | CreateProviderError,
-	SolanaService | GameService
-> =>
-	Effect.all([SolanaService, GameService]).pipe(
-		Effect.flatMap(([solanaService, gameService]) =>
-			Effect.all([solanaService.anchorProvider, gameService.signer]),
-		),
-		Effect.flatMap(([provider, signer]) =>
-			Effect.tryPromise({
-				try: () =>
-					sageBuildAndSignTransaction(instructions, signer, {
-						connection: provider.connection,
-					}),
-				catch: (error) => {
-					return new BuildAndSignTransactionError({ error });
-				},
-			}),
-		),
-	);
+export class BuildOptimalTxError extends Data.TaggedError(
+	"BuildOptimalTxError",
+)<{
+	error: unknown;
+}> {
+	override get message() {
+		return this.error instanceof Error
+			? this.error.message
+			: String(this.error);
+	}
+}
 
-export type BuildAndSignTransaction = typeof buildAndSignTransaction;
+export const createBuildAndSignTransaction = (withAtlasPrime: boolean) =>
+	withAtlasPrime
+		? buildAndSignTransactionWithAtlasPrime
+		: buildAndSignTransactionWithSol;
+
+export type BuildAndSignTransaction = ReturnType<
+	typeof createBuildAndSignTransaction
+>;
