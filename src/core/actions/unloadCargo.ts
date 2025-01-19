@@ -89,26 +89,17 @@ export const unloadCargo = ({
 							Effect.bind("drainVaultIx", () => createDrainVaultIx()),
 							// Sending the transactions before doing the next step
 							Effect.flatMap(({ stopMiningIx, dockIx, drainVaultIx }) =>
-								Effect.all([
-									GameService.buildAndSignTransactionWithAtlasPrime({
-										ixs: [stopMiningIx],
-										afterIxs: [drainVaultIx],
-									}),
-									GameService.buildAndSignTransactionWithAtlasPrime({
-										ixs: [dockIx],
-										afterIxs: [drainVaultIx],
-									}),
-								]),
+								GameService.buildAndSignTransactionWithAtlasPrime({
+									ixs: [...stopMiningIx, ...dockIx],
+									afterIxs: drainVaultIx,
+								}),
 							),
-							Effect.flatMap(([stopMiningTx, dockTx]) =>
-								Effect.all([
-									GameService.sendTransaction(stopMiningTx),
-									GameService.sendTransaction(dockTx),
-								]),
+							Effect.flatMap((txs) =>
+								Effect.all(txs.map((tx) => GameService.sendTransaction(tx))),
 							),
-							Effect.tap(([stopMiningTx, dockTx]) =>
+							Effect.tap((txs) =>
 								Effect.log("Fleet stopped mining and docked to starbase.").pipe(
-									Effect.annotateLogs({ stopMiningTx, dockTx }),
+									Effect.annotateLogs({ txs }),
 								),
 							),
 							Effect.flatMap((signatures) =>

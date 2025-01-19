@@ -309,16 +309,13 @@ export const loadCargo = ({
 			ixs.map((ix) =>
 				GameService.buildAndSignTransactionWithAtlasPrime({
 					ixs: [ix],
-					afterIxs: [drainVaultIx],
+					afterIxs: drainVaultIx,
 				}),
 			),
 		);
 
-		// ...existing code...
-
 		const maybeTxIds = yield* Effect.all(
-			txs.map((tx) => GameService.sendTransaction(tx).pipe(Effect.either)),
-			{ concurrency: 5 },
+			txs.map((tx) => GameService.sendTransaction(tx)),
 		);
 
 		const [errors, signatures] = EffectArray.partitionMap(maybeTxIds, identity);
