@@ -1,5 +1,12 @@
 # Changelog
 
+# [1.16.0](https://github.com/hexon-studio/atom-core/compare/v1.15.5...v1.16.0) (2025-01-19)
+
+
+### Features
+
+* add no-atlas-prime option ([59eb7ff](https://github.com/hexon-studio/atom-core/commit/59eb7ff16bd24dbf27f60f8bdc0af9076296f5f4))
+
 ## [1.15.5](https://github.com/hexon-studio/atom-core/compare/v1.15.4...v1.15.5) (2025-01-13)
 
 
