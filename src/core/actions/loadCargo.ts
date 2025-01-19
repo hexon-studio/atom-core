@@ -312,7 +312,7 @@ export const loadCargo = ({
 					afterIxs: [drainVaultIx],
 				}),
 			),
-		).pipe(Effect.map(EffectArray.flatten));
+		);
 
 		// ...existing code...
 
