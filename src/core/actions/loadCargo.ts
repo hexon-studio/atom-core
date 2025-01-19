@@ -89,7 +89,48 @@ export const loadCargo = ({
 				Match.when(
 					{ MineAsteroid: Match.defined },
 					({ MineAsteroid: { resource } }) =>
-						Effect.Do.pipe(
+						Effect.Do.pipe(						// ...existing code...
+						Effect.bind("stopMiningIx", () =>
+							pipe(
+								getResourceAccount(resource),
+								Effect.flatMap((resource) =>
+									getMineItemAccount(resource.data.mineItem),
+								),
+								Effect.flatMap((mineItem) =>
+									createStopMiningIx({
+										resourceMint: mineItem.data.mint,
+										fleetAccount,
+									}),
+								),
+							),
+						),
+						Effect.bind("dockIx", () => createDockToStarbaseIx(fleetAccount)),
+						Effect.bind("drainVaultIx", () => createDrainVaultIx()),
+						// Sending the transactions before doing the next step
+						Effect.flatMap(({ stopMiningIx, dockIx, drainVaultIx }) =>
+							Effect.all([
+								GameService.buildAndSignTransactionWithAtlasPrime({
+									ixs: stopMiningIx,
+									afterIxs: drainVaultIx,
+								}),
+								GameService.buildAndSignTransactionWithAtlasPrime({
+									ixs: dockIx,
+									afterIxs: drainVaultIx,
+								}),
+							]),
+						),
+						Effect.flatMap(([stopMiningTxs, dockTxs]) =>
+							Effect.all([
+								...stopMiningTxs.map((tx) => GameService.sendTransaction(tx)),
+								...dockTxs.map((tx) => GameService.sendTransaction(tx)),
+							]),
+						),
+						Effect.tap(([stopMiningTxs, dockTxs]) =>
+							Effect.log("Fleet stopped mining and docked to starbase.").pipe(
+								Effect.annotateLogs({ stopMiningTxs, dockTxs }),
+							),
+						),
+						// ...existing code...
 							Effect.bind("stopMiningIx", () =>
 								pipe(
 									getResourceAccount(resource),
@@ -262,10 +303,14 @@ export const loadCargo = ({
 
 		const drainVaultIx = yield* createDrainVaultIx();
 
-		const txs = yield* GameService.buildAndSignTransactionWithAtlasPrime({
-			ixs,
-			afterIxs: drainVaultIx,
-		});
+		const txs = yield* Effect.all(
+			ixs.map((ix) =>
+				GameService.buildAndSignTransactionWithAtlasPrime({
+					ixs: [ix],
+					afterIxs: drainVaultIx,
+				}),
+			),
+		);
 
 		const maybeTxIds = yield* Effect.all(
 			txs.map((tx) => GameService.sendTransaction(tx).pipe(Effect.either)),
