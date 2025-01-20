@@ -1,5 +1,12 @@
 # Changelog
 
+# [1.17.0](https://github.com/hexon-studio/atom-core/compare/v1.16.0...v1.17.0) (2025-01-20)
+
+
+### Features
+
+* add sol fee ([6968454](https://github.com/hexon-studio/atom-core/commit/69684549c01fa3697067183d86a5a0513998cf99))
+
 # [1.16.0](https://github.com/hexon-studio/atom-core/compare/v1.15.5...v1.16.0) (2025-01-19)
 
 
