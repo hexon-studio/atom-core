@@ -1,9 +1,11 @@
-import type { TransactionError } from "@solana/web3.js";
+import type {
+	Connection,
+	TransactionError,
+	VersionedTransaction,
+} from "@solana/web3.js";
 import {
-	type AnyTransaction,
 	type SendTransactionOptions,
 	type TransactionReturn,
-	type TransactionSender,
 	isVersionedTransaction,
 	verifySignatures,
 } from "@staratlas/data-source";
@@ -54,8 +56,8 @@ export class TransactionFailedError extends Data.TaggedError(
 }
 
 export const customSageSendTransaction = (
-	transaction: TransactionReturn<AnyTransaction>,
-	connection: TransactionSender,
+	transaction: TransactionReturn<VersionedTransaction>,
+	connection: Connection,
 	options?: SendTransactionOptions,
 ) =>
 	Effect.gen(function* () {
@@ -69,6 +71,12 @@ export const customSageSendTransaction = (
 		}
 
 		const commitment = options?.commitment || "confirmed";
+
+		// const sim = yield* Effect.tryPromise(() =>
+		// 	connection.simulateTransaction(transaction.transaction),
+		// );
+
+		// console.log("Simulated transaction", sim.value);
 
 		const signature = yield* Effect.log("Sending transaction").pipe(
 			Effect.flatMap(() =>

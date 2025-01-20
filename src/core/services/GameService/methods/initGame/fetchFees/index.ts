@@ -23,6 +23,7 @@ const decoder = z.object({
 			.transform((value) => new PublicKey(value))
 			.nullable(),
 		defaultFee: z.number(),
+		defaultFeeSol: z.number(),
 		mintFees: z.array(mintFeeSchema),
 	}),
 });
