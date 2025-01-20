@@ -1,6 +1,6 @@
 import { Data } from "effect";
-import { buildAndSignTransactionWithAtlasPrime } from "../buildAndSignTransactionWithAtlasPrime";
-import { buildAndSignTransactionWithSol } from "../buildAndSignTransactionWithSol";
+import { buildAndSignTransactionWithAtlasPrime } from "./buildAndSignTransactionWithAtlasPrime";
+import { buildAndSignTransactionWithSol } from "./buildAndSignTransactionWithSol";
 
 export class BuildAndSignTransactionError extends Data.TaggedError(
 	"BuildAndSignTransactionError",

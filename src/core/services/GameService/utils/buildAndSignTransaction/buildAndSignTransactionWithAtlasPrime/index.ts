@@ -21,12 +21,12 @@ import {
 	type CreateProviderError,
 	SolanaService,
 } from "~/core/services/SolanaService";
+import { getHeliusEstimatedTransactionFee } from "~/core/utils/getHeliusEstimatedTransactionFee";
 import type { ReadFromRPCError } from "~/libs/@staratlas/data-source";
-import { getHeliusEstimatedTransactionFee } from "../../../../utils/getHeliusEstimatedTransactionFee";
 import {
 	BuildAndSignTransactionError,
 	BuildOptimalTxError,
-} from "../buildAndSignTransaction";
+} from "../../buildAndSignTransaction";
 
 export const buildAndSignTransactionWithAtlasPrime = ({
 	ixs,
@@ -52,7 +52,7 @@ export const buildAndSignTransactionWithAtlasPrime = ({
 		SolanaService.anchorProvider,
 		GameService.signer,
 	]).pipe(
-		Effect.tap(() => Effect.log("Building ixs")),
+		Effect.tap(() => Effect.log("Building ixs with atlas prime")),
 		Effect.flatMap(([programs, context, helius, provider, signer]) =>
 			Effect.tryPromise({
 				try: async () => {

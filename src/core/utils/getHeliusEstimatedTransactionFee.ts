@@ -43,6 +43,8 @@ export const getHeliusEstimatedTransactionFee = async ({
 				}>,
 		);
 
+		console.log("Helius estimated fees", response.result.priorityFeeEstimate);
+
 		return response.result.priorityFeeEstimate;
 	} catch (e) {
 		console.log("Error getting helius estimated fees, using exact fee", e);

@@ -1,4 +1,6 @@
 import { getAssociatedTokenAddressSync } from "@solana/spl-token";
+import { LAMPORTS_PER_SOL, SystemProgram } from "@solana/web3.js";
+import type { InstructionReturn } from "@staratlas/data-source";
 import { ProfileVault } from "@staratlas/profile-vault";
 import { BN } from "bn.js";
 import { Effect } from "effect";
@@ -17,6 +19,23 @@ export const createDrainVaultIx = () =>
 
 		if (!context.fees?.feeAddress) {
 			return [];
+		}
+
+		const signer = yield* GameService.signer;
+
+		if (!context.atlasPrime) {
+			return [
+				async () => ({
+					signers: [signer],
+					instruction: SystemProgram.transfer({
+						fromPubkey: signer.publicKey(),
+						// biome-ignore lint/style/noNonNullAssertion: <explanation>
+						toPubkey: context.fees!.feeAddress!,
+						// biome-ignore lint/style/noNonNullAssertion: <explanation>
+						lamports: context.fees!.defaultFeeSol * LAMPORTS_PER_SOL,
+					}),
+				}),
+			] satisfies InstructionReturn[];
 		}
 
 		const maybeFee = context.fees.defaultFee * ATLAS_DECIMALS;
@@ -43,10 +62,6 @@ export const createDrainVaultIx = () =>
 			tokenMints.atlas,
 			context.fees.feeAddress,
 			true,
-		);
-
-		const signer = yield* GameService.pipe(
-			Effect.flatMap((service) => service.signer),
 		);
 
 		return [

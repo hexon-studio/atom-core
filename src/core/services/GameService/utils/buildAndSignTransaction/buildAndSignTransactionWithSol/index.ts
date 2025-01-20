@@ -14,12 +14,12 @@ import {
 	type CreateProviderError,
 	SolanaService,
 } from "~/core/services/SolanaService";
+import { getHeliusEstimatedTransactionFee } from "~/core/utils/getHeliusEstimatedTransactionFee";
 import type { ReadFromRPCError } from "~/libs/@staratlas/data-source";
-import { getHeliusEstimatedTransactionFee } from "../../../../utils/getHeliusEstimatedTransactionFee";
 import {
 	BuildAndSignTransactionError,
 	BuildOptimalTxError,
-} from "../buildAndSignTransaction";
+} from "../../buildAndSignTransaction";
 
 export const buildAndSignTransactionWithSol = ({
 	ixs,
