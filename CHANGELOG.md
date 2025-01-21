@@ -1,5 +1,18 @@
 # Changelog
 
+# [1.19.0](https://github.com/hexon-studio/atom-core/compare/v1.18.0...v1.19.0) (2025-01-21)
+
+
+### Bug Fixes
+
+* small improvements ([fba938e](https://github.com/hexon-studio/atom-core/commit/fba938ee9436337cfe7cb84ec56ee37b86fd8164))
+* update minimum SOL quantity constant ([1e515f8](https://github.com/hexon-studio/atom-core/commit/1e515f8bd6646782c2ae4a934767d8eceaa5f72c))
+
+
+### Features
+
+* add SOL balance check to base command functionality ([34ea251](https://github.com/hexon-studio/atom-core/commit/34ea2516d8f02a73fda04f816896c4b35cf17c92))
+
 # [1.18.0](https://github.com/hexon-studio/atom-core/compare/v1.17.0...v1.18.0) (2025-01-21)
 
 
