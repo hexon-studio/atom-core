@@ -15,6 +15,8 @@ export class AtlasNotEnoughError extends Data.TaggedError(
 	"AtlasNotEnoughError",
 ) {}
 
+export class SolNotEnoughError extends Data.TaggedError("SolNotEnoughError") {}
+
 export const initGame = ({
 	atlasPrime,
 	owner,
