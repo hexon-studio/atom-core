@@ -1,10 +1,16 @@
 import { getAssociatedTokenAddressSync } from "@solana/spl-token";
+import { LAMPORTS_PER_SOL } from "@solana/web3.js";
 import { ProfileVault } from "@staratlas/profile-vault";
 import { Effect, Array as EffectArray, unsafeCoerce } from "effect";
+import { GameService } from "~/core/services/GameService";
 import { getAssociatedTokenAccountBalance } from "~/utils/getAssociatedTokenAccountBalance";
-import { MIN_ATLAS_QTY, tokenMints } from "../constants/tokens";
+import { getSolBalance } from "~/utils/getSolBalance";
+import { MIN_ATLAS_QTY, MIN_SOL_QTY, tokenMints } from "../constants/tokens";
 import { getSagePrograms } from "../core/programs";
-import { AtlasNotEnoughError } from "../core/services/GameService/methods/initGame";
+import {
+	AtlasNotEnoughError,
+	SolNotEnoughError,
+} from "../core/services/GameService/methods/initGame";
 import { getGameContext } from "../core/services/GameService/utils";
 import { fireWebhookEvent } from "../utils/fireWebhookEvent";
 
@@ -35,6 +41,21 @@ const checkAtlasBalance = () =>
 		return atlasBalance;
 	});
 
+const checkSolBalance = () =>
+	Effect.gen(function* () {
+		const signer = yield* GameService.signer;
+
+		const solBalance = yield* getSolBalance(signer.publicKey());
+
+		const minLamportsRequired = MIN_SOL_QTY * LAMPORTS_PER_SOL;
+
+		if (solBalance < minLamportsRequired) {
+			return yield* Effect.fail(new SolNotEnoughError());
+		}
+
+		return solBalance;
+	});
+
 export const runBaseCommand = <E, R>({
 	self,
 	normalizeError,
@@ -54,6 +75,8 @@ export const runBaseCommand = <E, R>({
 
 		if (gameContext.atlasPrime) {
 			yield* checkAtlasBalance();
+		} else {
+			yield* checkSolBalance();
 		}
 
 		// yield* fireWebhookEvent({
