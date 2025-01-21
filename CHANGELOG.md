@@ -1,5 +1,12 @@
 # Changelog
 
+# [1.18.0](https://github.com/hexon-studio/atom-core/compare/v1.17.0...v1.18.0) (2025-01-21)
+
+
+### Features
+
+* conditionally check atlas balance based on game context ([6cd7142](https://github.com/hexon-studio/atom-core/commit/6cd714282b8e2226b8dbbb5f0327dc403a6441ca))
+
 # [1.17.0](https://github.com/hexon-studio/atom-core/compare/v1.16.0...v1.17.0) (2025-01-20)
 
 
