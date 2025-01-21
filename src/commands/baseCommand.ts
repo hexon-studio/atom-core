@@ -1,7 +1,10 @@
 import { getAssociatedTokenAddressSync } from "@solana/spl-token";
+import { LAMPORTS_PER_SOL } from "@solana/web3.js";
 import { ProfileVault } from "@staratlas/profile-vault";
 import { Effect, Array as EffectArray, unsafeCoerce } from "effect";
+import { GameService } from "~/core/services/GameService";
 import { getAssociatedTokenAccountBalance } from "~/utils/getAssociatedTokenAccountBalance";
+import { getSolBalance } from "~/utils/getSolBalance";
 import { MIN_ATLAS_QTY, MIN_SOL_QTY, tokenMints } from "../constants/tokens";
 import { getSagePrograms } from "../core/programs";
 import {
@@ -10,8 +13,6 @@ import {
 } from "../core/services/GameService/methods/initGame";
 import { getGameContext } from "../core/services/GameService/utils";
 import { fireWebhookEvent } from "../utils/fireWebhookEvent";
-import { GameService } from "~/core/services/GameService";
-import { LAMPORTS_PER_SOL } from "@solana/web3.js";
 
 const checkAtlasBalance = () =>
 	Effect.gen(function* () {
@@ -42,16 +43,13 @@ const checkAtlasBalance = () =>
 
 const checkSolBalance = () =>
 	Effect.gen(function* () {
-		const programs = yield* getSagePrograms();
 		const signer = yield* GameService.signer;
 
-		const solBalance = yield* Effect.tryPromise(() =>
-			programs.sage.provider.connection.getBalance(signer.publicKey()),
-		);
+		const solBalance = yield* getSolBalance(signer.publicKey());
 
-		const minSolQty = MIN_SOL_QTY * LAMPORTS_PER_SOL;
+		const minLamportsRequired = MIN_SOL_QTY * LAMPORTS_PER_SOL;
 
-		if (solBalance < minSolQty) {
+		if (solBalance < minLamportsRequired) {
 			return yield* Effect.fail(new SolNotEnoughError());
 		}
 
