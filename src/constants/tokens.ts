@@ -10,4 +10,4 @@ export const noopPublicKey = new PublicKey("11111111111111111111111111111111");
 export const MIN_ATLAS_QTY = 100;
 export const ATLAS_DECIMALS = 10 ** 8;
 
-export const MIN_SOL_QTY = 0.002;
+export const MIN_SOL_QTY = 0.0025;
