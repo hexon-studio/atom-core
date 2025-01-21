@@ -50,7 +50,11 @@ export const runBaseCommand = <E, R>({
 	Effect.gen(function* () {
 		yield* fireWebhookEvent({ type: "start" });
 
-		yield* checkAtlasBalance();
+		const gameContext = yield* getGameContext();
+
+		if (gameContext.atlasPrime) {
+			yield* checkAtlasBalance();
+		}
 
 		// yield* fireWebhookEvent({
 		// 	type: "atlas-balance",
