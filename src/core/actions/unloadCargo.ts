@@ -160,6 +160,7 @@ export const unloadCargo = ({
 		const txs = yield* GameService.buildAndSignTransaction({
 			ixs,
 			afterIxs: drainVaultIx,
+			size: 2,
 		});
 
 		const maybeSignatures = yield* Effect.all(
