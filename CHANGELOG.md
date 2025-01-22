@@ -1,5 +1,12 @@
 # Changelog
 
+# [1.20.0](https://github.com/hexon-studio/atom-core/compare/v1.19.0...v1.20.0) (2025-01-22)
+
+
+### Features
+
+* implement transaction building with size parameter ([4c95b59](https://github.com/hexon-studio/atom-core/commit/4c95b59a07c60c4ffe764c0689788357805a43ea))
+
 # [1.19.0](https://github.com/hexon-studio/atom-core/compare/v1.18.0...v1.19.0) (2025-01-21)
 
 
