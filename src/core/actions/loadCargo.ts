@@ -265,6 +265,7 @@ export const loadCargo = ({
 		const txs = yield* GameService.buildAndSignTransaction({
 			ixs,
 			afterIxs: drainVaultIx,
+			size: 2,
 		});
 
 		const maybeTxIds = yield* Effect.all(
