@@ -51,70 +51,84 @@ export const unloadCargo = ({
 			`Unloading cargo from fleet ${fleetNameOrAddress.toString()}`,
 		);
 
-		const fleetAccount =
+		const preFleetAccount =
 			yield* getFleetAccountByNameOrAddress(fleetNameOrAddress);
 
+		const preIxsSignatures = yield* Match.value(preFleetAccount.state).pipe(
+			Match.whenOr(
+				{ Idle: Match.defined },
+				{ MoveWarp: Match.defined },
+				{ MoveSubwarp: Match.defined },
+				() =>
+					Effect.Do.pipe(
+						Effect.bind("dockIx", () =>
+							createDockToStarbaseIx(preFleetAccount),
+						),
+						Effect.bind("drainVaultIx", () => createDrainVaultIx()),
+						// Sending the transactions before doing the next step
+						Effect.flatMap(({ dockIx, drainVaultIx }) =>
+							GameService.buildAndSignTransaction({
+								ixs: dockIx,
+								afterIxs: drainVaultIx,
+							}),
+						),
+						Effect.flatMap((txs) =>
+							Effect.all(txs.map((tx) => GameService.sendTransaction(tx))),
+						),
+						Effect.tap((signatures) =>
+							Effect.log("Fleet docked to starbase.").pipe(
+								Effect.annotateLogs({ signatures }),
+							),
+						),
+					),
+			),
+			Match.when(
+				{ MineAsteroid: Match.defined },
+				({ MineAsteroid: { resource } }) =>
+					Effect.Do.pipe(
+						Effect.bind("stopMiningIx", () =>
+							pipe(
+								getResourceAccount(resource),
+								Effect.flatMap((resource) =>
+									getMineItemAccount(resource.data.mineItem),
+								),
+								Effect.flatMap((mineItem) =>
+									createStopMiningIx({
+										resourceMint: mineItem.data.mint,
+										fleetAccount: preFleetAccount,
+									}),
+								),
+							),
+						),
+						Effect.bind("dockIx", () =>
+							createDockToStarbaseIx(preFleetAccount),
+						),
+						Effect.bind("drainVaultIx", () => createDrainVaultIx()),
+						// Sending the transactions before doing the next step
+						Effect.flatMap(({ stopMiningIx, dockIx, drainVaultIx }) =>
+							GameService.buildAndSignTransaction({
+								ixs: [...stopMiningIx, ...dockIx],
+								afterIxs: drainVaultIx,
+							}),
+						),
+						Effect.flatMap((txs) =>
+							Effect.all(txs.map((tx) => GameService.sendTransaction(tx))),
+						),
+						Effect.tap((txs) =>
+							Effect.log("Fleet stopped mining and docked to starbase.").pipe(
+								Effect.annotateLogs({ txs }),
+							),
+						),
+					),
+			),
+			Match.orElse(() => Effect.succeed([])),
+		);
+
+		yield* Effect.sleep("10 seconds");
+
+		const freshFleetAccount = yield* getFleetAccount(preFleetAccount.key);
+
 		const ixs: InstructionReturn[] = [];
-
-		const { ixs: preIxs, signatures: stopMiningSignatures } =
-			yield* Match.value(fleetAccount.state).pipe(
-				Match.whenOr(
-					{ Idle: Match.defined },
-					{ MoveWarp: Match.defined },
-					{ MoveSubwarp: Match.defined },
-					() =>
-						createDockToStarbaseIx(fleetAccount).pipe(
-							Effect.map((ixs) => ({ signatures: [] as string[], ixs })),
-						),
-				),
-				Match.when(
-					{ MineAsteroid: Match.defined },
-					({ MineAsteroid: { resource } }) =>
-						Effect.Do.pipe(
-							Effect.bind("stopMiningIx", () =>
-								pipe(
-									getResourceAccount(resource),
-									Effect.flatMap((resource) =>
-										getMineItemAccount(resource.data.mineItem),
-									),
-									Effect.flatMap((mineItem) =>
-										createStopMiningIx({
-											resourceMint: mineItem.data.mint,
-											fleetAccount,
-										}),
-									),
-								),
-							),
-							Effect.bind("dockIx", () => createDockToStarbaseIx(fleetAccount)),
-							Effect.bind("drainVaultIx", () => createDrainVaultIx()),
-							// Sending the transactions before doing the next step
-							Effect.flatMap(({ stopMiningIx, dockIx, drainVaultIx }) =>
-								GameService.buildAndSignTransaction({
-									ixs: [...stopMiningIx, ...dockIx],
-									afterIxs: drainVaultIx,
-								}),
-							),
-							Effect.flatMap((txs) =>
-								Effect.all(txs.map((tx) => GameService.sendTransaction(tx))),
-							),
-							Effect.tap((txs) =>
-								Effect.log("Fleet stopped mining and docked to starbase.").pipe(
-									Effect.annotateLogs({ txs }),
-								),
-							),
-							Effect.flatMap((signatures) =>
-								Effect.sleep("10 seconds").pipe(
-									Effect.map(() => ({ signatures, ixs: [] })),
-								),
-							),
-						),
-				),
-				Match.orElse(() =>
-					Effect.succeed({ signatures: [] as string[], ixs: [] }),
-				),
-			);
-
-		ixs.push(...preIxs);
 
 		const itemsCargoPodsKinds = [
 			...new Set(items.map((item) => item.cargoPodKind)),
@@ -122,10 +136,8 @@ export const unloadCargo = ({
 
 		const initialCargoPodsInfos = yield* getFleetCargoPodInfosForItems({
 			cargoPodKinds: itemsCargoPodsKinds,
-			fleetAccount,
+			fleetAccount: freshFleetAccount,
 		});
-
-		const freshFleetAccount = yield* getFleetAccount(fleetAccount.key);
 
 		const unloadCargoIxs = yield* Effect.all(
 			EffectArray.filterMap(items, (item) => {
@@ -180,7 +192,7 @@ export const unloadCargo = ({
 
 		// NOTE: All transactions succeeded
 		if (EffectArray.isEmptyArray(errors)) {
-			return [...stopMiningSignatures, ...signatures];
+			return [...preIxsSignatures, ...signatures];
 		}
 
 		// NOTE: Some transactions failed
@@ -188,7 +200,7 @@ export const unloadCargo = ({
 
 		const postCargoPodsInfos = yield* getFleetCargoPodInfosForItems({
 			cargoPodKinds: itemsCargoPodsKinds,
-			fleetAccount,
+			fleetAccount: freshFleetAccount,
 		}).pipe(Effect.orElseSucceed(constNull));
 
 		const differences: Record<CargoPodKind, CargoPodsDifference> = pipe(
@@ -251,7 +263,7 @@ export const unloadCargo = ({
 		});
 		return yield* new LoadUnloadPartiallyFailedError({
 			errors,
-			signatures: [...stopMiningSignatures, ...signatures],
+			signatures: [...preIxsSignatures, ...signatures],
 			context: { missingResources: missingItems },
 		});
 	});
