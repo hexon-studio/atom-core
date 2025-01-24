@@ -19,10 +19,10 @@ export const buildAndSignTransactionWithAtlasPrime: BuildAndSignTransactionWithA
 		Effect.log("Building ixs with atlas prime").pipe(
 			Effect.map(() => EffectArray.chunksOf(ixs, size)),
 			Effect.map((chunks) =>
-				EffectArray.map(chunks, (ixs, index) =>
+				EffectArray.map(chunks, (ixs) =>
 					buildTransactions({
 						ixs,
-						afterIxs: index === chunks.length - 1 ? afterIxs : [],
+						afterIxs,
 					}).pipe(Effect.timeout("30 seconds")),
 				),
 			),
