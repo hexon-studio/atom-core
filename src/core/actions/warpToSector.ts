@@ -15,16 +15,15 @@ import {
 	createWarpToCoordinateIx,
 } from "../fleet/instructions";
 import { GameService } from "../services/GameService";
+import { getGameContext } from "../services/GameService/utils";
 import { createDrainVaultIx } from "../vault/instructions/createDrainVaultIx";
 
 export const warpToSector = ({
 	fleetNameOrAddress,
 	targetSector: [targetSectorX, targetSectorY],
-	applyTxSizeLimit,
 }: {
 	fleetNameOrAddress: string | PublicKey;
 	targetSector: [number, number];
-	applyTxSizeLimit: boolean;
 }) =>
 	Effect.gen(function* () {
 		yield* Effect.log("Start warp...");
@@ -96,10 +95,14 @@ export const warpToSector = ({
 
 		const drainVaultIx = yield* createDrainVaultIx();
 
+		const {
+			options: { mipt },
+		} = yield* getGameContext();
+
 		const txs = yield* GameService.buildAndSignTransaction({
 			ixs,
 			afterIxs: drainVaultIx,
-			size: applyTxSizeLimit ? 2 : undefined,
+			size: mipt,
 		});
 
 		const txId = yield* Effect.all(

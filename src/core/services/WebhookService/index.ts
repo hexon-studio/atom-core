@@ -36,7 +36,7 @@ const fireWebhookEvent =
 	({ contextId, webhookSecret, webhookUrl }: WebhookOptions) =>
 	(event: WebhookEvent) =>
 		getGameContext().pipe(
-			Effect.flatMap(({ owner, playerProfile }) =>
+			Effect.flatMap(({ options, playerProfile }) =>
 				Effect.retry(
 					Effect.tryPromise({
 						try: async (): Promise<{ success: boolean }> => {
@@ -49,7 +49,7 @@ const fireWebhookEvent =
 								},
 								body: JSON.stringify({
 									...event,
-									owner: owner.toString(),
+									owner: options.owner.toString(),
 									playerProfile: playerProfile.key.toString(),
 									contextId,
 								}),

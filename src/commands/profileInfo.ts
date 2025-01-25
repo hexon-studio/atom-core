@@ -13,23 +13,12 @@ import type { GlobalOptionsWithWebhook } from "../types";
 import { createMainLiveService } from "../utils/createMainLiveService";
 
 export const runProfileInfo = async (globalOpts: GlobalOptionsWithWebhook) => {
-	const { keypair, owner, playerProfile, feeUrl } = globalOpts;
-
 	const mainServiceLive = createMainLiveService(globalOpts);
 
 	const runtime = ManagedRuntime.make(mainServiceLive);
 
 	const program = GameService.pipe(
-		Effect.tap((service) =>
-			service.initGame({
-				atlasPrime: globalOpts.atlasPrime,
-				owner,
-				playerProfile,
-				signerAddress: keypair.publicKey,
-				contextRef: service.gameContext,
-				feeUrl,
-			}),
-		),
+		Effect.tap((service) => service.initGame(service.gameContext, globalOpts)),
 		Effect.tap(() => Effect.log("Game initialized.")),
 		Effect.flatMap(getGameContext),
 		Effect.map((context) => context.playerProfile),

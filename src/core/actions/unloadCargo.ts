@@ -37,16 +37,15 @@ import {
 } from "../fleet/utils/getCargoPodsResourcesDifference";
 import { getFleetCargoPodInfosForItems } from "../fleet/utils/getFleetCargoPodInfosForItems";
 import { GameService } from "../services/GameService";
+import { getGameContext } from "../services/GameService/utils";
 import { createDrainVaultIx } from "../vault/instructions/createDrainVaultIx";
 
 export const unloadCargo = ({
 	fleetNameOrAddress,
 	items,
-	applyTxSizeLimit,
 }: {
 	fleetNameOrAddress: string | PublicKey;
 	items: Array<UnloadResourceInput>;
-	applyTxSizeLimit: boolean;
 }) =>
 	Effect.gen(function* () {
 		yield* Effect.log(
@@ -55,6 +54,10 @@ export const unloadCargo = ({
 
 		const preFleetAccount =
 			yield* getFleetAccountByNameOrAddress(fleetNameOrAddress);
+
+		const {
+			options: { mipt },
+		} = yield* getGameContext();
 
 		const preIxsSignatures = yield* Match.value(preFleetAccount.state).pipe(
 			Match.whenOr(
@@ -72,7 +75,7 @@ export const unloadCargo = ({
 							GameService.buildAndSignTransaction({
 								ixs: dockIx,
 								afterIxs: drainVaultIx,
-								size: applyTxSizeLimit ? 2 : undefined,
+								size: mipt,
 							}),
 						),
 						Effect.flatMap((txs) =>
@@ -112,7 +115,7 @@ export const unloadCargo = ({
 							GameService.buildAndSignTransaction({
 								ixs: [...stopMiningIx, ...dockIx],
 								afterIxs: drainVaultIx,
-								size: applyTxSizeLimit ? 2 : undefined,
+								size: mipt,
 							}),
 						),
 						Effect.flatMap((txs) =>
@@ -176,7 +179,7 @@ export const unloadCargo = ({
 		const txs = yield* GameService.buildAndSignTransaction({
 			ixs,
 			afterIxs: drainVaultIx,
-			size: applyTxSizeLimit ? 2 : undefined,
+			size: mipt,
 		});
 
 		const maybeSignatures = yield* Effect.all(

@@ -24,19 +24,11 @@ export const createAtomApi = (
 
 	const runtime = ManagedRuntime.make(appLayer);
 
-	const { keypair, owner, playerProfile, applyTxSizeLimit } = options;
-
 	return {
 		init: () =>
 			GameService.pipe(
 				Effect.flatMap((service) =>
-					service.initGame({
-						atlasPrime: options.atlasPrime,
-						contextRef: service.gameContext,
-						owner,
-						playerProfile,
-						signerAddress: keypair.publicKey,
-					}),
+					service.initGame(service.gameContext, options),
 				),
 				runtime.runPromise,
 			),
@@ -71,7 +63,6 @@ export const createAtomApi = (
 			return startMining({
 				fleetNameOrAddress,
 				resourceMint,
-				applyTxSizeLimit,
 			}).pipe(runtime.runPromise);
 		},
 		stopMining: ({
@@ -86,7 +77,7 @@ export const createAtomApi = (
 					? resourceNameToMint[resource as ResourceName]
 					: resource;
 
-			return stopMining({ fleetNameOrAddress, resourceMint, applyTxSizeLimit });
+			return stopMining({ fleetNameOrAddress, resourceMint });
 		},
 		loadCargo: (...args: Parameters<typeof loadCargo>) =>
 			loadCargo(...args).pipe(runtime.runPromise),

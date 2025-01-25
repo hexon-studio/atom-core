@@ -45,7 +45,10 @@ const main = async () => {
 		.name("atom")
 		.version(packageJsonVersion)
 		.option("--no-atlas-prime", "Disable the use of Atlas Prime")
-		.option("--apply-tx-size-limit", "Apply a size limit to the transactions")
+		.option(
+			"-mipt, --max-ixs-per-transaction <mipt>",
+			"Apply a limit of instructions on a transactions",
+		)
 		.addOption(
 			new Option(
 				"-o, --owner <publickKey>",

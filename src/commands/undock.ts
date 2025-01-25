@@ -20,23 +20,12 @@ type Param = {
 };
 
 export const runUndock = async ({ fleetNameOrAddress, globalOpts }: Param) => {
-	const { keypair, owner, playerProfile, feeUrl } = globalOpts;
-
 	const mainServiceLive = createMainLiveService(globalOpts);
 
 	const runtime = ManagedRuntime.make(mainServiceLive);
 
 	const program = GameService.pipe(
-		Effect.tap((service) =>
-			service.initGame({
-				atlasPrime: globalOpts.atlasPrime,
-				owner,
-				playerProfile,
-				signerAddress: keypair.publicKey,
-				contextRef: service.gameContext,
-				feeUrl,
-			}),
-		),
+		Effect.tap((service) => service.initGame(service.gameContext, globalOpts)),
 		Effect.tap(() => Effect.log("Game initialized.")),
 		Effect.flatMap(() =>
 			runBaseCommand({
