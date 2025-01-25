@@ -16,7 +16,7 @@ export type FeeMode = "low" | "medium" | "high";
 
 export type RequiredOptions = {
 	atlasPrime: boolean;
-	mipt?: number;
+	maxIxsPerTransaction?: number;
 	logDisabled?: boolean;
 	feeMode: FeeMode;
 	keypair: Keypair;

@@ -56,7 +56,7 @@ export const unloadCargo = ({
 			yield* getFleetAccountByNameOrAddress(fleetNameOrAddress);
 
 		const {
-			options: { mipt },
+			options: { maxIxsPerTransaction: mipt },
 		} = yield* getGameContext();
 
 		const preIxsSignatures = yield* Match.value(preFleetAccount.state).pipe(
