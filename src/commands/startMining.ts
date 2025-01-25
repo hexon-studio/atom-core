@@ -49,6 +49,7 @@ export const runStartMining = async ({
 					startMining({
 						fleetNameOrAddress,
 						resourceMint,
+						applyTxSizeLimit: globalOpts.applyTxSizeLimit,
 					}),
 				normalizeError: (err) => ({
 					tag: err._tag,

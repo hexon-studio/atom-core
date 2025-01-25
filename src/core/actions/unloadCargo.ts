@@ -72,6 +72,7 @@ export const unloadCargo = ({
 							GameService.buildAndSignTransaction({
 								ixs: dockIx,
 								afterIxs: drainVaultIx,
+								size: applyTxSizeLimit ? 2 : undefined,
 							}),
 						),
 						Effect.flatMap((txs) =>
@@ -111,6 +112,7 @@ export const unloadCargo = ({
 							GameService.buildAndSignTransaction({
 								ixs: [...stopMiningIx, ...dockIx],
 								afterIxs: drainVaultIx,
+								size: applyTxSizeLimit ? 2 : undefined,
 							}),
 						),
 						Effect.flatMap((txs) =>

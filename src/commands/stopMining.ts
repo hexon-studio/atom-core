@@ -49,6 +49,7 @@ export const runStopMining = async ({
 					stopMining({
 						fleetNameOrAddress,
 						resourceMint,
+						applyTxSizeLimit: globalOpts.applyTxSizeLimit,
 					}),
 				normalizeError: (err) => ({
 					tag: err._tag,

@@ -8,9 +8,11 @@ import { createDrainVaultIx } from "../vault/instructions/createDrainVaultIx";
 export const stopMining = ({
 	fleetNameOrAddress,
 	resourceMint,
+	applyTxSizeLimit,
 }: {
 	fleetNameOrAddress: string | PublicKey;
 	resourceMint: PublicKey;
+	applyTxSizeLimit: boolean;
 }) =>
 	Effect.gen(function* () {
 		const fleetAccount =
@@ -34,6 +36,7 @@ export const stopMining = ({
 		const txs = yield* GameService.buildAndSignTransaction({
 			ixs,
 			afterIxs: drainVaultIx,
+			size: applyTxSizeLimit ? 2 : undefined,
 		});
 
 		const txIds = yield* Effect.all(

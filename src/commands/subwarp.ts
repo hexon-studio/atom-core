@@ -49,6 +49,7 @@ export const runSubwarp = async ({
 					subwarpToSector({
 						fleetNameOrAddress,
 						targetSector,
+						applyTxSizeLimit: globalOpts.applyTxSizeLimit,
 					}),
 				normalizeError: (err) => ({
 					tag: err._tag,

@@ -24,7 +24,7 @@ export const createAtomApi = (
 
 	const runtime = ManagedRuntime.make(appLayer);
 
-	const { keypair, owner, playerProfile } = options;
+	const { keypair, owner, playerProfile, applyTxSizeLimit } = options;
 
 	return {
 		init: () =>
@@ -68,9 +68,11 @@ export const createAtomApi = (
 					? resourceNameToMint[resource as ResourceName]
 					: resource;
 
-			return startMining({ fleetNameOrAddress, resourceMint }).pipe(
-				runtime.runPromise,
-			);
+			return startMining({
+				fleetNameOrAddress,
+				resourceMint,
+				applyTxSizeLimit,
+			}).pipe(runtime.runPromise);
 		},
 		stopMining: ({
 			fleetNameOrAddress,
@@ -84,7 +86,7 @@ export const createAtomApi = (
 					? resourceNameToMint[resource as ResourceName]
 					: resource;
 
-			return stopMining({ fleetNameOrAddress, resourceMint });
+			return stopMining({ fleetNameOrAddress, resourceMint, applyTxSizeLimit });
 		},
 		loadCargo: (...args: Parameters<typeof loadCargo>) =>
 			loadCargo(...args).pipe(runtime.runPromise),
