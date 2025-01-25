@@ -51,6 +51,7 @@ export const runLoadCargo = async ({
 					loadCargo({
 						fleetNameOrAddress,
 						items,
+						applyTxSizeLimit: globalOpts.applyTxSizeLimit,
 					}),
 				normalizeError: (err) => ({
 					tag: err._tag,
