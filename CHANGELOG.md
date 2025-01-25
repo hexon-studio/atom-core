@@ -1,5 +1,17 @@
 # Changelog
 
+# [1.21.0](https://github.com/hexon-studio/atom-core/compare/v1.20.2...v1.21.0) (2025-01-25)
+
+
+### Bug Fixes
+
+* adjust transaction size limit logic in unload cargo action ([e6fcb13](https://github.com/hexon-studio/atom-core/commit/e6fcb135e453000e723f6c33132274ed7e2d5276))
+
+
+### Features
+
+* add optional transaction size limit for load and unload cargo ([342e65c](https://github.com/hexon-studio/atom-core/commit/342e65ca99fe4c9aa0e1796b1ec218eeb48ea2a1))
+
 ## [1.20.2](https://github.com/hexon-studio/atom-core/compare/v1.20.1...v1.20.2) (2025-01-24)
 
 ## [1.20.1](https://github.com/hexon-studio/atom-core/compare/v1.20.0...v1.20.1) (2025-01-23)
