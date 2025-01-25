@@ -42,9 +42,11 @@ import { createDrainVaultIx } from "../vault/instructions/createDrainVaultIx";
 export const unloadCargo = ({
 	fleetNameOrAddress,
 	items,
+	applyTxSizeLimit,
 }: {
 	fleetNameOrAddress: string | PublicKey;
 	items: Array<UnloadResourceInput>;
+	applyTxSizeLimit: boolean;
 }) =>
 	Effect.gen(function* () {
 		yield* Effect.log(
@@ -172,7 +174,7 @@ export const unloadCargo = ({
 		const txs = yield* GameService.buildAndSignTransaction({
 			ixs,
 			afterIxs: drainVaultIx,
-			size: 2,
+			size: applyTxSizeLimit ? 2 : undefined,
 		});
 
 		const maybeSignatures = yield* Effect.all(
