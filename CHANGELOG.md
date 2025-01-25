@@ -1,5 +1,18 @@
 # Changelog
 
+# [1.22.0](https://github.com/hexon-studio/atom-core/compare/v1.21.0...v1.22.0) (2025-01-25)
+
+
+### Bug Fixes
+
+* add option in game context ([a700491](https://github.com/hexon-studio/atom-core/commit/a7004917b307c9b4681852f84d7f6bbc303bb460))
+* rename option mipt ([6fb80a3](https://github.com/hexon-studio/atom-core/commit/6fb80a36ded4dbedb530ebfff6c22d39136a0b6d))
+
+
+### Features
+
+* add optional transaction size limit to mining, warp, and sector actions ([4a7d380](https://github.com/hexon-studio/atom-core/commit/4a7d380df7c700649ce8aa70c53b5212e9e4516e))
+
 # [1.21.0](https://github.com/hexon-studio/atom-core/compare/v1.20.2...v1.21.0) (2025-01-25)
 
 
