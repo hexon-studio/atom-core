@@ -16,7 +16,7 @@ export type FeeMode = "low" | "medium" | "high";
 
 export type RequiredOptions = {
 	atlasPrime: boolean;
-	applyTxSizeLimit: boolean;
+	maxIxsPerTransaction?: number;
 	logDisabled?: boolean;
 	feeMode: FeeMode;
 	keypair: Keypair;
@@ -25,10 +25,10 @@ export type RequiredOptions = {
 	rpcUrl: string;
 	feeLimit?: number;
 	heliusRpcUrl?: string;
+	feeUrl?: string;
 };
 
 export type CliGlobalOptions = RequiredOptions & {
-	feeUrl?: string;
 	loggingToken?: string;
 	contextId?: string;
 	webhookSecret?: string;

@@ -40,7 +40,7 @@ export const buildTransactions = ({
 					const [vaultAuthority] = ProfileVault.findVaultSigner(
 						programs.profileVaultProgram,
 						context.playerProfile.key,
-						context.owner,
+						context.options.owner,
 					);
 
 					const lookupTable = await provider.connection.getAddressLookupTable(

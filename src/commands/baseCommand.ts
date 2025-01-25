@@ -23,7 +23,7 @@ const checkAtlasBalance = () =>
 		const [vaultAuthority] = ProfileVault.findVaultSigner(
 			programs.profileVaultProgram,
 			context.playerProfile.key,
-			context.owner,
+			context.options.owner,
 		);
 
 		const funderVault = getAssociatedTokenAddressSync(
@@ -73,7 +73,7 @@ export const runBaseCommand = <E, R>({
 
 		const gameContext = yield* getGameContext();
 
-		if (gameContext.atlasPrime) {
+		if (gameContext.options.atlasPrime) {
 			yield* checkAtlasBalance();
 		} else {
 			yield* checkSolBalance();

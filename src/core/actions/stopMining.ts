@@ -3,6 +3,7 @@ import { Effect } from "effect";
 import { getFleetAccountByNameOrAddress } from "~/libs/@staratlas/sage";
 import { createStopMiningIx } from "../fleet/instructions";
 import { GameService } from "../services/GameService";
+import { getGameContext } from "../services/GameService/utils";
 import { createDrainVaultIx } from "../vault/instructions/createDrainVaultIx";
 
 export const stopMining = ({
@@ -31,9 +32,14 @@ export const stopMining = ({
 
 		const drainVaultIx = yield* createDrainVaultIx();
 
+		const {
+			options: { maxIxsPerTransaction: mipt },
+		} = yield* getGameContext();
+
 		const txs = yield* GameService.buildAndSignTransaction({
 			ixs,
 			afterIxs: drainVaultIx,
+			size: mipt,
 		});
 
 		const txIds = yield* Effect.all(

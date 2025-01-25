@@ -7,6 +7,7 @@ import { BN } from "bn.js";
 import { Effect, Exit, Layer, ManagedRuntime, Option, Ref } from "effect";
 import { constant, unsafeCoerce } from "effect/Function";
 import mock from "mock-fs";
+import type { RequiredOptions } from "~/types";
 import { createDepositCargoToFleetIx } from ".";
 import { resourceNameToMint } from "../../../../constants/resources";
 import { noopPublicKey } from "../../../../constants/tokens";
@@ -28,10 +29,12 @@ vi.mock("../../../utils/accounts");
 
 const gameContextRef = Ref.unsafeMake(
 	Option.some<GameContext>({
-		atlasPrime: false,
+		options: {
+			atlasPrime: false,
+			owner: noopPublicKey,
+		} as RequiredOptions,
 		gameInfo: {} as GameInfo,
 		fees: {} as Fees,
-		owner: noopPublicKey,
 		playerProfile: {} as PlayerProfile,
 		keyIndexes: {
 			points: 0,

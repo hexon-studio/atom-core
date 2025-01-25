@@ -23,7 +23,7 @@ export const createDrainVaultIx = () =>
 
 		const signer = yield* GameService.signer;
 
-		if (!context.atlasPrime) {
+		if (!context.options.atlasPrime) {
 			return [
 				async () => ({
 					signers: [signer],
@@ -49,7 +49,7 @@ export const createDrainVaultIx = () =>
 		const [vaultAuthority] = ProfileVault.findVaultSigner(
 			programs.profileVaultProgram,
 			context.playerProfile.key,
-			context.owner,
+			context.options.owner,
 		);
 
 		const vault = getAssociatedTokenAddressSync(

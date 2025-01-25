@@ -7,6 +7,7 @@ import {
 	createUndockFromStarbaseIx,
 } from "../fleet/instructions";
 import { GameService } from "../services/GameService";
+import { getGameContext } from "../services/GameService/utils";
 import { createDrainVaultIx } from "../vault/instructions/createDrainVaultIx";
 
 export const startMining = ({
@@ -52,9 +53,12 @@ export const startMining = ({
 
 		const drainVaultIx = yield* createDrainVaultIx();
 
+		const context = yield* getGameContext();
+
 		const txs = yield* GameService.buildAndSignTransaction({
 			ixs,
 			afterIxs: drainVaultIx,
+			size: context.options.maxIxsPerTransaction,
 		});
 
 		const txIds = yield* Effect.all(

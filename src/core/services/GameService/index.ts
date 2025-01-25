@@ -1,7 +1,8 @@
-import type { Keypair, PublicKey } from "@solana/web3.js";
+import type { Keypair } from "@solana/web3.js";
 import { type AsyncSigner, keypairToAsyncSigner } from "@staratlas/data-source";
 import type { PlayerProfile } from "@staratlas/player-profile";
 import { Effect, Layer, Option, Ref } from "effect";
+import type { RequiredOptions } from "~/types";
 import { type CreateKeypairError, SolanaService } from "../SolanaService";
 import { type FindFleets, findFleets } from "./methods/findFleets";
 import { type FindGame, findGame } from "./methods/findGame";
@@ -24,9 +25,8 @@ import {
 import { type SendTransaction, sendTransaction } from "./utils/sendTransaction";
 
 export interface GameContext {
-	atlasPrime: boolean;
+	options: RequiredOptions;
 	gameInfo: GameInfo;
-	owner: PublicKey;
 	playerProfile: PlayerProfile;
 	keyIndexes: {
 		sage: number;
