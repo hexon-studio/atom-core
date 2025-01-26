@@ -1,7 +1,7 @@
 import { Fleet } from "@staratlas/sage";
 import type BN from "bn.js";
 import { Effect } from "effect";
-import { getProfileFactionAddress } from "~/libs/@staratlas/profile-faction";
+import { findProfileFactionPda } from "~/libs/@staratlas/profile-faction";
 import { getSagePrograms } from "../../programs";
 import { GameService } from "../../services/GameService";
 import { getGameContext } from "../../services/GameService/utils";
@@ -37,7 +37,7 @@ export const createSubwarpToCoordinateIx = ({
 
 		const ixs = [];
 
-		const playerFactionAddress = yield* getProfileFactionAddress(
+		const [playerFactionAddress] = yield* findProfileFactionPda(
 			fleetAccount.data.ownerProfile,
 		);
 

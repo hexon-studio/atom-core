@@ -6,8 +6,8 @@ import { getGameContext } from "~/core/services/GameService/utils";
 import type { LoadResourceInput } from "~/decoders";
 import {
 	type CargoPodEnhanced,
+	findCargoTypePda,
 	getCargoTypeAccount,
-	getCargoTypeAddress,
 } from "~/libs/@staratlas/cargo";
 import {
 	getCargoTypeResourceMultiplier,
@@ -49,7 +49,7 @@ export const enhanceLoadResourceItem = ({
 			Option.getOrElse(() => new BN(0)),
 		);
 
-		const cargoTypeAddress = yield* getCargoTypeAddress(
+		const [cargoTypeAddress] = yield* findCargoTypePda(
 			resourceMint,
 			context.gameInfo.cargoStatsDefinition.key,
 			context.gameInfo.cargoStatsDefinition.data.seqId,

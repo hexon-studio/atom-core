@@ -1,11 +1,11 @@
 import type BN from "bn.js";
 import { Effect } from "effect";
 import {
+	findSagePlayerProfilePda,
+	findStarbasePdaByCoordinates,
+	findStarbasePlayerPda,
 	getCargoPodsByAuthority,
-	getSagePlayerProfileAddress,
 	getStarbaseAccount,
-	getStarbaseAddressByCoordinates,
-	getStarbasePlayerAddress,
 } from "~/libs/@staratlas/sage";
 import { getGameContext } from "../services/GameService/utils";
 
@@ -17,12 +17,12 @@ export const getStarbaseInfoByCoords = ({
 	Effect.gen(function* () {
 		const context = yield* getGameContext();
 
-		const sagePlayerProfilePubkey = yield* getSagePlayerProfileAddress(
+		const [sagePlayerProfilePubkey] = yield* findSagePlayerProfilePda(
 			context.gameInfo.game.key,
 			context.playerProfile.key,
 		);
 
-		const starbasePubkey = yield* getStarbaseAddressByCoordinates(
+		const [starbasePubkey] = yield* findStarbasePdaByCoordinates(
 			context.gameInfo.game.key,
 			startbaseCoords,
 		);
@@ -30,7 +30,7 @@ export const getStarbaseInfoByCoords = ({
 		const starbaseAccount = yield* getStarbaseAccount(starbasePubkey);
 
 		// PDA Starbase - Player
-		const starbasePlayerPubkey = yield* getStarbasePlayerAddress(
+		const [starbasePlayerPubkey] = yield* findStarbasePlayerPda(
 			starbasePubkey,
 			sagePlayerProfilePubkey,
 			starbaseAccount.data.seqId,

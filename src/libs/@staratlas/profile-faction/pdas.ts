@@ -3,16 +3,14 @@ import { ProfileFactionAccount } from "@staratlas/profile-faction";
 import { Effect } from "effect";
 import { getSagePrograms } from "~/core/programs";
 
-export const getProfileFactionAddress = (playerProfile: PublicKey) =>
+export const findProfileFactionPda = (playerProfile: PublicKey) =>
 	getSagePrograms().pipe(
 		Effect.flatMap((programs) =>
-			Effect.try(() => {
-				const [pubKey] = ProfileFactionAccount.findAddress(
+			Effect.try(() =>
+				ProfileFactionAccount.findAddress(
 					programs.profileFaction,
 					playerProfile,
-				);
-
-				return pubKey;
-			}),
+				),
+			),
 		),
 	);

@@ -2,11 +2,11 @@ import { PublicKey } from "@solana/web3.js";
 import type { InstructionReturn } from "@staratlas/data-source";
 import { Fleet } from "@staratlas/sage";
 import { Effect, Match } from "effect";
-import { getCargoTypeAddress } from "~/libs/@staratlas/cargo";
+import { findCargoTypePda } from "~/libs/@staratlas/cargo";
 import {
-	getMineItemAddress,
-	getResourceAddress,
-	getStarbaseAddressByCoordinates,
+	findMineItemPda,
+	findResourcePda,
+	findStarbasePdaByCoordinates,
 } from "~/libs/@staratlas/sage";
 import { resourceNameToMint } from "../../../constants/resources";
 import { getAssociatedTokenAddress } from "../../../utils/getAssociatedTokenAddress";
@@ -59,19 +59,19 @@ export const createAsteroidMiningHandlerIx = ({
 
 		ixs.push(resourceIxs);
 
-		const foodCargoTypeAddress = yield* getCargoTypeAddress(
+		const [foodCargoTypeAddress] = yield* findCargoTypePda(
 			resourceNameToMint.Food,
 			new PublicKey(context.gameInfo.cargoStatsDefinition.key),
 			context.gameInfo.cargoStatsDefinition.data.seqId,
 		);
 
-		const ammoCargoTypeAddress = yield* getCargoTypeAddress(
+		const [ammoCargoTypeAddress] = yield* findCargoTypePda(
 			resourceNameToMint.Ammunition,
 			new PublicKey(context.gameInfo.cargoStatsDefinition.key),
 			context.gameInfo.cargoStatsDefinition.data.seqId,
 		);
 
-		const resourceCargoTypeAddress = yield* getCargoTypeAddress(
+		const [resourceCargoTypeAddress] = yield* findCargoTypePda(
 			resourceMint,
 			new PublicKey(context.gameInfo.cargoStatsDefinition.key),
 			context.gameInfo.cargoStatsDefinition.data.seqId,
@@ -81,17 +81,20 @@ export const createAsteroidMiningHandlerIx = ({
 			fleetAccount.state,
 		);
 
-		const starbaseAddress = yield* getStarbaseAddressByCoordinates(
+		const [starbaseAddress] = yield* findStarbasePdaByCoordinates(
 			fleetAccount.data.gameId,
 			fleetCoordinates,
 		);
 
-		const mineItemKey = yield* getMineItemAddress(
+		const [mineItemKey] = yield* findMineItemPda(
 			fleetAccount.data.gameId,
 			resourceMint,
 		);
 
-		const resourceKey = yield* getResourceAddress(mineItemKey, planetAddress);
+		const [resourceKey] = yield* findResourcePda({
+			mint: mineItemKey,
+			planet: planetAddress,
+		});
 
 		const resourceTokenFromAta = yield* getAssociatedTokenAddress(
 			resourceMint,
