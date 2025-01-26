@@ -1,4 +1,5 @@
-import type { Keypair, PublicKey } from "@solana/web3.js";
+import { Keypair, PublicKey } from "@solana/web3.js";
+import { z } from "zod";
 
 export type WebhookOptions = Required<
 	Pick<CliGlobalOptions, "webhookSecret" | "webhookUrl">
@@ -12,25 +13,31 @@ export type GlobalOptionsWithWebhook = Omit<
 	webhookArgs?: WebhookOptions;
 };
 
-export type FeeMode = "low" | "medium" | "high";
+export const requiredOptionsDecoder = z.object({
+	atlasPrime: z.boolean(),
+	feeMode: z.union([z.literal("low"), z.literal("medium"), z.literal("high")]),
+	keypair: z.instanceof(Keypair),
+	maxIxsPerTransaction: z.string().transform(Number),
+	owner: z.instanceof(PublicKey),
+	playerProfile: z.instanceof(PublicKey),
+	rpcUrl: z.string(),
 
-export type RequiredOptions = {
-	atlasPrime: boolean;
-	maxIxsPerTransaction?: number;
-	logDisabled?: boolean;
-	feeMode: FeeMode;
-	keypair: Keypair;
-	owner: PublicKey;
-	playerProfile: PublicKey;
-	rpcUrl: string;
-	feeLimit?: number;
-	heliusRpcUrl?: string;
-	feeUrl?: string;
-};
+	// Optinal fields
+	feeLimit: z.number().optional(),
+	feeUrl: z.string().optional(),
+	heliusRpcUrl: z.string().optional(),
+	logDisabled: z.boolean().optional(),
+});
 
-export type CliGlobalOptions = RequiredOptions & {
-	loggingToken?: string;
-	contextId?: string;
-	webhookSecret?: string;
-	webhookUrl?: string;
-};
+export type RequiredOptions = z.infer<typeof requiredOptionsDecoder>;
+
+export type FeeMode = RequiredOptions["feeMode"];
+
+export const cliOptionsDecoder = requiredOptionsDecoder.extend({
+	contextId: z.string().optional(),
+	loggingToken: z.string().optional(),
+	webhookSecret: z.string().optional(),
+	webhookUrl: z.string().optional(),
+});
+
+export type CliGlobalOptions = z.infer<typeof cliOptionsDecoder>;

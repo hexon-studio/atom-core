@@ -1,10 +1,15 @@
 import { InvalidOptionArgumentError } from "commander";
-import type { CliGlobalOptions, GlobalOptionsWithWebhook } from "../types";
+import {
+	type CliGlobalOptions,
+	type GlobalOptionsWithWebhook,
+	cliOptionsDecoder,
+} from "../types";
 
 export const createOptionsWithWebhook = (
 	globalOps: CliGlobalOptions,
 ): GlobalOptionsWithWebhook => {
-	const { webhookSecret, webhookUrl, contextId, ...rest } = globalOps;
+	const { webhookSecret, webhookUrl, contextId, ...rest } =
+		cliOptionsDecoder.parse(globalOps);
 
 	if (rest.heliusRpcUrl) {
 		const isHeliusRpc = rest.heliusRpcUrl.includes("helius");

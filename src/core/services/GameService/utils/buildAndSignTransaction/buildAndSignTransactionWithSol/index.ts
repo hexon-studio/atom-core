@@ -20,7 +20,7 @@ import { buildTransactions } from "./buildTransactions";
 export const buildAndSignTransactionWithSol: BuildAndSignTransactionWithSol = ({
 	ixs,
 	afterIxs,
-	size = 5,
+	size,
 }) =>
 	Effect.log("Building ixs").pipe(
 		Effect.map(() => EffectArray.chunksOf(ixs, size)),
@@ -39,7 +39,7 @@ export const buildAndSignTransactionWithSol: BuildAndSignTransactionWithSol = ({
 export type BuildAndSignTransactionWithSol = (_: {
 	ixs: Array<InstructionReturn>;
 	afterIxs?: Array<InstructionReturn>;
-	size?: number;
+	size: number;
 }) => Effect.Effect<
 	TransactionReturn[],
 	| BuildAndSignTransactionError

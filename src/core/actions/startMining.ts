@@ -53,12 +53,14 @@ export const startMining = ({
 
 		const drainVaultIx = yield* createDrainVaultIx();
 
-		const context = yield* getGameContext();
+		const {
+			options: { maxIxsPerTransaction },
+		} = yield* getGameContext();
 
 		const txs = yield* GameService.buildAndSignTransaction({
 			ixs,
 			afterIxs: drainVaultIx,
-			size: context.options.maxIxsPerTransaction,
+			size: maxIxsPerTransaction,
 		});
 
 		const txIds = yield* Effect.all(
