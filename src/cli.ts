@@ -48,6 +48,7 @@ const main = async () => {
 		.option(
 			"-mipt, --max-ixs-per-transaction <mipt>",
 			"Apply a limit of instructions on a transactions",
+			"5",
 		)
 		.addOption(
 			new Option(

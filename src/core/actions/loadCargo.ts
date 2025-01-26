@@ -77,7 +77,7 @@ export const loadCargo = ({
 		);
 
 		const {
-			options: { maxIxsPerTransaction: mipt },
+			options: { maxIxsPerTransaction },
 		} = yield* getGameContext();
 
 		const preIxsSignatures = yield* Match.value(preFleetAccount.state).pipe(
@@ -96,7 +96,7 @@ export const loadCargo = ({
 							GameService.buildAndSignTransaction({
 								ixs: dockIx,
 								afterIxs: drainVaultIx,
-								size: mipt,
+								size: maxIxsPerTransaction,
 							}),
 						),
 						Effect.flatMap((txs) =>
@@ -136,7 +136,7 @@ export const loadCargo = ({
 							GameService.buildAndSignTransaction({
 								ixs: [...stopMiningIx, ...dockIx],
 								afterIxs: drainVaultIx,
-								size: mipt,
+								size: maxIxsPerTransaction,
 							}),
 						),
 						Effect.flatMap((txs) =>
@@ -286,7 +286,7 @@ export const loadCargo = ({
 		const txs = yield* GameService.buildAndSignTransaction({
 			ixs,
 			afterIxs: drainVaultIx,
-			size: mipt,
+			size: maxIxsPerTransaction,
 		});
 
 		const maybeTxIds = yield* Effect.all(

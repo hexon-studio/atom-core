@@ -56,7 +56,7 @@ export const unloadCargo = ({
 			yield* getFleetAccountByNameOrAddress(fleetNameOrAddress);
 
 		const {
-			options: { maxIxsPerTransaction: mipt },
+			options: { maxIxsPerTransaction },
 		} = yield* getGameContext();
 
 		const preIxsSignatures = yield* Match.value(preFleetAccount.state).pipe(
@@ -75,7 +75,7 @@ export const unloadCargo = ({
 							GameService.buildAndSignTransaction({
 								ixs: dockIx,
 								afterIxs: drainVaultIx,
-								size: mipt,
+								size: maxIxsPerTransaction,
 							}),
 						),
 						Effect.flatMap((txs) =>
@@ -115,7 +115,7 @@ export const unloadCargo = ({
 							GameService.buildAndSignTransaction({
 								ixs: [...stopMiningIx, ...dockIx],
 								afterIxs: drainVaultIx,
-								size: mipt,
+								size: maxIxsPerTransaction,
 							}),
 						),
 						Effect.flatMap((txs) =>
@@ -179,7 +179,7 @@ export const unloadCargo = ({
 		const txs = yield* GameService.buildAndSignTransaction({
 			ixs,
 			afterIxs: drainVaultIx,
-			size: mipt,
+			size: maxIxsPerTransaction,
 		});
 
 		const maybeSignatures = yield* Effect.all(

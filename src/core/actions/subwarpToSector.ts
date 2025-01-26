@@ -78,13 +78,13 @@ export const subwarpToSector = ({
 		const drainVaultIx = yield* createDrainVaultIx();
 
 		const {
-			options: { maxIxsPerTransaction: mipt },
+			options: { maxIxsPerTransaction },
 		} = yield* getGameContext();
 
 		const txs = yield* GameService.buildAndSignTransaction({
 			ixs,
 			afterIxs: drainVaultIx,
-			size: mipt,
+			size: maxIxsPerTransaction,
 		});
 
 		const txId = yield* Effect.all(

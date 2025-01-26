@@ -15,7 +15,7 @@ import type { GameService } from "../../..";
 import { buildTransactions } from "./buildTransactions";
 
 export const buildAndSignTransactionWithAtlasPrime: BuildAndSignTransactionWithAtlasPrime =
-	({ ixs, afterIxs, size = 5 }) =>
+	({ ixs, afterIxs, size }) =>
 		Effect.log("Building ixs with atlas prime").pipe(
 			Effect.map(() => EffectArray.chunksOf(ixs, size)),
 			Effect.map((chunks) =>
@@ -33,7 +33,7 @@ export const buildAndSignTransactionWithAtlasPrime: BuildAndSignTransactionWithA
 export type BuildAndSignTransactionWithAtlasPrime = (_: {
 	ixs: Array<InstructionReturn>;
 	afterIxs?: Array<InstructionReturn>;
-	size?: number;
+	size: number;
 }) => Effect.Effect<
 	TransactionReturn[],
 	| BuildAndSignTransactionError
