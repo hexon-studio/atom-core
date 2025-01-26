@@ -1,5 +1,12 @@
 # Changelog
 
+# [1.23.0](https://github.com/hexon-studio/atom-core/compare/v1.22.0...v1.23.0) (2025-01-26)
+
+
+### Features
+
+* update transaction size handling to use maxIxsPerTransaction option ([90f8a27](https://github.com/hexon-studio/atom-core/commit/90f8a277923137f8270bab83fed725653ee17302))
+
 # [1.22.0](https://github.com/hexon-studio/atom-core/compare/v1.21.0...v1.22.0) (2025-01-25)
 
 
