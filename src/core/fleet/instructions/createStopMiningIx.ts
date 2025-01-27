@@ -5,22 +5,18 @@ import type BN from "bn.js";
 import { Effect, Option, Record } from "effect";
 import { isNone } from "effect/Option";
 import { getFleetCargoPodInfoByType } from "~/libs/@staratlas/cargo";
-import { getProfileFactionAddress } from "~/libs/@staratlas/profile-faction";
+import { findUserPointsPda } from "~/libs/@staratlas/points";
+import { findProfileFactionPda } from "~/libs/@staratlas/profile-faction";
 import {
-	getMineItemAddress,
-	getResourceAddress,
-	getSagePlayerProfileAddress,
+	findMineItemPda,
+	findResourcePda,
+	findSagePlayerProfilePda,
+	findStarbasePdaByCoordinates,
+	findStarbasePlayerPda,
 	getStarbaseAccount,
-	getStarbaseAddressByCoordinates,
 	getStarbasePlayerAccount,
-	getStarbasePlayerAddress,
 } from "~/libs/@staratlas/sage";
 import { resourceNameToMint } from "../../../constants/resources";
-import {
-	getCouncilRankXpKey,
-	getMiningXpKey,
-	getPilotXpKey,
-} from "../../points-utils/accounts";
 import { getSagePrograms } from "../../programs";
 import { GameService } from "../../services/GameService";
 import { getGameContext } from "../../services/GameService/utils";
@@ -75,7 +71,7 @@ export const createStopMiningIx = ({
 
 		const planetAddress = maybePlanet.value.key;
 
-		const starbaseAddress = yield* getStarbaseAddressByCoordinates(
+		const [starbaseAddress] = yield* findStarbasePdaByCoordinates(
 			fleetAccount.data.gameId,
 			fleetCoordinates,
 		);
@@ -84,14 +80,14 @@ export const createStopMiningIx = ({
 
 		const playerProfile = fleetAccount.data.ownerProfile;
 
-		const playerFactionAddress = yield* getProfileFactionAddress(playerProfile);
+		const [playerFactionAddress] = yield* findProfileFactionPda(playerProfile);
 
-		const sagePlayerProfileAddress = yield* getSagePlayerProfileAddress(
+		const [sagePlayerProfileAddress] = yield* findSagePlayerProfilePda(
 			fleetAccount.data.gameId,
 			playerProfile,
 		);
 
-		const starbasePlayerAddress = yield* getStarbasePlayerAddress(
+		const [starbasePlayerAddress] = yield* findStarbasePlayerPda(
 			starbaseAccount.key,
 			sagePlayerProfileAddress,
 			starbaseAccount.data.seqId,
@@ -117,12 +113,15 @@ export const createStopMiningIx = ({
 			ixs.push(ix_0);
 		}
 
-		const mineItemKey = yield* getMineItemAddress(
+		const [mineItemKey] = yield* findMineItemPda(
 			fleetAccount.data.gameId,
 			resourceMint,
 		);
 
-		const resourceKey = yield* getResourceAddress(mineItemKey, planetAddress);
+		const [resourceKey] = yield* findResourcePda({
+			mint: mineItemKey,
+			planet: planetAddress,
+		});
 
 		const fleetKey = fleetAccount.key;
 
@@ -150,11 +149,20 @@ export const createStopMiningIx = ({
 
 		ixs.push(...miningHandlerIxs);
 
-		const miningXpKey = yield* getMiningXpKey(context.playerProfile.key);
-		const pilotXpKey = yield* getPilotXpKey(context.playerProfile.key);
-		const councilRankXpKey = yield* getCouncilRankXpKey(
-			context.playerProfile.key,
-		);
+		const [miningXpKey] = yield* findUserPointsPda({
+			category: "miningXp",
+			playerProfile: context.playerProfile.key,
+		});
+
+		const [pilotXpKey] = yield* findUserPointsPda({
+			category: "pilotXp",
+			playerProfile: context.playerProfile.key,
+		});
+
+		const [councilRankXpKey] = yield* findUserPointsPda({
+			category: "councilRankXp",
+			playerProfile: context.playerProfile.key,
+		});
 
 		yield* Effect.log("Creating stopMiningAsteroid IX");
 

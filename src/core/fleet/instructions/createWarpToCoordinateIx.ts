@@ -1,8 +1,8 @@
 import { Fleet } from "@staratlas/sage";
 import type BN from "bn.js";
 import { Effect } from "effect";
-import { getCargoTypeAddress } from "~/libs/@staratlas/cargo";
-import { getProfileFactionAddress } from "~/libs/@staratlas/profile-faction";
+import { findCargoTypePda } from "~/libs/@staratlas/cargo";
+import { findProfileFactionPda } from "~/libs/@staratlas/profile-faction";
 import { resourceNameToMint } from "../../../constants/resources";
 import { getAssociatedTokenAddress } from "../../../utils/getAssociatedTokenAddress";
 import { getSagePrograms } from "../../programs";
@@ -40,7 +40,7 @@ export const createWarpToCoordinateIx = ({
 
 		const ixs = [];
 
-		const cargoTypeAddress = yield* getCargoTypeAddress(
+		const [cargoTypeAddress] = yield* findCargoTypePda(
 			resourceNameToMint.Fuel,
 			context.gameInfo.cargoStatsDefinition.key,
 			context.gameInfo.cargoStatsDefinition.data.seqId,
@@ -52,7 +52,7 @@ export const createWarpToCoordinateIx = ({
 			true,
 		);
 
-		const playerFactionAddress = yield* getProfileFactionAddress(
+		const [playerFactionAddress] = yield* findProfileFactionPda(
 			fleetAccount.data.ownerProfile,
 		);
 

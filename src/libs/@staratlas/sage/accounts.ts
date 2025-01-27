@@ -14,7 +14,7 @@ import { Effect } from "effect";
 import { getSagePrograms } from "~/core/programs";
 import { readFromSage } from "~/libs/@staratlas/data-source";
 import { isPublicKey } from "~/utils/public-key";
-import { getFleetAddressByName } from "./pdas";
+import { findFleetPdaByName } from "./pdas";
 
 export const getGameAccount = (gamePublicKey: PublicKey) =>
 	getSagePrograms().pipe(
@@ -35,7 +35,9 @@ export const getFleetAccountByNameOrAddress = (
 ) =>
 	(isPublicKey(fleetNameOrAddress)
 		? Effect.succeed(fleetNameOrAddress)
-		: getFleetAddressByName(fleetNameOrAddress)
+		: findFleetPdaByName(fleetNameOrAddress).pipe(
+				Effect.map(([fleetAddress]) => fleetAddress),
+			)
 	).pipe(Effect.flatMap(getFleetAccount));
 
 export const getFleetAccount = (fleetPubkey: PublicKey) =>

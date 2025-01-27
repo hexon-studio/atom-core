@@ -3,7 +3,7 @@ import { CargoPod, CargoType } from "@staratlas/cargo";
 import { Data, Effect } from "effect";
 import { getSagePrograms } from "~/core/programs";
 
-export class FindAddressError extends Data.TaggedError("FindAddressError")<{
+export class FindPdaError extends Data.TaggedError("FindPdaError")<{
 	error: unknown;
 }> {
 	override get message() {
@@ -13,7 +13,7 @@ export class FindAddressError extends Data.TaggedError("FindAddressError")<{
 	}
 }
 
-export const getCargoTypeAddress = (
+export const findCargoTypePda = (
 	mint: PublicKey,
 	cargoStatsDefinitionAddress: PublicKey,
 	cargoStatsDefinitionseqId = 0,
@@ -21,28 +21,24 @@ export const getCargoTypeAddress = (
 	getSagePrograms().pipe(
 		Effect.flatMap((programs) =>
 			Effect.try({
-				try: () => {
-					const [cargoType] = CargoType.findAddress(
+				try: () =>
+					CargoType.findAddress(
 						programs.cargo,
 						cargoStatsDefinitionAddress,
 						mint,
 						cargoStatsDefinitionseqId,
-					);
-
-					return cargoType;
-				},
-				catch: (error) => new FindAddressError({ error }),
+					),
+				catch: (error) => new FindPdaError({ error }),
 			}),
 		),
 	);
 
-export const getCargoPodAddress = (podSeeds: Buffer) =>
+export const findCargoPodPda = (podSeeds: Buffer) =>
 	getSagePrograms().pipe(
 		Effect.flatMap((programs) =>
-			Effect.try(() => {
-				const [cargoPod] = CargoPod.findAddress(programs.cargo, podSeeds);
-
-				return cargoPod;
+			Effect.try({
+				try: () => CargoPod.findAddress(programs.cargo, podSeeds),
+				catch: (error) => new FindPdaError({ error }),
 			}),
 		),
 	);

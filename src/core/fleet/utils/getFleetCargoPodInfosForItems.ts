@@ -12,7 +12,7 @@ import type {
 import type { CargoPodKind } from "~/decoders";
 import {
 	type CargoPodEnhanced,
-	type FindAddressError,
+	type FindPdaError,
 	getFleetCargoPodInfoByType,
 } from "~/libs/@staratlas/cargo";
 import type { ReadFromRPCError } from "~/libs/@staratlas/data-source/readFromSage";
@@ -27,7 +27,7 @@ export const getFleetCargoPodInfosForItems = ({
 	| CreateKeypairError
 	| GetParsedTokenAccountsByOwnerError
 	| GameNotInitializedError
-	| FindAddressError
+	| FindPdaError
 	| UnknownException,
 	SolanaService | GameService
 > =>

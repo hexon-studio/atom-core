@@ -8,10 +8,10 @@ import { getGameContext } from "~/core/services/GameService/utils";
 import type { StarbaseInfo } from "~/core/utils/getStarbaseInfo";
 import type { CargoPodKind } from "~/decoders";
 import {
-	getCargoTypeAddress,
+	findCargoTypePda,
 	isResourceAllowedForCargoPod,
 } from "~/libs/@staratlas/cargo";
-import { getProfileFactionAddress } from "~/libs/@staratlas/profile-faction";
+import { findProfileFactionPda } from "~/libs/@staratlas/profile-faction";
 import {
 	InvalidAmountError,
 	InvalidResourceForPodKindError,
@@ -67,8 +67,8 @@ export const createDepositCargoToFleetIx = ({
 
 		const playerProfilePubkey = fleetAccount.data.ownerProfile;
 
-		const profileFactionPubkey =
-			yield* getProfileFactionAddress(playerProfilePubkey);
+		const [profileFactionPubkey] =
+			yield* findProfileFactionPda(playerProfilePubkey);
 
 		const targetTokenAccount =
 			yield* GameService.createAssociatedTokenAccountIdempotent(
@@ -81,7 +81,7 @@ export const createDepositCargoToFleetIx = ({
 
 		const ix_0 = targetTokenAccount.instructions;
 
-		const cargoTypeAddress = yield* getCargoTypeAddress(
+		const [cargoTypeAddress] = yield* findCargoTypePda(
 			resourceMint,
 			context.gameInfo.cargoStatsDefinition.key,
 			context.gameInfo.cargoStatsDefinition.data.seqId,

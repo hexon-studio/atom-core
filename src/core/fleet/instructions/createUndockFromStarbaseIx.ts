@@ -1,10 +1,10 @@
 import { Fleet } from "@staratlas/sage";
 import { Effect } from "effect";
-import { getProfileFactionAddress } from "~/libs/@staratlas/profile-faction";
+import { findProfileFactionPda } from "~/libs/@staratlas/profile-faction";
 import {
-	getSagePlayerProfileAddress,
+	findSagePlayerProfilePda,
+	findStarbasePlayerPda,
 	getStarbaseAccount,
-	getStarbasePlayerAddress,
 } from "~/libs/@staratlas/sage";
 import { getSagePrograms } from "../../programs";
 import { GameService } from "../../services/GameService";
@@ -26,16 +26,16 @@ export const createUndockFromStarbaseIx = (fleetAccount: Fleet) =>
 		const starbaseKey = fleetAccount.state.StarbaseLoadingBay.starbase;
 		const starbaseAccount = yield* getStarbaseAccount(starbaseKey);
 
-		const sagePlayerProfileAddress = yield* getSagePlayerProfileAddress(
+		const [sagePlayerProfileAddress] = yield* findSagePlayerProfilePda(
 			context.gameInfo.game.key,
 			fleetAccount.data.ownerProfile,
 		);
 
-		const playerFactionAddress = yield* getProfileFactionAddress(
+		const [playerFactionAddress] = yield* findProfileFactionPda(
 			fleetAccount.data.ownerProfile,
 		);
 
-		const starbasePlayerKey = yield* getStarbasePlayerAddress(
+		const [starbasePlayerKey] = yield* findStarbasePlayerPda(
 			starbaseKey,
 			sagePlayerProfileAddress,
 			starbaseAccount.data.seqId,

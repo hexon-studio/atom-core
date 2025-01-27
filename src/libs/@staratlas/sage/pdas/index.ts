@@ -14,113 +14,86 @@ import { Effect } from "effect";
 import { getSagePrograms } from "~/core/programs";
 import { getGameContext } from "~/core/services/GameService/utils";
 
-export const getFleetAddressByName = (fleetName: string) =>
+export const findFleetPdaByName = (fleetName: string) =>
 	Effect.all([getSagePrograms(), getGameContext()]).pipe(
 		Effect.flatMap(([programs, context]) =>
 			Effect.try(() => {
 				const fleetLabel = stringToByteArray(fleetName, 32);
 
-				const [fleet] = Fleet.findAddress(
+				return Fleet.findAddress(
 					programs.sage,
 					context.gameInfo.game.key,
 					context.playerProfile.key,
 					fleetLabel,
 				);
-
-				return fleet;
 			}),
 		),
 	);
 
-export const getSagePlayerProfileAddress = (
+export const findSagePlayerProfilePda = (
 	gameId: PublicKey,
 	playerProfile: PublicKey,
 ) =>
 	getSagePrograms().pipe(
 		Effect.flatMap((programs) =>
-			Effect.try(() => {
-				const [pubKey] = SagePlayerProfile.findAddress(
-					programs.sage,
-					playerProfile,
-					gameId,
-				);
-				return pubKey;
-			}),
+			Effect.try(() =>
+				SagePlayerProfile.findAddress(programs.sage, playerProfile, gameId),
+			),
 		),
 	);
 
-export const getStarbasePlayerAddress = (
+export const findStarbasePlayerPda = (
 	starbase: PublicKey,
 	sagePlayerProfile: PublicKey,
 	starbaseSeqId: number,
 ) =>
 	getSagePrograms().pipe(
 		Effect.flatMap((programs) =>
-			Effect.try(() => {
-				const [pubKey] = StarbasePlayer.findAddress(
+			Effect.try(() =>
+				StarbasePlayer.findAddress(
 					programs.sage,
 					starbase,
 					sagePlayerProfile,
 					starbaseSeqId,
-				);
-				return pubKey;
-			}),
+				),
+			),
 		),
 	);
-export const getMineItemAddress = (gameId: PublicKey, mint: PublicKey) =>
+export const findMineItemPda = (gameId: PublicKey, mint: PublicKey) =>
 	getSagePrograms().pipe(
 		Effect.flatMap((programs) =>
-			Effect.try(() => {
-				const [mineItem] = MineItem.findAddress(programs.sage, gameId, mint);
-
-				return mineItem;
-			}),
+			Effect.try(() => MineItem.findAddress(programs.sage, gameId, mint)),
 		),
 	);
 
-export const getStarbaseAddressByCoordinates = (
+export const findStarbasePdaByCoordinates = (
 	gameId: PublicKey,
 	coordinates: [BN, BN],
 ) =>
 	getSagePrograms().pipe(
 		Effect.flatMap((programs) =>
-			Effect.try(() => {
-				const [starbase] = Starbase.findAddress(
-					programs.sage,
-					gameId,
-					coordinates,
-				);
-
-				return starbase;
-			}),
+			Effect.try(() =>
+				Starbase.findAddress(programs.sage, gameId, coordinates),
+			),
 		),
 	);
 
-export const getResourceAddress = (mint: PublicKey, planet: PublicKey) =>
+export const findResourcePda = ({
+	mint,
+	planet,
+}: { mint: PublicKey; planet: PublicKey }) =>
 	getSagePrograms().pipe(
 		Effect.flatMap((programs) =>
-			Effect.try(() => {
-				const [address] = Resource.findAddress(programs.sage, mint, planet);
-
-				return address;
-			}),
+			Effect.try(() => Resource.findAddress(programs.sage, mint, planet)),
 		),
 	);
 
-export const getSectorAddressByCoordinates = (
+export const findSectorPdaByCoordinates = (
 	gameId: PublicKey,
 	coordinates: [BN, BN],
 ) =>
 	getSagePrograms().pipe(
 		Effect.flatMap((programs) =>
-			Effect.try(() => {
-				const [address] = Sector.findAddress(
-					programs.sage,
-					gameId,
-					coordinates,
-				);
-
-				return address;
-			}),
+			Effect.try(() => Sector.findAddress(programs.sage, gameId, coordinates)),
 		),
 	);

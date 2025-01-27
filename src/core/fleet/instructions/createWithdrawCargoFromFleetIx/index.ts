@@ -14,18 +14,18 @@ import { getGameContext } from "~/core/services/GameService/utils";
 import type { UnloadResourceInput } from "~/decoders";
 import {
 	type CargoPodEnhanced,
-	getCargoPodAddress,
+	findCargoPodPda,
+	findCargoTypePda,
 	getCargoTypeAccount,
-	getCargoTypeAddress,
 	isResourceAllowedForCargoPod,
 } from "~/libs/@staratlas/cargo";
-import { getProfileFactionAddress } from "~/libs/@staratlas/profile-faction";
+import { findProfileFactionPda } from "~/libs/@staratlas/profile-faction";
 import {
+	findSagePlayerProfilePda,
+	findStarbasePdaByCoordinates,
+	findStarbasePlayerPda,
 	getCargoUnitsFromTokenAmount,
-	getSagePlayerProfileAddress,
 	getStarbaseAccount,
-	getStarbaseAddressByCoordinates,
-	getStarbasePlayerAddress,
 } from "~/libs/@staratlas/sage";
 import { getCargoPodsByAuthority } from "~/libs/@staratlas/sage/getCargoPodsByAuthority";
 import { getCargoTypeResourceMultiplier } from "~/libs/@staratlas/sage/utils/getCargoTypeResourceMultiplier";
@@ -70,13 +70,13 @@ export const createWithdrawCargoFromFleetIx = ({
 
 		const playerProfilePubkey = fleetAccount.data.ownerProfile;
 
-		const sagePlayerProfilePubkey = yield* getSagePlayerProfileAddress(
+		const [sagePlayerProfilePubkey] = yield* findSagePlayerProfilePda(
 			fleetAccount.data.gameId,
 			playerProfilePubkey,
 		);
 
-		const playerFactionAddress =
-			yield* getProfileFactionAddress(playerProfilePubkey);
+		const [playerFactionAddress] =
+			yield* findProfileFactionPda(playerProfilePubkey);
 
 		const cargoPodTokenAccount = yield* getAssociatedTokenAddress(
 			resourceMint,
@@ -88,14 +88,16 @@ export const createWithdrawCargoFromFleetIx = ({
 		const fleetCoords = yield* getCurrentFleetSectorCoordinates(
 			fleetAccount.state,
 		);
-		const starbaseAddress = yield* getStarbaseAddressByCoordinates(
+
+		const [starbaseAddress] = yield* findStarbasePdaByCoordinates(
 			context.gameInfo.game.key,
 			fleetCoords,
 		);
+
 		const starbaseAccount = yield* getStarbaseAccount(starbaseAddress);
 
 		// PDA Starbase - Player
-		const starbasePlayerAddress = yield* getStarbasePlayerAddress(
+		const [starbasePlayerAddress] = yield* findStarbasePlayerPda(
 			starbaseAddress,
 			sagePlayerProfilePubkey,
 			starbaseAccount.data.seqId,
@@ -138,10 +140,12 @@ export const createWithdrawCargoFromFleetIx = ({
 								},
 							);
 
+							const [starbasePlayerCargoPodAddress] =
+								yield* findCargoPodPda(podSeedBuffer);
+
 							return {
 								ixs: [createCargoPodIx],
-								starbasePlayerCargoPodAddress:
-									yield* getCargoPodAddress(podSeedBuffer),
+								starbasePlayerCargoPodAddress,
 							};
 						}),
 					onSome: (account) =>
@@ -163,7 +167,7 @@ export const createWithdrawCargoFromFleetIx = ({
 
 		ixs.push(createStarbasePlayerResourceMintAtaIx);
 
-		const cargoTypeAddress = yield* getCargoTypeAddress(
+		const [cargoTypeAddress] = yield* findCargoTypePda(
 			resourceMint,
 			context.gameInfo.cargoStatsDefinition.key,
 			context.gameInfo.cargoStatsDefinition.data.seqId,

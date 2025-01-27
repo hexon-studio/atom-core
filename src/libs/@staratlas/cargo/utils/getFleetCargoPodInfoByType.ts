@@ -7,9 +7,9 @@ import { GameService } from "~/core/services/GameService";
 import { getGameContext } from "~/core/services/GameService/utils";
 import type { CargoPodKind } from "~/decoders";
 import {
+	findCargoTypePda,
 	getCargoPodAccount,
 	getCargoTypeAccount,
-	getCargoTypeAddress,
 } from "~/libs/@staratlas/cargo";
 import { getCargoUnitsFromTokenAmount } from "~/libs/@staratlas/sage";
 import { getCargoTypeResourceMultiplier } from "~/libs/@staratlas/sage/utils/getCargoTypeResourceMultiplier";
@@ -63,7 +63,7 @@ export const getFleetCargoPodInfoByType = ({
 			>(),
 			(acc, cargoPodTokenAccount) =>
 				Effect.gen(function* () {
-					const cargoTypeKey = yield* getCargoTypeAddress(
+					const [cargoTypeKey] = yield* findCargoTypePda(
 						cargoPodTokenAccount.mint,
 						new PublicKey(context.gameInfo.cargoStatsDefinition.key),
 						context.gameInfo.cargoStatsDefinition.data.seqId,

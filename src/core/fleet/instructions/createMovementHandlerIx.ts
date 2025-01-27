@@ -1,12 +1,9 @@
 import { PublicKey } from "@solana/web3.js";
 import { Fleet } from "@staratlas/sage";
 import { Effect, Match } from "effect";
-import { getCargoTypeAddress } from "~/libs/@staratlas/cargo";
+import { findCargoTypePda } from "~/libs/@staratlas/cargo";
+import { findUserPointsPda } from "~/libs/@staratlas/points";
 import { resourceNameToMint } from "../../../constants/resources";
-import {
-	getCouncilRankXpKey,
-	getPilotXpKey,
-} from "../../points-utils/accounts";
 import { getSagePrograms } from "../../programs";
 import { GameService } from "../../services/GameService";
 import { getGameContext } from "../../services/GameService/utils";
@@ -27,12 +24,17 @@ export const createMovementHandlerIx = (fleetAccount: Fleet) =>
 
 		ixs.push(instructions);
 
-		const pilotXpKey = yield* getPilotXpKey(context.playerProfile.key);
-		const councilRankXpKey = yield* getCouncilRankXpKey(
-			context.playerProfile.key,
-		);
+		const [pilotXpKey] = yield* findUserPointsPda({
+			category: "pilotXp",
+			playerProfile: context.playerProfile.key,
+		});
 
-		const cargoTypeAddress = yield* getCargoTypeAddress(
+		const [councilRankXpKey] = yield* findUserPointsPda({
+			category: "councilRankXp",
+			playerProfile: context.playerProfile.key,
+		});
+
+		const [cargoTypeAddress] = yield* findCargoTypePda(
 			resourceNameToMint.Fuel,
 			new PublicKey(context.gameInfo.cargoStatsDefinition.key),
 			context.gameInfo.cargoStatsDefinition.data.seqId,

@@ -4,15 +4,15 @@ import type BN from "bn.js";
 import { Effect, Option, Record } from "effect";
 import { isNone } from "effect/Option";
 import { getFleetCargoPodInfoByType } from "~/libs/@staratlas/cargo";
-import { getProfileFactionAddress } from "~/libs/@staratlas/profile-faction";
+import { findProfileFactionPda } from "~/libs/@staratlas/profile-faction";
 import {
-	getMineItemAddress,
-	getResourceAddress,
-	getSagePlayerProfileAddress,
+	findMineItemPda,
+	findResourcePda,
+	findSagePlayerProfilePda,
+	findStarbasePdaByCoordinates,
+	findStarbasePlayerPda,
 	getStarbaseAccount,
-	getStarbaseAddressByCoordinates,
 	getStarbasePlayerAccount,
-	getStarbasePlayerAddress,
 } from "~/libs/@staratlas/sage";
 import { resourceNameToMint } from "../../../constants/resources";
 import { getSagePrograms } from "../../programs";
@@ -69,7 +69,7 @@ export const createStartMiningIx = ({
 
 		const planetPubkey = maybePlanet.value.key;
 
-		const starbaseAddress = yield* getStarbaseAddressByCoordinates(
+		const [starbaseAddress] = yield* findStarbasePdaByCoordinates(
 			fleetAccount.data.gameId,
 			fleetCoordinates,
 		);
@@ -78,14 +78,14 @@ export const createStartMiningIx = ({
 
 		const playerProfile = fleetAccount.data.ownerProfile;
 
-		const playerFactionAddress = yield* getProfileFactionAddress(playerProfile);
+		const [playerFactionAddress] = yield* findProfileFactionPda(playerProfile);
 
-		const sagePlayerProfileAddress = yield* getSagePlayerProfileAddress(
+		const [sagePlayerProfileAddress] = yield* findSagePlayerProfilePda(
 			fleetAccount.data.gameId,
 			playerProfile,
 		);
 
-		const starbasePlayerAddress = yield* getStarbasePlayerAddress(
+		const [starbasePlayerAddress] = yield* findStarbasePlayerPda(
 			starbaseAccount.key,
 			sagePlayerProfileAddress,
 			starbaseAccount.data.seqId,
@@ -115,12 +115,15 @@ export const createStartMiningIx = ({
 
 		ixs.push(...maybeMoveHandlerIx);
 
-		const mineItemKey = yield* getMineItemAddress(
+		const [mineItemKey] = yield* findMineItemPda(
 			fleetAccount.data.gameId,
 			resourceMint,
 		);
 
-		const resourceKey = yield* getResourceAddress(mineItemKey, planetPubkey);
+		const [resourceKey] = yield* findResourcePda({
+			mint: mineItemKey,
+			planet: planetPubkey,
+		});
 
 		const fleetKey = fleetAccount.key;
 

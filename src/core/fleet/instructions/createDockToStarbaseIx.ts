@@ -3,13 +3,13 @@ import type { InstructionReturn } from "@staratlas/data-source";
 import { Fleet, StarbasePlayer } from "@staratlas/sage";
 import { Effect, Option } from "effect";
 import { isNone } from "effect/Option";
-import { getProfileFactionAddress } from "~/libs/@staratlas/profile-faction";
+import { findProfileFactionPda } from "~/libs/@staratlas/profile-faction";
 import {
-	getSagePlayerProfileAddress,
+	findSagePlayerProfilePda,
+	findStarbasePdaByCoordinates,
+	findStarbasePlayerPda,
 	getStarbaseAccount,
-	getStarbaseAddressByCoordinates,
 	getStarbasePlayerAccount,
-	getStarbasePlayerAddress,
 } from "~/libs/@staratlas/sage";
 import { getCargoPodsByAuthority } from "~/libs/@staratlas/sage/getCargoPodsByAuthority";
 import { getSagePrograms } from "../../programs";
@@ -32,24 +32,28 @@ export const createDockToStarbaseIx = (fleetAccount: Fleet) =>
 
 		const signer = yield* GameService.signer;
 
-		const [sagePlayerProfileAddress, playerFactionAddress, fleetCoords] =
+		const [sagePlayerProfilePda, playerFactionPda, fleetCoords] =
 			yield* Effect.all([
-				getSagePlayerProfileAddress(
+				findSagePlayerProfilePda(
 					fleetAccount.data.gameId,
 					fleetAccount.data.ownerProfile,
 				),
-				getProfileFactionAddress(fleetAccount.data.ownerProfile),
+				findProfileFactionPda(fleetAccount.data.ownerProfile),
 				getCurrentFleetSectorCoordinates(fleetAccount.state),
 			]);
 
-		const starbaseAddress = yield* getStarbaseAddressByCoordinates(
+		const [sagePlayerProfileAddress] = sagePlayerProfilePda;
+
+		const [playerFactionAddress] = playerFactionPda;
+
+		const [starbaseAddress] = yield* findStarbasePdaByCoordinates(
 			fleetAccount.data.gameId,
 			fleetCoords,
 		);
 
 		const starbaseAccount = yield* getStarbaseAccount(starbaseAddress);
 
-		const starbasePlayerAddress = yield* getStarbasePlayerAddress(
+		const [starbasePlayerAddress] = yield* findStarbasePlayerPda(
 			starbaseAccount.key,
 			sagePlayerProfileAddress,
 			starbaseAccount.data.seqId,
