@@ -7,12 +7,12 @@ import { getFleetCargoPodInfoByType } from "~/libs/@staratlas/cargo";
 import { getFleetAccountByNameOrAddress } from "~/libs/@staratlas/sage";
 import {
 	FleetScanCooldownError,
+	NotEnoughCargoSpaceForScanError,
 	NotEnoughFoodForScanError,
 } from "../fleet/errors";
 import { createUndockFromStarbaseIx } from "../fleet/instructions";
 import { createScanIx } from "../fleet/instructions/createScanIx";
 import { GameService } from "../services/GameService";
-import { createDrainVaultIx } from "../vault/instructions/createDrainVaultIx";
 
 export const startScan = ({
 	fleetNameOrAddress,
@@ -25,11 +25,11 @@ export const startScan = ({
 		const fleetAccount =
 			yield* getFleetAccountByNameOrAddress(fleetNameOrAddress);
 
-		const isScanning = fleetAccount.data.scanCooldownExpiresAt.gt(
+		const isScanCooldown = fleetAccount.data.scanCooldownExpiresAt.gt(
 			new BN(Math.floor(Date.now() / 1000)),
 		);
 
-		if (isScanning) {
+		if (isScanCooldown) {
 			yield* Effect.log("Scan is on cooldown");
 
 			return yield* Effect.fail(
@@ -43,6 +43,11 @@ export const startScan = ({
 
 		const scanCost = (fleetAccount.data.stats.miscStats as { scanCost: number })
 			.scanCost;
+		const sduPerScan = (
+			fleetAccount.data.stats.miscStats as {
+				sduPerScan: number;
+			}
+		).sduPerScan;
 
 		if (scanCost) {
 			const foodAmount = yield* getFleetCargoPodInfoByType({
@@ -58,11 +63,31 @@ export const startScan = ({
 			const hasEnoughFood = foodAmount.gte(new BN(scanCost));
 
 			if (!hasEnoughFood) {
+				yield* Effect.log("Not enough food for scan");
+
 				return yield* new NotEnoughFoodForScanError({
 					foodAmount: foodAmount.toString(),
 					scanCost: String(scanCost),
 				});
 			}
+		}
+
+		const hasEnoughCargoSpace = yield* getFleetCargoPodInfoByType({
+			type: "cargo_hold",
+			fleetAccount,
+		}).pipe(
+			Effect.map((info) => {
+				const diff = info.maxCapacityInCargoUnits.sub(
+					info.totalResourcesAmountInCargoUnits,
+				);
+				return diff.gte(new BN(sduPerScan));
+			}),
+		);
+
+		if (!hasEnoughCargoSpace) {
+			yield* Effect.log("Not enough cargo space for scan");
+
+			return yield* new NotEnoughCargoSpaceForScanError();
 		}
 
 		const ixs: InstructionReturn[] = [];
@@ -82,11 +107,8 @@ export const startScan = ({
 
 		ixs.push(...startScanIxs);
 
-		const drainVaultIx = yield* createDrainVaultIx();
-
 		const txs = yield* GameService.buildAndSignTransaction({
 			ixs,
-			afterIxs: drainVaultIx,
 			size: 1, // NOTE: scan should be done in a single transaction
 		});
 
