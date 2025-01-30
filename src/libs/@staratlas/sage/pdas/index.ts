@@ -88,12 +88,15 @@ export const findResourcePda = ({
 		),
 	);
 
-export const findSectorPdaByCoordinates = (
-	gameId: PublicKey,
-	coordinates: [BN, BN],
-) =>
-	getSagePrograms().pipe(
-		Effect.flatMap((programs) =>
-			Effect.try(() => Sector.findAddress(programs.sage, gameId, coordinates)),
+export const findSectorPdaByCoordinates = (coordinates: [BN, BN]) =>
+	Effect.all([getSagePrograms(), getGameContext()]).pipe(
+		Effect.flatMap(([programs, context]) =>
+			Effect.try(() =>
+				Sector.findAddress(
+					programs.sage,
+					context.gameInfo.game.key,
+					coordinates,
+				),
+			),
 		),
 	);

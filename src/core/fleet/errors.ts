@@ -114,3 +114,35 @@ export class LoadUnloadFailedError extends Data.TaggedError(
 		return this.errors.map((error) => error.message).join("\n");
 	}
 }
+
+export class GetSurveyDataUnitTrackerError extends Data.TaggedError(
+	"GetSurveyDataUnitTrackerError",
+)<{ error: unknown }> {
+	override get message() {
+		return `Error getting survey data unit tracker: ${this.error}`;
+	}
+}
+
+export class GetSurveyDataUnitTrackerNotFoundError extends Data.TaggedError(
+	"GetSurveyDataUnitTrackerNotFoundError",
+) {}
+
+export class FleetScanCooldownError extends Data.TaggedError(
+	"FleetScanCooldownError",
+)<{ scanCooldownExpiresAt: string }> {
+	override get message() {
+		return `Fleet warp is on cooldown until ${this.scanCooldownExpiresAt}`;
+	}
+}
+
+export class NotEnoughFoodForScanError extends Data.TaggedError(
+	"NotEnoughFoodForScanError",
+)<{ foodAmount: string; scanCost: string }> {
+	override get message() {
+		return `Not enough food to start scan: ${this.foodAmount} < ${this.scanCost}`;
+	}
+}
+
+export class NotEnoughCargoSpaceForScanError extends Data.TaggedError(
+	"NotEnoughCargoSpaceForScanError",
+) {}
