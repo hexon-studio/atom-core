@@ -1,3 +1,4 @@
+import { getAccount } from "@solana/spl-token";
 import { Keypair } from "@solana/web3.js";
 import type { InstructionReturn } from "@staratlas/data-source";
 import { Fleet, StarbasePlayer } from "@staratlas/sage";
@@ -11,6 +12,7 @@ import { getCurrentFleetSectorCoordinates } from "~/core/fleet/utils/getCurrentF
 import { getSagePrograms } from "~/core/programs";
 import { GameService } from "~/core/services/GameService";
 import { getGameContext } from "~/core/services/GameService/utils";
+import { SolanaService } from "~/core/services/SolanaService";
 import type { UnloadResourceInput } from "~/decoders";
 import {
 	type CargoPodEnhanced,
@@ -67,6 +69,8 @@ export const createWithdrawCargoFromFleetIx = ({
 		}
 
 		const context = yield* getGameContext();
+
+		const provider = yield* SolanaService.anchorProvider;
 
 		const playerProfilePubkey = fleetAccount.data.ownerProfile;
 
@@ -165,7 +169,17 @@ export const createWithdrawCargoFromFleetIx = ({
 			true,
 		);
 
-		ixs.push(createStarbasePlayerResourceMintAtaIx);
+		const starbasePlayerResourceMintAtaAccount = yield* Effect.tryPromise(() =>
+			getAccount(
+				provider.connection,
+				starbasePlayerResourceMintAta,
+				"confirmed",
+			),
+		).pipe(Effect.option);
+
+		if (Option.isNone(starbasePlayerResourceMintAtaAccount)) {
+			ixs.push(createStarbasePlayerResourceMintAtaIx);
+		}
 
 		const [cargoTypeAddress] = yield* findCargoTypePda(
 			resourceMint,

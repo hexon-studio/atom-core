@@ -1,7 +1,9 @@
+import { getAccount } from "@solana/spl-token";
 import { PublicKey } from "@solana/web3.js";
 import type { InstructionReturn } from "@staratlas/data-source";
 import { Fleet } from "@staratlas/sage";
-import { Effect, Match } from "effect";
+import { Effect, Match, Option } from "effect";
+import { SolanaService } from "~/core/services/SolanaService";
 import { findCargoTypePda } from "~/libs/@staratlas/cargo";
 import {
 	findMineItemPda,
@@ -30,34 +32,54 @@ export const createAsteroidMiningHandlerIx = ({
 		const programs = yield* getSagePrograms();
 		const context = yield* getGameContext();
 
+		const provider = yield* SolanaService.anchorProvider;
+
 		const ixs: InstructionReturn[] = [];
 
-		const { address: foodCargoHoldAta, instructions: foodIxs } =
+		const { address: foodCargoHoldAta, instructions: foodIx } =
 			yield* GameService.createAssociatedTokenAccountIdempotent(
 				resourceNameToMint.Food,
 				fleetAccount.data.cargoHold,
 				true,
 			);
 
-		ixs.push(foodIxs);
+		const foodTokenToAccount = yield* Effect.tryPromise(() =>
+			getAccount(provider.connection, foodCargoHoldAta, "confirmed"),
+		).pipe(Effect.option);
 
-		const { address: ammoAmmoBankAta, instructions: ammoIxs } =
+		if (Option.isNone(foodTokenToAccount)) {
+			ixs.push(foodIx);
+		}
+
+		const createAmmoBankAta =
 			yield* GameService.createAssociatedTokenAccountIdempotent(
 				resourceNameToMint.Ammunition,
 				fleetAccount.data.ammoBank,
 				true,
 			);
 
-		ixs.push(ammoIxs);
+		const ammoTokenToAccount = yield* Effect.tryPromise(() =>
+			getAccount(provider.connection, createAmmoBankAta.address, "confirmed"),
+		).pipe(Effect.option);
 
-		const { address: resourceCargoHoldAta, instructions: resourceIxs } =
+		if (Option.isNone(ammoTokenToAccount)) {
+			ixs.push(createAmmoBankAta.instructions);
+		}
+
+		const { address: resourceCargoHoldAta, instructions: resourceIx } =
 			yield* GameService.createAssociatedTokenAccountIdempotent(
 				resourceMint,
 				fleetAccount.data.cargoHold,
 				true,
 			);
 
-		ixs.push(resourceIxs);
+		const resourceTokenToAccount = yield* Effect.tryPromise(() =>
+			getAccount(provider.connection, resourceCargoHoldAta, "confirmed"),
+		).pipe(Effect.option);
+
+		if (Option.isNone(resourceTokenToAccount)) {
+			ixs.push(resourceIx);
+		}
 
 		const [foodCargoTypeAddress] = yield* findCargoTypePda(
 			resourceNameToMint.Food,
@@ -121,7 +143,7 @@ export const createAsteroidMiningHandlerIx = ({
 					context.gameInfo.game.data.gameState,
 					context.gameInfo.game.key,
 					foodCargoHoldAta,
-					ammoAmmoBankAta,
+					createAmmoBankAta.address,
 					resourceTokenFromAta,
 					resourceCargoHoldAta,
 					resourceNameToMint.Food,

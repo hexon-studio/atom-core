@@ -291,7 +291,6 @@ export const loadCargo = ({
 
 		const maybeTxIds = yield* Effect.all(
 			txs.map((tx) => GameService.sendTransaction(tx).pipe(Effect.either)),
-			{ concurrency: 5 },
 		);
 
 		const [errors, signatures] = EffectArray.partitionMap(maybeTxIds, identity);

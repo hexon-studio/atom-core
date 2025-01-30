@@ -1,6 +1,8 @@
+import { getAccount } from "@solana/spl-token";
 import { PublicKey } from "@solana/web3.js";
 import { Fleet } from "@staratlas/sage";
-import { Effect, Match } from "effect";
+import { Effect, Match, Option } from "effect";
+import { SolanaService } from "~/core/services/SolanaService";
 import { findCargoTypePda } from "~/libs/@staratlas/cargo";
 import { findUserPointsPda } from "~/libs/@staratlas/points";
 import { resourceNameToMint } from "../../../constants/resources";
@@ -13,16 +15,28 @@ export const createMovementHandlerIx = (fleetAccount: Fleet) =>
 		const programs = yield* getSagePrograms();
 		const context = yield* getGameContext();
 
+		const provider = yield* SolanaService.anchorProvider;
+
 		const ixs = [];
 
-		const { address: fuelFuelTankAta, instructions } =
+		const createFuelFuelTankAta =
 			yield* GameService.createAssociatedTokenAccountIdempotent(
 				resourceNameToMint.Fuel,
 				fleetAccount.data.fuelTank,
 				true,
 			);
 
-		ixs.push(instructions);
+		const fuelTokenToAccount = yield* Effect.tryPromise(() =>
+			getAccount(
+				provider.connection,
+				createFuelFuelTankAta.address,
+				"confirmed",
+			),
+		).pipe(Effect.option);
+
+		if (Option.isNone(fuelTokenToAccount)) {
+			ixs.push(createFuelFuelTankAta.instructions);
+		}
 
 		const [pilotXpKey] = yield* findUserPointsPda({
 			category: "pilotXp",
@@ -66,7 +80,7 @@ export const createMovementHandlerIx = (fleetAccount: Fleet) =>
 					fleetAccount.data.fuelTank,
 					cargoTypeAddress,
 					context.gameInfo.cargoStatsDefinition.key,
-					fuelFuelTankAta,
+					createFuelFuelTankAta.address,
 					resourceNameToMint.Fuel,
 					pilotXpKey,
 					context.gameInfo.game.data.points.pilotXpCategory.category,
