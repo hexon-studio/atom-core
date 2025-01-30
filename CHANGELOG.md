@@ -1,5 +1,17 @@
 # Changelog
 
+# [1.25.0](https://github.com/hexon-studio/atom-core/compare/v1.24.0...v1.25.0) (2025-01-30)
+
+
+### Bug Fixes
+
+* lint and typechecl ([68deaac](https://github.com/hexon-studio/atom-core/commit/68deaac85d3cbe4f58bfe0f63961d54d78ca7a3b))
+
+
+### Features
+
+* improve token account creation and transaction handling ([7b90f11](https://github.com/hexon-studio/atom-core/commit/7b90f11a4d03614ef6a6ecc3efc5791b0d803e9c))
+
 # [1.24.0](https://github.com/hexon-studio/atom-core/compare/v1.23.1...v1.24.0) (2025-01-30)
 
 
