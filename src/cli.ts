@@ -28,6 +28,7 @@ import {
 	runUnloadCargo,
 	runWarp,
 } from "./commands";
+import { runStartScan } from "./commands/startScan";
 import {
 	cargoPodKinds,
 	loadResourceDecoder,
@@ -277,6 +278,21 @@ const main = async () => {
 				});
 			},
 		);
+
+	program
+		.command("start-scan <fleetNameOrAddress>")
+		.action(async (fleetNameOrAddress: string) => {
+			const globalOpts = createOptionsWithWebhook(
+				program.opts<CliGlobalOptions>(),
+			);
+
+			return runStartScan({
+				globalOpts,
+				fleetNameOrAddress: isPublicKey(fleetNameOrAddress)
+					? new PublicKey(fleetNameOrAddress)
+					: fleetNameOrAddress,
+			});
+		});
 
 	program
 		.command("dock <fleetNameOrAddress>")
