@@ -23,7 +23,7 @@ export const startMining = ({
 		const fleetAccount =
 			yield* getFleetAccountByNameOrAddress(fleetNameOrAddress);
 
-		// TODO: Not enough resources to star mining (fuel, ammo, food)
+		// TODO: Not enough resources to start mining (fuel, ammo, food)
 
 		if (fleetAccount.state.MineAsteroid) {
 			yield* Effect.log(

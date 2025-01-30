@@ -1,5 +1,4 @@
 import type { PublicKey } from "@solana/web3.js";
-import type { InstructionReturn } from "@staratlas/data-source";
 import BN from "bn.js";
 import {
 	Effect,
@@ -156,7 +155,7 @@ export const loadCargo = ({
 
 		const freshFleetAccount = yield* getFleetAccount(preFleetAccount.key);
 
-		const ixs: InstructionReturn[] = [];
+		// const ixs: InstructionReturn[] = [];
 
 		const itemsCargoPodsKinds = [
 			...new Set(items.map((item) => item.cargoPodKind)),
@@ -271,7 +270,7 @@ export const loadCargo = ({
 					},
 				});
 			}),
-		).pipe(Effect.map(EffectArray.flatten));
+		);
 
 		if (EffectArray.isEmptyArray(loadCargoIxs)) {
 			yield* Effect.log("Nothing to load. Skipping");
@@ -279,9 +278,20 @@ export const loadCargo = ({
 			return [];
 		}
 
-		ixs.push(...loadCargoIxs);
+		const preIxs = loadCargoIxs
+			.map((ix) => ix.preIx)
+			.filter((ix) => ix !== undefined);
+		const ixs = loadCargoIxs.map((ix) => ix.ix);
+
+		// ixs.push(...loadCargoIxs);
 
 		const drainVaultIx = yield* createDrainVaultIx();
+
+		const preTxs = yield* GameService.buildAndSignTransaction({
+			ixs: preIxs,
+			afterIxs: drainVaultIx,
+			size: maxIxsPerTransaction,
+		});
 
 		const txs = yield* GameService.buildAndSignTransaction({
 			ixs,
@@ -289,9 +299,11 @@ export const loadCargo = ({
 			size: maxIxsPerTransaction,
 		});
 
+		txs.unshift(...preTxs);
+
 		const maybeTxIds = yield* Effect.all(
 			txs.map((tx) => GameService.sendTransaction(tx).pipe(Effect.either)),
-			{ concurrency: 5 },
+			{ concurrency: 1 },
 		);
 
 		const [errors, signatures] = EffectArray.partitionMap(maybeTxIds, identity);

@@ -1,7 +1,7 @@
 import type { PublicKey } from "@solana/web3.js";
 import { Fleet } from "@staratlas/sage";
 import BN from "bn.js";
-import { Effect, pipe } from "effect";
+import { Effect, Option, pipe } from "effect";
 import { getSagePrograms } from "~/core/programs";
 import { GameService } from "~/core/services/GameService";
 import { getGameContext } from "~/core/services/GameService/utils";
@@ -16,6 +16,9 @@ import {
 	InvalidAmountError,
 	InvalidResourceForPodKindError,
 } from "../../errors";
+import { SolanaService } from "~/core/services/SolanaService";
+import { getAccount } from "@solana/spl-token";
+import type { InstructionReturn } from "@staratlas/data-source";
 
 export const createDepositCargoToFleetIx = ({
 	cargoPodPublicKey,
@@ -37,6 +40,9 @@ export const createDepositCargoToFleetIx = ({
 		const { amount, cargoPodKind, resourceMint, starbaseResourceTokenAccount } =
 			item;
 
+		const provider = yield* SolanaService.anchorProvider;
+
+		let preIx: InstructionReturn | undefined;
 		const {
 			starbasePlayerPubkey,
 			starbasePubkey,
@@ -70,16 +76,22 @@ export const createDepositCargoToFleetIx = ({
 		const [profileFactionPubkey] =
 			yield* findProfileFactionPda(playerProfilePubkey);
 
-		const targetTokenAccount =
+		const targetTokenIx =
 			yield* GameService.createAssociatedTokenAccountIdempotent(
 				resourceMint,
 				cargoPodPublicKey,
 				true,
 			);
 
-		const tokenAccountToPubkey = targetTokenAccount.address;
+		const targetTokenAccount = yield* Effect.tryPromise(() =>
+			getAccount(provider.connection, targetTokenIx.address, "confirmed"),
+		).pipe(Effect.option);
 
-		const ix_0 = targetTokenAccount.instructions;
+		if (Option.isNone(targetTokenAccount)) {
+			preIx = targetTokenIx.instructions;
+		}
+
+		const tokenAccountToPubkey = targetTokenIx.address;
 
 		const [cargoTypeAddress] = yield* findCargoTypePda(
 			resourceMint,
@@ -124,5 +136,5 @@ export const createDepositCargoToFleetIx = ({
 			{ keyIndex: context.keyIndexes.sage, amount: new BN(amount) },
 		);
 
-		return [ix_0, ix_1];
+		return { preIx, ix: ix_1 };
 	});

@@ -31,6 +31,8 @@ import { getCargoPodsByAuthority } from "~/libs/@staratlas/sage/getCargoPodsByAu
 import { getCargoTypeResourceMultiplier } from "~/libs/@staratlas/sage/utils/getCargoTypeResourceMultiplier";
 import { getAssociatedTokenAddress } from "~/utils/getAssociatedTokenAddress";
 import { computeWithdrawAmount } from "./computeWithdrawAmount";
+import { SolanaService } from "~/core/services/SolanaService";
+import { getAccount } from "@solana/spl-token";
 
 export class FleetCargoPodTokenAccountNotFoundError extends Data.TaggedError(
 	"FleetCargoPodTokenAccountNotFoundError",
@@ -67,6 +69,8 @@ export const createWithdrawCargoFromFleetIx = ({
 		}
 
 		const context = yield* getGameContext();
+
+		const provider = yield* SolanaService.anchorProvider;
 
 		const playerProfilePubkey = fleetAccount.data.ownerProfile;
 
@@ -165,7 +169,17 @@ export const createWithdrawCargoFromFleetIx = ({
 			true,
 		);
 
-		ixs.push(createStarbasePlayerResourceMintAtaIx);
+		const starbasePlayerResourceMintAtaAccount = yield* Effect.tryPromise(() =>
+			getAccount(
+				provider.connection,
+				starbasePlayerResourceMintAta,
+				"confirmed",
+			),
+		).pipe(Effect.option);
+
+		if (Option.isNone(starbasePlayerResourceMintAtaAccount)) {
+			ixs.push(createStarbasePlayerResourceMintAtaIx);
+		}
 
 		const [cargoTypeAddress] = yield* findCargoTypePda(
 			resourceMint,
