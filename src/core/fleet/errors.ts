@@ -142,3 +142,7 @@ export class NotEnoughFoodForScanError extends Data.TaggedError(
 		return `Not enough food to start scan: ${this.foodAmount} < ${this.scanCost}`;
 	}
 }
+
+export class NotEnoughCargoSpaceForScanError extends Data.TaggedError(
+	"NotEnoughCargoSpaceForScanError",
+) {}
