@@ -1,5 +1,18 @@
 # Changelog
 
+# [1.24.0](https://github.com/hexon-studio/atom-core/compare/v1.23.1...v1.24.0) (2025-01-30)
+
+
+### Bug Fixes
+
+* add missing error ([e19e25a](https://github.com/hexon-studio/atom-core/commit/e19e25a015bd94d9f47993cd18442af1c64f1d0d))
+
+
+### Features
+
+* add scan ix ([1fea376](https://github.com/hexon-studio/atom-core/commit/1fea37627abb8091150e7291c991744b3b416731))
+* enhance scan start logic with cargo space and food checks ([0869366](https://github.com/hexon-studio/atom-core/commit/086936685c2b5c13a86bb8a038bb7ba3862f55e1))
+
 ## [1.23.1](https://github.com/hexon-studio/atom-core/compare/v1.23.0...v1.23.1) (2025-01-27)
 
 # [1.23.0](https://github.com/hexon-studio/atom-core/compare/v1.22.0...v1.23.0) (2025-01-26)
