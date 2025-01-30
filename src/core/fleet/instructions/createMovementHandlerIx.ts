@@ -1,14 +1,14 @@
+import { getAccount } from "@solana/spl-token";
 import { PublicKey } from "@solana/web3.js";
 import { Fleet } from "@staratlas/sage";
 import { Effect, Match, Option } from "effect";
+import { SolanaService } from "~/core/services/SolanaService";
 import { findCargoTypePda } from "~/libs/@staratlas/cargo";
 import { findUserPointsPda } from "~/libs/@staratlas/points";
 import { resourceNameToMint } from "../../../constants/resources";
 import { getSagePrograms } from "../../programs";
 import { GameService } from "../../services/GameService";
 import { getGameContext } from "../../services/GameService/utils";
-import { SolanaService } from "~/core/services/SolanaService";
-import { getAccount } from "@solana/spl-token";
 
 export const createMovementHandlerIx = (fleetAccount: Fleet) =>
 	Effect.gen(function* () {
@@ -19,7 +19,7 @@ export const createMovementHandlerIx = (fleetAccount: Fleet) =>
 
 		const ixs = [];
 
-		const { address: fuelFuelTankAta, instructions: ix } =
+		const createFuelFuelTankAta =
 			yield* GameService.createAssociatedTokenAccountIdempotent(
 				resourceNameToMint.Fuel,
 				fleetAccount.data.fuelTank,
@@ -27,11 +27,15 @@ export const createMovementHandlerIx = (fleetAccount: Fleet) =>
 			);
 
 		const fuelTokenToAccount = yield* Effect.tryPromise(() =>
-			getAccount(provider.connection, fuelFuelTankAta, "confirmed"),
+			getAccount(
+				provider.connection,
+				createFuelFuelTankAta.address,
+				"confirmed",
+			),
 		).pipe(Effect.option);
 
 		if (Option.isNone(fuelTokenToAccount)) {
-			ixs.push(ix);
+			ixs.push(createFuelFuelTankAta.instructions);
 		}
 
 		const [pilotXpKey] = yield* findUserPointsPda({
@@ -76,7 +80,7 @@ export const createMovementHandlerIx = (fleetAccount: Fleet) =>
 					fleetAccount.data.fuelTank,
 					cargoTypeAddress,
 					context.gameInfo.cargoStatsDefinition.key,
-					fuelFuelTankAta,
+					createFuelFuelTankAta.address,
 					resourceNameToMint.Fuel,
 					pilotXpKey,
 					context.gameInfo.game.data.points.pilotXpCategory.category,

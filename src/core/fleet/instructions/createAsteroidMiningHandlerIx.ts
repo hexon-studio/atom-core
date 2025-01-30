@@ -1,7 +1,9 @@
+import { getAccount } from "@solana/spl-token";
 import { PublicKey } from "@solana/web3.js";
 import type { InstructionReturn } from "@staratlas/data-source";
 import { Fleet } from "@staratlas/sage";
 import { Effect, Match, Option } from "effect";
+import { SolanaService } from "~/core/services/SolanaService";
 import { findCargoTypePda } from "~/libs/@staratlas/cargo";
 import {
 	findMineItemPda,
@@ -14,8 +16,6 @@ import { getSagePrograms } from "../../programs";
 import { GameService } from "../../services/GameService";
 import { getGameContext } from "../../services/GameService/utils";
 import { getCurrentFleetSectorCoordinates } from "../utils/getCurrentFleetSectorCoordinates";
-import { SolanaService } from "~/core/services/SolanaService";
-import { getAccount } from "@solana/spl-token";
 
 type Param = {
 	fleetAccount: Fleet;
@@ -51,7 +51,7 @@ export const createAsteroidMiningHandlerIx = ({
 			ixs.push(foodIx);
 		}
 
-		const { address: ammoAmmoBankAta, instructions: ammoIx } =
+		const createAmmoBankAta =
 			yield* GameService.createAssociatedTokenAccountIdempotent(
 				resourceNameToMint.Ammunition,
 				fleetAccount.data.ammoBank,
@@ -59,11 +59,11 @@ export const createAsteroidMiningHandlerIx = ({
 			);
 
 		const ammoTokenToAccount = yield* Effect.tryPromise(() =>
-			getAccount(provider.connection, ammoAmmoBankAta, "confirmed"),
+			getAccount(provider.connection, createAmmoBankAta.address, "confirmed"),
 		).pipe(Effect.option);
 
 		if (Option.isNone(ammoTokenToAccount)) {
-			ixs.push(ammoIx);
+			ixs.push(createAmmoBankAta.instructions);
 		}
 
 		const { address: resourceCargoHoldAta, instructions: resourceIx } =
@@ -143,7 +143,7 @@ export const createAsteroidMiningHandlerIx = ({
 					context.gameInfo.game.data.gameState,
 					context.gameInfo.game.key,
 					foodCargoHoldAta,
-					ammoAmmoBankAta,
+					createAmmoBankAta.address,
 					resourceTokenFromAta,
 					resourceCargoHoldAta,
 					resourceNameToMint.Food,

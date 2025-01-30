@@ -1,10 +1,13 @@
+import { getAccount } from "@solana/spl-token";
 import type { PublicKey } from "@solana/web3.js";
+import type { InstructionReturn } from "@staratlas/data-source";
 import { Fleet } from "@staratlas/sage";
 import BN from "bn.js";
 import { Effect, Option, pipe } from "effect";
 import { getSagePrograms } from "~/core/programs";
 import { GameService } from "~/core/services/GameService";
 import { getGameContext } from "~/core/services/GameService/utils";
+import { SolanaService } from "~/core/services/SolanaService";
 import type { StarbaseInfo } from "~/core/utils/getStarbaseInfo";
 import type { CargoPodKind } from "~/decoders";
 import {
@@ -16,9 +19,6 @@ import {
 	InvalidAmountError,
 	InvalidResourceForPodKindError,
 } from "../../errors";
-import { SolanaService } from "~/core/services/SolanaService";
-import { getAccount } from "@solana/spl-token";
-import type { InstructionReturn } from "@staratlas/data-source";
 
 export const createDepositCargoToFleetIx = ({
 	cargoPodPublicKey,
@@ -42,7 +42,8 @@ export const createDepositCargoToFleetIx = ({
 
 		const provider = yield* SolanaService.anchorProvider;
 
-		let preIx: InstructionReturn | undefined;
+		const ixs: InstructionReturn[] = [];
+
 		const {
 			starbasePlayerPubkey,
 			starbasePubkey,
@@ -88,7 +89,7 @@ export const createDepositCargoToFleetIx = ({
 		).pipe(Effect.option);
 
 		if (Option.isNone(targetTokenAccount)) {
-			preIx = targetTokenIx.instructions;
+			ixs.push(targetTokenIx.instructions);
 		}
 
 		const tokenAccountToPubkey = targetTokenIx.address;
@@ -136,5 +137,5 @@ export const createDepositCargoToFleetIx = ({
 			{ keyIndex: context.keyIndexes.sage, amount: new BN(amount) },
 		);
 
-		return { preIx, ix: ix_1 };
+		return [...ixs, ix_1];
 	});
