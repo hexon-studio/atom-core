@@ -1,0 +1,83 @@
+import type { PublicKey } from "@solana/web3.js";
+import {
+	Cause,
+	Effect,
+	Exit,
+	LogLevel,
+	Logger,
+	ManagedRuntime,
+	Option,
+} from "effect";
+import { GameService } from "../core/services/GameService";
+import type { GlobalOptionsWithWebhook } from "../types";
+import { createMainLiveService } from "../utils/createMainLiveService";
+import { runBaseCommand } from "./baseCommand";
+import { loadCrew } from "~/core/actions/loadCrew";
+
+type Param = {
+	fleetNameOrAddress: string | PublicKey;
+	crewAmount: number;
+	globalOpts: GlobalOptionsWithWebhook;
+};
+
+export const runLoadCrew = async ({
+	fleetNameOrAddress,
+	crewAmount,
+	globalOpts,
+}: Param) => {
+	const mainServiceLive = createMainLiveService(globalOpts);
+
+	const runtime = ManagedRuntime.make(mainServiceLive);
+
+	const program = GameService.pipe(
+		Effect.tap((service) => service.initGame(service.gameContext, globalOpts)),
+		Effect.tap(() => Effect.log("Game initialized.")),
+		Effect.flatMap(() =>
+			runBaseCommand({
+				self: () =>
+					loadCrew({
+						fleetNameOrAddress,
+						crewAmount,
+					}),
+				normalizeError: (err) => ({
+					tag: err._tag,
+					message: err.message,
+					signatures:
+						err._tag === "TransactionFailedError" ? err.signature : null,
+				}),
+			}),
+		),
+		Effect.tapBoth({
+			onSuccess: (txIds) =>
+				Effect.log("Crew load done").pipe(Effect.annotateLogs({ txIds })),
+			onFailure: (error) =>
+				Effect.logError(`[${error._tag}] ${error.message}`).pipe(
+					Effect.annotateLogs({ error }),
+				),
+		}),
+		Logger.withMinimumLogLevel(LogLevel.Debug),
+	);
+
+	const exit = await runtime.runPromiseExit(program);
+
+	await runtime.dispose();
+
+	exit.pipe(
+		Exit.match({
+			onSuccess: () => {
+				process.exit(0);
+			},
+			onFailure: (cause) => {
+				console.log(`Transaction error: ${Cause.pretty(cause)}`);
+
+				const error = Cause.failureOption(cause).pipe(Option.getOrUndefined);
+
+				if (error) {
+					console.log(error);
+				}
+
+				process.exit(1);
+			},
+		}),
+	);
+};
