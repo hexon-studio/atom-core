@@ -26,7 +26,7 @@ describe("computeDepositAmout", () => {
 			expect(result).toBe("100");
 		});
 
-		it("returns a FleetNotEnoughSpaceError if fleet have not enough space", async () => {
+		it("returns a FleetNotEnoughSpaceFixedError if fleet have not enough space", async () => {
 			const result = await Effect.runPromiseExit(
 				compute({
 					mode: "fixed",
@@ -46,7 +46,7 @@ describe("computeDepositAmout", () => {
 				    "_id": "Cause",
 				    "_tag": "Fail",
 				    "failure": {
-				      "_tag": "FleetNotEnoughSpaceError",
+				      "_tag": "FleetNotEnoughSpaceFixedError",
 				      "amountAdded": "100",
 				      "amountAvailable": "99",
 				      "cargoKind": "ammo_bank",
