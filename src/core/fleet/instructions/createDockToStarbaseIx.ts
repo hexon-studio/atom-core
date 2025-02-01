@@ -17,7 +17,6 @@ import { GameService } from "../../services/GameService";
 import { getGameContext } from "../../services/GameService/utils";
 import { InvalidFleetStateError } from "../errors";
 import { getCurrentFleetSectorCoordinates } from "../utils/getCurrentFleetSectorCoordinates";
-import { createMovementHandlerIx } from "./createMovementHandlerIx";
 
 export const createDockToStarbaseIx = (fleetAccount: Fleet) =>
 	Effect.gen(function* () {
@@ -114,9 +113,9 @@ export const createDockToStarbaseIx = (fleetAccount: Fleet) =>
 			ixs.push(ix_1);
 		}
 
-		const maybeMoveHandlerIx = yield* createMovementHandlerIx(fleetAccount);
+		//const maybeMoveHandlerIx = yield* createMovementHandlerIx(fleetAccount);
 
-		ixs.push(...maybeMoveHandlerIx);
+		// ixs.push(...maybeMoveHandlerIx);
 
 		yield* Effect.log("Creating idleToLoadingBay IX");
 

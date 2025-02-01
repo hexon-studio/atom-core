@@ -1,7 +1,7 @@
 import type { PublicKey } from "@solana/web3.js";
 import { Effect } from "effect";
 import { getFleetAccountByNameOrAddress } from "~/libs/@staratlas/sage";
-import { createDockToStarbaseIx } from "../fleet/instructions";
+import { createPreIxs } from "../fleet/instructions/createPreIxs";
 import { GameService } from "../services/GameService";
 import { getGameContext } from "../services/GameService/utils";
 import { createDrainVaultIx } from "../vault/instructions/createDrainVaultIx";
@@ -23,7 +23,10 @@ export const dockToStarbase = ({
 			return [];
 		}
 
-		const ixs = yield* createDockToStarbaseIx(fleetAccount);
+		const ixs = yield* createPreIxs({
+			fleetAccount,
+			target: "StarbaseLoadingBay",
+		});
 
 		const drainVaultIx = yield* createDrainVaultIx();
 

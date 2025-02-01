@@ -7,9 +7,12 @@ import {
 	getStarbasePlayerAccount,
 } from "~/libs/@staratlas/sage";
 import { createLoadCrewIx } from "../fleet/instructions/createLoadCrewIx";
+import { createPreIxs } from "../fleet/instructions/createPreIxs";
 import { getCurrentFleetSectorCoordinates } from "../fleet/utils/getCurrentFleetSectorCoordinates";
 import { GameService } from "../services/GameService";
+import { getGameContext } from "../services/GameService/utils";
 import { getStarbaseInfoByCoords } from "../utils/getStarbaseInfo";
+import { createDrainVaultIx } from "../vault/instructions/createDrainVaultIx";
 
 export const loadCrew = ({
 	fleetNameOrAddress,
@@ -66,6 +69,13 @@ export const loadCrew = ({
 
 		const ixs: InstructionReturn[] = [];
 
+		const preIxs = yield* createPreIxs({
+			fleetAccount,
+			target: "StarbaseLoadingBay",
+		});
+
+		ixs.push(...preIxs);
+
 		yield* Effect.log(
 			`Loading ${finalCrewAmount} passenger crew to fleet ${fleetAccount.key.toString()}`,
 		);
@@ -78,9 +88,16 @@ export const loadCrew = ({
 
 		ixs.push(...loadCrewIxs);
 
+		const drainVaultIx = yield* createDrainVaultIx();
+
+		const {
+			options: { maxIxsPerTransaction },
+		} = yield* getGameContext();
+
 		const txs = yield* GameService.buildAndSignTransaction({
+			afterIxs: drainVaultIx,
 			ixs,
-			size: 1,
+			size: maxIxsPerTransaction,
 		});
 
 		const txIds = yield* Effect.all(

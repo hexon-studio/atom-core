@@ -1,19 +1,11 @@
 import type { PublicKey } from "@solana/web3.js";
 import type { InstructionReturn } from "@staratlas/data-source";
 import BN from "bn.js";
-import { Effect, Match, pipe } from "effect";
-import {
-	getFleetAccount,
-	getFleetAccountByNameOrAddress,
-	getMineItemAccount,
-	getResourceAccount,
-} from "~/libs/@staratlas/sage";
+import { Effect } from "effect";
+import { getFleetAccountByNameOrAddress } from "~/libs/@staratlas/sage";
 import { FleetWarpCooldownError } from "../fleet/errors";
-import {
-	createStopMiningIx,
-	createUndockFromStarbaseIx,
-	createWarpToCoordinateIx,
-} from "../fleet/instructions";
+import { createWarpToCoordinateIx } from "../fleet/instructions";
+import { createPreIxs } from "../fleet/instructions/createPreIxs";
 import { GameService } from "../services/GameService";
 import { getGameContext } from "../services/GameService/utils";
 import { createDrainVaultIx } from "../vault/instructions/createDrainVaultIx";
@@ -28,7 +20,7 @@ export const warpToSector = ({
 	Effect.gen(function* () {
 		yield* Effect.log("Start warp...");
 
-		let fleetAccount =
+		const fleetAccount =
 			yield* getFleetAccountByNameOrAddress(fleetNameOrAddress);
 
 		const warpCooldownExpiresAt =
@@ -50,33 +42,7 @@ export const warpToSector = ({
 
 		const ixs: InstructionReturn[] = [];
 
-		const preIxs = yield* Match.value(fleetAccount.state).pipe(
-			Match.when(
-				{ MineAsteroid: Match.defined },
-				({ MineAsteroid: { resource } }) =>
-					pipe(
-						getResourceAccount(resource),
-						Effect.flatMap((resource) =>
-							getMineItemAccount(resource.data.mineItem),
-						),
-						Effect.flatMap((mineItem) => {
-							return createStopMiningIx({
-								resourceMint: mineItem.data.mint,
-								fleetAccount,
-							});
-						}),
-					),
-			),
-			Match.when({ StarbaseLoadingBay: Match.defined }, () =>
-				createUndockFromStarbaseIx(fleetAccount).pipe(Effect.map((ix) => [ix])),
-			),
-			Match.orElse(() => Effect.succeed([] as InstructionReturn[])),
-		);
-
-		if (preIxs.length) {
-			// NOTE: get a fresh fleet account
-			fleetAccount = yield* getFleetAccount(fleetAccount.key);
-		}
+		const preIxs = yield* createPreIxs({ fleetAccount, target: "Idle" });
 
 		ixs.push(...preIxs);
 

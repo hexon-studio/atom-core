@@ -16,13 +16,11 @@ import { runBaseCommand } from "./baseCommand";
 
 type Param = {
 	fleetNameOrAddress: string | PublicKey;
-	resourceMint: PublicKey;
 	globalOpts: GlobalOptionsWithWebhook;
 };
 
 export const runStopMining = async ({
 	fleetNameOrAddress,
-	resourceMint,
 	globalOpts,
 }: Param) => {
 	const mainServiceLive = createMainLiveService(globalOpts);
@@ -37,7 +35,6 @@ export const runStopMining = async ({
 				self: () =>
 					stopMining({
 						fleetNameOrAddress,
-						resourceMint,
 					}),
 				normalizeError: (err) => ({
 					tag: err._tag,

@@ -1,17 +1,15 @@
 import type { PublicKey } from "@solana/web3.js";
 import { Effect } from "effect";
 import { getFleetAccountByNameOrAddress } from "~/libs/@staratlas/sage";
-import { createStopMiningIx } from "../fleet/instructions";
+import { createPreIxs } from "../fleet/instructions/createPreIxs";
 import { GameService } from "../services/GameService";
 import { getGameContext } from "../services/GameService/utils";
 import { createDrainVaultIx } from "../vault/instructions/createDrainVaultIx";
 
 export const stopMining = ({
 	fleetNameOrAddress,
-	resourceMint,
 }: {
 	fleetNameOrAddress: string | PublicKey;
-	resourceMint: PublicKey;
 }) =>
 	Effect.gen(function* () {
 		const fleetAccount =
@@ -23,11 +21,11 @@ export const stopMining = ({
 			return [];
 		}
 
-		yield* Effect.log(`Stop mining ${resourceMint}...`);
+		yield* Effect.log("Stop mining...");
 
-		const ixs = yield* createStopMiningIx({
+		const ixs = yield* createPreIxs({
 			fleetAccount,
-			resourceMint,
+			target: "Idle",
 		});
 
 		const drainVaultIx = yield* createDrainVaultIx();

@@ -1,7 +1,7 @@
 import type { PublicKey } from "@solana/web3.js";
 import type { InstructionReturn } from "@staratlas/data-source";
 import { BN } from "bn.js";
-import { Effect, Match, Option, Record } from "effect";
+import { Effect, Option, Record } from "effect";
 import { resourceNameToMint } from "~/constants/resources";
 import { getFleetCargoPodInfoByType } from "~/libs/@staratlas/cargo";
 import { getFleetAccountByNameOrAddress } from "~/libs/@staratlas/sage";
@@ -10,7 +10,7 @@ import {
 	NotEnoughCargoSpaceForScanError,
 	NotEnoughFoodForScanError,
 } from "../fleet/errors";
-import { createUndockFromStarbaseIx } from "../fleet/instructions";
+import { createPreIxs } from "../fleet/instructions/createPreIxs";
 import { createScanIx } from "../fleet/instructions/createScanIx";
 import { GameService } from "../services/GameService";
 
@@ -92,12 +92,7 @@ export const startScan = ({
 
 		const ixs: InstructionReturn[] = [];
 
-		const preIxs = yield* Match.value(fleetAccount.state).pipe(
-			Match.when({ StarbaseLoadingBay: Match.defined }, () =>
-				createUndockFromStarbaseIx(fleetAccount).pipe(Effect.map((ix) => [ix])),
-			),
-			Match.orElse(() => Effect.succeed([])),
-		);
+		const preIxs = yield* createPreIxs({ fleetAccount, target: "Idle" });
 
 		ixs.push(...preIxs);
 

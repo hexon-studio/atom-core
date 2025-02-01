@@ -351,11 +351,6 @@ const main = async () => {
 	program
 		.command("stop-mining")
 		.argument("<fleetNameOrAddress>", "The fleet to stop mining")
-		.argument(
-			"<resourceMint>",
-			"The mint of the resource to mine",
-			parsePublicKey,
-		)
 		.action(async (fleetNameOrAddress: string, resourceMint: PublicKey) => {
 			const globalOpts = createOptionsWithWebhook(
 				program.opts<CliGlobalOptions>(),
@@ -363,7 +358,6 @@ const main = async () => {
 
 			return runStopMining({
 				globalOpts,
-				resourceMint,
 				fleetNameOrAddress: isPublicKey(fleetNameOrAddress)
 					? new PublicKey(fleetNameOrAddress)
 					: fleetNameOrAddress,
