@@ -73,7 +73,7 @@ export const loadCrew = ({
 		const loadCrewIxs = yield* createLoadCrewIx({
 			fleetAccount,
 			starbaseInfo,
-			count: finalCrewAmount,
+			crewAmount: finalCrewAmount,
 		});
 
 		ixs.push(...loadCrewIxs);
