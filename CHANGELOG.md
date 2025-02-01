@@ -1,5 +1,12 @@
 # Changelog
 
+# [1.27.0](https://github.com/hexon-studio/atom-core/compare/v1.26.0...v1.27.0) (2025-02-01)
+
+
+### Features
+
+* refactor stop mining and crew loading actions to use pre-instructions ([2070319](https://github.com/hexon-studio/atom-core/commit/20703194ddce89af79b870fafa955c2cd7cd5ed1))
+
 # [1.26.0](https://github.com/hexon-studio/atom-core/compare/v1.25.0...v1.26.0) (2025-02-01)
 
 
