@@ -1,5 +1,14 @@
 # Changelog
 
+# [1.26.0](https://github.com/hexon-studio/atom-core/compare/v1.25.0...v1.26.0) (2025-02-01)
+
+
+### Features
+
+* add load and unload crew commands to CLI ([dc513e9](https://github.com/hexon-studio/atom-core/commit/dc513e9c38b7d350994b5847504b71cce7c92ad1))
+* enhance crew loading and unloading commands with argument parsing ([2f44aca](https://github.com/hexon-studio/atom-core/commit/2f44aca713fb20c72c5c8ee4d968da8fef8e456b))
+* enhance crew loading and unloading commands with argument parsing ([14bfb89](https://github.com/hexon-studio/atom-core/commit/14bfb89744f011c5975a639a122211bec7429dd5))
+
 # [1.25.0](https://github.com/hexon-studio/atom-core/compare/v1.24.0...v1.25.0) (2025-01-30)
 
 
