@@ -1,8 +1,7 @@
 import type { PublicKey } from "@solana/web3.js";
-import type { InstructionReturn } from "@staratlas/data-source";
 import { Effect } from "effect";
 import { getFleetAccountByNameOrAddress } from "~/libs/@staratlas/sage";
-import { createUndockFromStarbaseIx } from "../fleet/instructions";
+import { createPreIxs } from "../fleet/instructions/createPreIxs";
 import { GameService } from "../services/GameService";
 import { getGameContext } from "../services/GameService/utils";
 import { createDrainVaultIx } from "../vault/instructions/createDrainVaultIx";
@@ -20,13 +19,9 @@ export const undockFromStarbase = ({
 			return [];
 		}
 
-		const ixs: InstructionReturn[] = [];
-
 		yield* Effect.log("Undocking from starbase...");
 
-		const ix = yield* createUndockFromStarbaseIx(fleetAccount);
-
-		ixs.push(ix);
+		const ixs = yield* createPreIxs({ fleetAccount, target: "Idle" });
 
 		const drainVaultIx = yield* createDrainVaultIx();
 

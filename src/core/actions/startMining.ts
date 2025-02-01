@@ -1,11 +1,9 @@
 import type { PublicKey } from "@solana/web3.js";
 import type { InstructionReturn } from "@staratlas/data-source";
-import { Effect, Match } from "effect";
+import { Effect } from "effect";
 import { getFleetAccountByNameOrAddress } from "~/libs/@staratlas/sage";
-import {
-	createStartMiningIx,
-	createUndockFromStarbaseIx,
-} from "../fleet/instructions";
+import { createStartMiningIx } from "../fleet/instructions";
+import { createPreIxs } from "../fleet/instructions/createPreIxs";
 import { GameService } from "../services/GameService";
 import { getGameContext } from "../services/GameService/utils";
 import { createDrainVaultIx } from "../vault/instructions/createDrainVaultIx";
@@ -35,12 +33,7 @@ export const startMining = ({
 
 		const ixs: InstructionReturn[] = [];
 
-		const preIxs = yield* Match.value(fleetAccount.state).pipe(
-			Match.when({ StarbaseLoadingBay: Match.defined }, () =>
-				createUndockFromStarbaseIx(fleetAccount).pipe(Effect.map((ix) => [ix])),
-			),
-			Match.orElse(() => Effect.succeed([])),
-		);
+		const preIxs = yield* createPreIxs({ fleetAccount, target: "Idle" });
 
 		ixs.push(...preIxs);
 

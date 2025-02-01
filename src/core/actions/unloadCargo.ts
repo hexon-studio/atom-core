@@ -4,7 +4,6 @@ import { BN } from "bn.js";
 import {
 	Effect,
 	Array as EffectArray,
-	Match,
 	Option,
 	Record,
 	identity,
@@ -14,8 +13,6 @@ import { constNull } from "effect/Function";
 import {
 	getFleetAccount,
 	getFleetAccountByNameOrAddress,
-	getMineItemAccount,
-	getResourceAccount,
 } from "~/libs/@staratlas/sage";
 import {
 	type CargoPodKind,
@@ -26,11 +23,8 @@ import {
 	LoadUnloadFailedError,
 	LoadUnloadPartiallyFailedError,
 } from "../fleet/errors";
-import {
-	createDockToStarbaseIx,
-	createStopMiningIx,
-	createWithdrawCargoFromFleetIx,
-} from "../fleet/instructions";
+import { createWithdrawCargoFromFleetIx } from "../fleet/instructions";
+import { createPreIxs } from "../fleet/instructions/createPreIxs";
 import {
 	type CargoPodsDifference,
 	getCargoPodsResourcesDifference,
@@ -59,76 +53,30 @@ export const unloadCargo = ({
 			options: { maxIxsPerTransaction },
 		} = yield* getGameContext();
 
-		const preIxsSignatures = yield* Match.value(preFleetAccount.state).pipe(
-			Match.whenOr(
-				{ Idle: Match.defined },
-				{ MoveWarp: Match.defined },
-				{ MoveSubwarp: Match.defined },
-				() =>
-					Effect.Do.pipe(
-						Effect.bind("dockIx", () =>
-							createDockToStarbaseIx(preFleetAccount),
-						),
-						Effect.bind("drainVaultIx", () => createDrainVaultIx()),
-						// Sending the transactions before doing the next step
-						Effect.flatMap(({ dockIx, drainVaultIx }) =>
-							GameService.buildAndSignTransaction({
-								ixs: dockIx,
-								afterIxs: drainVaultIx,
-								size: maxIxsPerTransaction,
-							}),
-						),
-						Effect.flatMap((txs) =>
-							Effect.all(txs.map((tx) => GameService.sendTransaction(tx))),
-						),
-						Effect.tap((signatures) =>
-							Effect.log("Fleet docked to starbase.").pipe(
-								Effect.annotateLogs({ signatures }),
-							),
-						),
-					),
+		const preIxsSignatures = yield* Effect.Do.pipe(
+			Effect.bind("preIxs", () =>
+				createPreIxs({
+					fleetAccount: preFleetAccount,
+					target: "StarbaseLoadingBay",
+				}),
 			),
-			Match.when(
-				{ MineAsteroid: Match.defined },
-				({ MineAsteroid: { resource } }) =>
-					Effect.Do.pipe(
-						Effect.bind("stopMiningIx", () =>
-							pipe(
-								getResourceAccount(resource),
-								Effect.flatMap((resource) =>
-									getMineItemAccount(resource.data.mineItem),
-								),
-								Effect.flatMap((mineItem) =>
-									createStopMiningIx({
-										resourceMint: mineItem.data.mint,
-										fleetAccount: preFleetAccount,
-									}),
-								),
-							),
-						),
-						Effect.bind("dockIx", () =>
-							createDockToStarbaseIx(preFleetAccount),
-						),
-						Effect.bind("drainVaultIx", () => createDrainVaultIx()),
-						// Sending the transactions before doing the next step
-						Effect.flatMap(({ stopMiningIx, dockIx, drainVaultIx }) =>
-							GameService.buildAndSignTransaction({
-								ixs: [...stopMiningIx, ...dockIx],
-								afterIxs: drainVaultIx,
-								size: maxIxsPerTransaction,
-							}),
-						),
-						Effect.flatMap((txs) =>
-							Effect.all(txs.map((tx) => GameService.sendTransaction(tx))),
-						),
-						Effect.tap((txs) =>
-							Effect.log("Fleet stopped mining and docked to starbase.").pipe(
-								Effect.annotateLogs({ txs }),
-							),
-						),
-					),
+			Effect.bind("drainVaultIx", () => createDrainVaultIx()),
+			// Sending the transactions before doing the next step
+			Effect.flatMap(({ preIxs, drainVaultIx }) =>
+				GameService.buildAndSignTransaction({
+					ixs: preIxs,
+					afterIxs: drainVaultIx,
+					size: maxIxsPerTransaction,
+				}),
 			),
-			Match.orElse(() => Effect.succeed([])),
+			Effect.flatMap((txs) =>
+				Effect.all(txs.map((tx) => GameService.sendTransaction(tx))),
+			),
+			Effect.tap((signatures) =>
+				Effect.log("Fleet docked to starbase.").pipe(
+					Effect.annotateLogs({ signatures }),
+				),
+			),
 		);
 
 		yield* Effect.sleep("10 seconds");

@@ -43,16 +43,18 @@ export const createUndockFromStarbaseIx = (fleetAccount: Fleet) =>
 
 		yield* Effect.log("Creating loadingBayToIdle IX");
 
-		return Fleet.loadingBayToIdle(
-			programs.sage,
-			signer,
-			fleetAccount.data.ownerProfile,
-			playerFactionAddress,
-			fleetAccount.key,
-			starbaseKey,
-			starbasePlayerKey,
-			context.gameInfo.game.key,
-			context.gameInfo.game.data.gameState,
-			context.keyIndexes.sage,
-		);
+		return [
+			Fleet.loadingBayToIdle(
+				programs.sage,
+				signer,
+				fleetAccount.data.ownerProfile,
+				playerFactionAddress,
+				fleetAccount.key,
+				starbaseKey,
+				starbasePlayerKey,
+				context.gameInfo.game.key,
+				context.gameInfo.game.data.gameState,
+				context.keyIndexes.sage,
+			),
+		];
 	});

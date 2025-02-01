@@ -3,10 +3,13 @@ import type { InstructionReturn } from "@staratlas/data-source";
 import type { MiscStats } from "@staratlas/sage";
 import { Effect } from "effect";
 import { getFleetAccountByNameOrAddress } from "~/libs/@staratlas/sage";
+import { createPreIxs } from "../fleet/instructions/createPreIxs";
 import { createUnloadCrewIx } from "../fleet/instructions/createUnloadCrewIx";
 import { getCurrentFleetSectorCoordinates } from "../fleet/utils/getCurrentFleetSectorCoordinates";
 import { GameService } from "../services/GameService";
+import { getGameContext } from "../services/GameService/utils";
 import { getStarbaseInfoByCoords } from "../utils/getStarbaseInfo";
+import { createDrainVaultIx } from "../vault/instructions/createDrainVaultIx";
 
 export const unloadCrew = ({
 	allowUnloadRequiredCrew = false,
@@ -51,6 +54,13 @@ export const unloadCrew = ({
 
 		const ixs: InstructionReturn[] = [];
 
+		const preIxs = yield* createPreIxs({
+			fleetAccount,
+			target: "StarbaseLoadingBay",
+		});
+
+		ixs.push(...preIxs);
+
 		yield* Effect.log(
 			`Unloading ${finalCrewAmount} passenger crew from fleet ${fleetAccount.key.toString()}`,
 		);
@@ -63,9 +73,16 @@ export const unloadCrew = ({
 
 		ixs.push(...unloadCrewIxs);
 
+		const drainVaultIx = yield* createDrainVaultIx();
+
+		const {
+			options: { maxIxsPerTransaction },
+		} = yield* getGameContext();
+
 		const txs = yield* GameService.buildAndSignTransaction({
+			afterIxs: drainVaultIx,
 			ixs,
-			size: 1,
+			size: maxIxsPerTransaction,
 		});
 
 		const txIds = yield* Effect.all(
