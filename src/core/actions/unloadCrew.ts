@@ -1,21 +1,21 @@
 import type { PublicKey } from "@solana/web3.js";
+import type { InstructionReturn } from "@staratlas/data-source";
+import type { MiscStats } from "@staratlas/sage";
 import { Effect } from "effect";
 import { getFleetAccountByNameOrAddress } from "~/libs/@staratlas/sage";
+import { createUnloadCrewIx } from "../fleet/instructions/createUnloadCrewIx";
+import { getCurrentFleetSectorCoordinates } from "../fleet/utils/getCurrentFleetSectorCoordinates";
 import { GameService } from "../services/GameService";
 import { getStarbaseInfoByCoords } from "../utils/getStarbaseInfo";
-import { getCurrentFleetSectorCoordinates } from "../fleet/utils/getCurrentFleetSectorCoordinates";
-import { createUnloadCrewIx } from "../fleet/instructions/createUnloadCrewIx";
-import type { ShipStats } from "@staratlas/sage";
-import type { InstructionReturn } from "@staratlas/data-source";
 
 export const unloadCrew = ({
-	fleetNameOrAddress,
-	crewAmount,
 	allowUnloadRequiredCrew = false,
+	crewAmount,
+	fleetNameOrAddress,
 }: {
-	fleetNameOrAddress: string | PublicKey;
-	crewAmount: number;
 	allowUnloadRequiredCrew: boolean;
+	crewAmount: number;
+	fleetNameOrAddress: string | PublicKey;
 }) =>
 	Effect.gen(function* () {
 		const fleetAccount =
@@ -33,26 +33,19 @@ export const unloadCrew = ({
 			startbaseCoords: fleetCoords,
 		});
 
-		let finalCrewAmount = crewAmount;
-
 		// check if there are enough crew members in the fleet
-		const fleetMiscStats = (<ShipStats>fleetAccount.data.stats).miscStats;
+		const fleetMiscStats = fleetAccount.data.stats.miscStats as MiscStats;
 		const currentCrew = fleetMiscStats.crewCount;
-		const requiredCrew = fleetMiscStats.requiredCrew;
 
-		if (
-			!allowUnloadRequiredCrew &&
-			finalCrewAmount > currentCrew - requiredCrew
-		) {
-			finalCrewAmount = currentCrew - requiredCrew;
-		}
+		const requiredCrew = allowUnloadRequiredCrew
+			? 0
+			: fleetMiscStats.requiredCrew;
 
-		if (allowUnloadRequiredCrew && finalCrewAmount > currentCrew) {
-			finalCrewAmount = currentCrew;
-		}
+		const finalCrewAmount = Math.min(crewAmount, currentCrew - requiredCrew);
 
-		if (finalCrewAmount === 0) {
+		if (finalCrewAmount <= 0) {
 			yield* Effect.log("No passenger crew to unload in fleet. Skipping.");
+
 			return [];
 		}
 

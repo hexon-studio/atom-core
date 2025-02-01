@@ -8,16 +8,16 @@ import {
 	ManagedRuntime,
 	Option,
 } from "effect";
+import { unloadCrew } from "~/core/actions/unloadCrew";
 import { GameService } from "../core/services/GameService";
 import type { GlobalOptionsWithWebhook } from "../types";
 import { createMainLiveService } from "../utils/createMainLiveService";
 import { runBaseCommand } from "./baseCommand";
-import { unloadCrew } from "~/core/actions/unloadCrew";
 
 type Param = {
-	fleetNameOrAddress: string | PublicKey;
-	crewAmount: number;
 	allowUnloadRequiredCrew: boolean;
+	crewAmount: number;
+	fleetNameOrAddress: string | PublicKey;
 	globalOpts: GlobalOptionsWithWebhook;
 };
 

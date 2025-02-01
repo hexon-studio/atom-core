@@ -1,15 +1,15 @@
 import type { PublicKey } from "@solana/web3.js";
 import type { InstructionReturn } from "@staratlas/data-source";
+import type { MiscStats } from "@staratlas/sage";
 import { Effect } from "effect";
 import {
 	getFleetAccountByNameOrAddress,
 	getStarbasePlayerAccount,
 } from "~/libs/@staratlas/sage";
-import { GameService } from "../services/GameService";
 import { createLoadCrewIx } from "../fleet/instructions/createLoadCrewIx";
-import { getStarbaseInfoByCoords } from "../utils/getStarbaseInfo";
 import { getCurrentFleetSectorCoordinates } from "../fleet/utils/getCurrentFleetSectorCoordinates";
-import type { ShipStats } from "@staratlas/sage";
+import { GameService } from "../services/GameService";
+import { getStarbaseInfoByCoords } from "../utils/getStarbaseInfo";
 
 export const loadCrew = ({
 	fleetNameOrAddress,
@@ -39,29 +39,28 @@ export const loadCrew = ({
 
 		const starbaseCrewCount = starbasePlayerAccount.totalCrew();
 
-		if (starbaseCrewCount === 0) {
+		if (!starbaseCrewCount) {
 			yield* Effect.log("No passenger crew to load in starbase. Skipping.");
+
 			return [];
 		}
 
-		let finalCrewAmount = crewAmount;
-
-		if (starbaseCrewCount < crewAmount) {
-			finalCrewAmount = starbaseCrewCount;
-		}
-
 		// check if there is enough passenger space in the fleet
-		const fleetMiscStats = (<ShipStats>fleetAccount.data.stats).miscStats;
+		const fleetMiscStats = fleetAccount.data.stats.miscStats as MiscStats;
+
 		const currentCrew = fleetMiscStats.crewCount;
+
 		const totalCrewCapacity =
 			fleetMiscStats.requiredCrew + fleetMiscStats.passengerCapacity;
 
-		if (currentCrew + finalCrewAmount > totalCrewCapacity) {
-			finalCrewAmount = totalCrewCapacity - currentCrew;
-		}
+		const finalCrewAmount = Math.min(
+			Math.min(crewAmount, starbaseCrewCount),
+			totalCrewCapacity - currentCrew,
+		);
 
-		if (finalCrewAmount === 0) {
+		if (finalCrewAmount <= 0) {
 			yield* Effect.log("Not enough passenger space in fleet. Skipping.");
+
 			return [];
 		}
 
@@ -74,7 +73,7 @@ export const loadCrew = ({
 		const loadCrewIxs = yield* createLoadCrewIx({
 			fleetAccount,
 			starbaseInfo,
-			crewAmount: finalCrewAmount,
+			count: finalCrewAmount,
 		});
 
 		ixs.push(...loadCrewIxs);

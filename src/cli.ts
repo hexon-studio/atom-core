@@ -28,7 +28,9 @@ import {
 	runUnloadCargo,
 	runWarp,
 } from "./commands";
+import { runLoadCrew } from "./commands/loadCrew";
 import { runStartScan } from "./commands/startScan";
+import { runUnloadCrew } from "./commands/unloadCrew";
 import {
 	cargoPodKinds,
 	loadResourceDecoder,
@@ -38,8 +40,6 @@ import type { CliGlobalOptions } from "./types";
 import { createOptionsWithWebhook } from "./utils/creactOptionsWithWebhook";
 import { parseSecretKey } from "./utils/keypair";
 import { isPublicKey, parsePublicKey } from "./utils/public-key";
-import { runLoadCrew } from "./commands/loadCrew";
-import { runUnloadCrew } from "./commands/unloadCrew";
 
 Dotenv.config();
 
@@ -373,7 +373,11 @@ const main = async () => {
 	program
 		.command("load-crew")
 		.argument("<fleetNameOrAddress>", "The fleet to load crew")
-		.argument("<crewAmount>", "The amount of crew to load")
+		.argument(
+			"<crewAmount>",
+			"The amount of crew to load",
+			z.coerce.number().parse,
+		)
 		.action(async (fleetNameOrAddress: string, crewAmount: number) => {
 			const globalOpts = createOptionsWithWebhook(
 				program.opts<CliGlobalOptions>(),
@@ -391,7 +395,11 @@ const main = async () => {
 	program
 		.command("unload-crew")
 		.argument("<fleetNameOrAddress>", "The fleet to unload crew")
-		.argument("<crewAmount>", "The amount of crew to unload")
+		.argument(
+			"<crewAmount>",
+			"The amount of crew to unload",
+			z.coerce.number().parse,
+		)
 		.option(
 			"--allow-unload-required-crew",
 			"Allow the unload of the fleet required crew",
