@@ -4,6 +4,7 @@ import { Effect, Match } from "effect";
 import type { CargoPodKind, LoadResourceInput } from "../../../../../decoders";
 import {
 	FleetNotEnoughSpaceError,
+	FleetNotEnoughSpaceFixedError,
 	ResourceNotEnoughError,
 } from "../../../errors";
 
@@ -57,7 +58,7 @@ export const computeDepositAmount =
 
 						if (freeCargoUnitsInFleet.lt(new BN(fixedAmount))) {
 							return yield* Effect.fail(
-								new FleetNotEnoughSpaceError({
+								new FleetNotEnoughSpaceFixedError({
 									amountAdded: fixedAmount.toString(),
 									amountAvailable: freeCargoUnitsInFleet.toString(),
 									cargoKind: cargoPodKind,
