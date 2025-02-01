@@ -38,6 +38,18 @@ export class FleetNotEnoughSpaceError extends Data.TaggedError(
 	}
 }
 
+export class FleetNotEnoughSpaceFixedError extends Data.TaggedError(
+	"FleetNotEnoughSpaceFixedError",
+)<{
+	cargoKind: CargoPodKind;
+	amountAvailable: string;
+	amountAdded: string;
+}> {
+	override get message() {
+		return `Fleet does not have enough space for ${this.cargoKind}: ${this.amountAvailable} < ${this.amountAdded}`;
+	}
+}
+
 export class FleetNotInStarbaseError extends Data.TaggedError(
 	"FleetNotInStarbaseError",
 ) {}
