@@ -1,5 +1,12 @@
 # Changelog
 
+# [1.28.0](https://github.com/hexon-studio/atom-core/compare/v1.27.0...v1.28.0) (2025-02-01)
+
+
+### Features
+
+* add FleetNotEnoughSpaceFixedError for precise cargo space validation ([f8b08d8](https://github.com/hexon-studio/atom-core/commit/f8b08d8e4616dc5789ca3e1b23e85f1872f619ac))
+
 # [1.27.0](https://github.com/hexon-studio/atom-core/compare/v1.26.0...v1.27.0) (2025-02-01)
 
 
