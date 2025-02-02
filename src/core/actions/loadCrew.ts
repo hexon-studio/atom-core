@@ -1,6 +1,7 @@
 import type { PublicKey } from "@solana/web3.js";
 import type { InstructionReturn } from "@staratlas/data-source";
 import type { MiscStats } from "@staratlas/sage";
+import { BN } from "bn.js";
 import { Effect } from "effect";
 import {
 	getFleetAccountByNameOrAddress,
@@ -13,7 +14,6 @@ import { GameService } from "../services/GameService";
 import { getGameContext } from "../services/GameService/utils";
 import { getStarbaseInfoByCoords } from "../utils/getStarbaseInfo";
 import { createDrainVaultIx } from "../vault/instructions/createDrainVaultIx";
-import { BN } from "bn.js";
 
 export const loadCrew = ({
 	fleetNameOrAddress,
