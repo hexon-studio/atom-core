@@ -1,6 +1,7 @@
 import type { PublicKey } from "@solana/web3.js";
 import type { InstructionReturn } from "@staratlas/data-source";
 import type { MiscStats } from "@staratlas/sage";
+import { BN } from "bn.js";
 import { Effect } from "effect";
 import {
 	getFleetAccountByNameOrAddress,
@@ -40,10 +41,16 @@ export const loadCrew = ({
 			starbaseInfo.starbasePlayerPubkey,
 		);
 
-		const starbaseCrewCount = starbasePlayerAccount.totalCrew();
+		const starbaseTotalCrewCount = new BN(starbasePlayerAccount.totalCrew());
 
-		if (!starbaseCrewCount) {
-			yield* Effect.log("No passenger crew to load in starbase. Skipping.");
+		const starbaseBusyCrewCount = starbasePlayerAccount.data.busyCrew;
+
+		const starbaseAvailableCrewCount = starbaseTotalCrewCount
+			.sub(starbaseBusyCrewCount)
+			.toNumber();
+
+		if (starbaseAvailableCrewCount <= 0) {
+			yield* Effect.log("In starbase there are no crew to load. Skipping.");
 
 			return [];
 		}
@@ -57,7 +64,7 @@ export const loadCrew = ({
 			fleetMiscStats.requiredCrew + fleetMiscStats.passengerCapacity;
 
 		const finalCrewAmount = Math.min(
-			Math.min(crewAmount, starbaseCrewCount),
+			Math.min(crewAmount, starbaseAvailableCrewCount),
 			totalCrewCapacity - currentCrew,
 		);
 

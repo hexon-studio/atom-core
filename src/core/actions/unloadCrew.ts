@@ -47,7 +47,7 @@ export const unloadCrew = ({
 		const finalCrewAmount = Math.min(crewAmount, currentCrew - requiredCrew);
 
 		if (finalCrewAmount <= 0) {
-			yield* Effect.log("No passenger crew to unload in fleet. Skipping.");
+			yield* Effect.log("In fleet there are no crew to disembark. Skipping.");
 
 			return [];
 		}
