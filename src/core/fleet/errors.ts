@@ -26,6 +26,16 @@ export class ResourceNotEnoughError extends Data.TaggedError(
 	}
 }
 
+export class FleetNotNormalizedCrewError extends Data.TaggedError(
+	"FleetNotNormalizedCrewError",
+)<{
+	crewCount: string;
+	requiredCrew: string;
+}> {
+	override get message() {
+		return `Fleet crew is not normalized: ${this.crewCount} < ${this.requiredCrew}`;
+	}
+}
 export class FleetNotEnoughSpaceError extends Data.TaggedError(
 	"FleetNotEnoughSpaceError",
 )<{
