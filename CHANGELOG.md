@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.28.1](https://github.com/hexon-studio/atom-core/compare/v1.28.0...v1.28.1) (2025-02-02)
+
+
+### Bug Fixes
+
+* improve crew loading logic with available crew calculation ([db90692](https://github.com/hexon-studio/atom-core/commit/db906922060717da2680cc206c7d5b59fc055f40))
+
 # [1.28.0](https://github.com/hexon-studio/atom-core/compare/v1.27.0...v1.28.0) (2025-02-01)
 
 
