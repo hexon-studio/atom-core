@@ -1,5 +1,12 @@
 # Changelog
 
+# [1.29.0](https://github.com/hexon-studio/atom-core/compare/v1.28.1...v1.29.0) (2025-02-02)
+
+
+### Features
+
+* add FleetNotNormalizedCrewError for undocking validation ([d1c1dff](https://github.com/hexon-studio/atom-core/commit/d1c1dff74340407fd8827d4b01447e0589ae757c))
+
 ## [1.28.1](https://github.com/hexon-studio/atom-core/compare/v1.28.0...v1.28.1) (2025-02-02)
 
 
