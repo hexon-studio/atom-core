@@ -1,5 +1,18 @@
 # Changelog
 
+# [1.30.0](https://github.com/hexon-studio/atom-core/compare/v1.29.0...v1.30.0) (2025-02-07)
+
+
+### Bug Fixes
+
+* round up fuel requirements for warp and subwarp movements ([a8484df](https://github.com/hexon-studio/atom-core/commit/a8484dfc66dea535ac4d8a9c4d8058a9cd3d8746))
+* warp and subwarp errors ([3d5cc5c](https://github.com/hexon-studio/atom-core/commit/3d5cc5cb8ed1b8b9542bba9ff4588526dad233ca))
+
+
+### Features
+
+* add fleet movement validation with fuel and range checks ([13a6cef](https://github.com/hexon-studio/atom-core/commit/13a6cef5ef1d55b4e600267ae4f954abd7d1e8a7))
+
 # [1.29.0](https://github.com/hexon-studio/atom-core/compare/v1.28.1...v1.29.0) (2025-02-02)
 
 
