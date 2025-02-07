@@ -1,5 +1,5 @@
-import { Fleet } from "@staratlas/sage";
-import type BN from "bn.js";
+import { calculateDistance, Fleet, type ShipStats } from "@staratlas/sage";
+import BN from "bn.js";
 import { Effect } from "effect";
 import { findCargoTypePda } from "~/libs/@staratlas/cargo";
 import { findProfileFactionPda } from "~/libs/@staratlas/profile-faction";
@@ -8,8 +8,13 @@ import { getAssociatedTokenAddress } from "../../../utils/getAssociatedTokenAddr
 import { getSagePrograms } from "../../programs";
 import { GameService } from "../../services/GameService";
 import { getGameContext } from "../../services/GameService/utils";
+import {
+	FleetNotEnoughFuelToWarpError,
+	FleetWarpRangeExceededError,
+} from "../errors";
 import { getCurrentFleetSectorCoordinates } from "../utils/getCurrentFleetSectorCoordinates";
 import { createMovementHandlerIx } from "./createMovementHandlerIx";
+import { getFleetCargoPodInfosForItems } from "../utils/getFleetCargoPodInfosForItems";
 
 type Param = {
 	fleetAccount: Fleet;
@@ -29,6 +34,37 @@ export const createWarpToCoordinateIx = ({
 			actualFleetSectorY.eq(targetSectorY)
 		) {
 			return [];
+		}
+
+		const fleetStats = fleetAccount.data.stats as ShipStats;
+
+		const distance = calculateDistance(
+			[actualFleetSectorX, actualFleetSectorY],
+			[targetSectorX, targetSectorY],
+		);
+
+		const maxWarpDistance = fleetStats.movementStats.maxWarpDistance / 100;
+
+		if (distance > maxWarpDistance) {
+			return yield* Effect.fail(new FleetWarpRangeExceededError());
+		}
+
+		const fuelNeededToWarp = new BN(
+			Fleet.calculateWarpFuelBurnWithDistance(fleetStats, distance) + 1,
+		);
+
+		yield* Effect.log("Fuel needed to warp", fuelNeededToWarp.toString());
+		const cargoPodInfos = yield* getFleetCargoPodInfosForItems({
+			cargoPodKinds: ["fuel_tank"],
+			fleetAccount,
+		});
+
+		if (
+			fuelNeededToWarp.gt(
+				cargoPodInfos.fuel_tank?.totalResourcesAmountInCargoUnits ?? new BN(0),
+			)
+		) {
+			return yield* Effect.fail(new FleetNotEnoughFuelToWarpError());
 		}
 
 		const programs = yield* getSagePrograms();
