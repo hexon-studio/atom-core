@@ -48,9 +48,11 @@ export const createWarpToCoordinateIx = ({
 		}
 
 		const requiredFuel =
-			Fleet.calculateWarpFuelBurnWithDistance(
-				fleetStats,
-				targetSectorDistance,
+			Math.ceil(
+				Fleet.calculateWarpFuelBurnWithDistance(
+					fleetStats,
+					targetSectorDistance,
+				),
 			) + 1;
 
 		yield* Effect.log("Fuel needed to warp", requiredFuel.toString());

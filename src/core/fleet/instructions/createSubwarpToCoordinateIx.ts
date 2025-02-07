@@ -40,9 +40,11 @@ export const createSubwarpToCoordinateIx = ({
 		});
 
 		const requiredFuel =
-			Fleet.calculateSubwarpFuelBurnWithDistance(
-				fleetAccount.data.stats,
-				targetSectorDistance,
+			Math.ceil(
+				Fleet.calculateSubwarpFuelBurnWithDistance(
+					fleetAccount.data.stats,
+					targetSectorDistance,
+				),
 			) + 1;
 
 		if (fuelTankInfo.totalResourcesAmountInCargoUnits.lten(requiredFuel)) {
