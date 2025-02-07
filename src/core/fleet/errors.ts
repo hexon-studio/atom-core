@@ -169,14 +169,4 @@ export class NotEnoughCargoSpaceForScanError extends Data.TaggedError(
 	"NotEnoughCargoSpaceForScanError",
 ) {}
 
-export class FleetWarpRangeExceededError extends Data.TaggedError(
-	"FleetWarpRangeExceededError",
-) {}
-
-export class FleetNotEnoughFuelToWarpError extends Data.TaggedError(
-	"FleetNotEnoughFuelToWarpError",
-) {}
-
-export class FleetNotEnoughFuelToSubwarpError extends Data.TaggedError(
-	"FleetNotEnoughFuelToSubwarpError",
-) {}
+export class SectorTooFarError extends Data.TaggedError("SectorTooFarError") {}
