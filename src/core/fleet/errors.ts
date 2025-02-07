@@ -168,3 +168,5 @@ export class NotEnoughFoodForScanError extends Data.TaggedError(
 export class NotEnoughCargoSpaceForScanError extends Data.TaggedError(
 	"NotEnoughCargoSpaceForScanError",
 ) {}
+
+export class SectorTooFarError extends Data.TaggedError("SectorTooFarError") {}
