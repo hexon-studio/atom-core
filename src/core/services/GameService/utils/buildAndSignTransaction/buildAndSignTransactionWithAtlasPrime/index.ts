@@ -16,19 +16,26 @@ import { buildTransactions } from "./buildTransactions";
 
 export const buildAndSignTransactionWithAtlasPrime: BuildAndSignTransactionWithAtlasPrime =
 	({ ixs, afterIxs, size }) =>
-		Effect.log("Building ixs with atlas prime").pipe(
-			Effect.map(() => EffectArray.chunksOf(ixs, size)),
-			Effect.map((chunks) =>
-				EffectArray.map(chunks, (ixs) =>
-					buildTransactions({
-						ixs,
-						afterIxs,
-					}).pipe(Effect.timeout("30 seconds")),
+		EffectArray.match(ixs, {
+			onEmpty: () =>
+				Effect.log("Skip building atlas prime ixs...").pipe(
+					Effect.map(EffectArray.empty<TransactionReturn>),
 				),
-			),
-			Effect.flatMap(Effect.all),
-			Effect.map(EffectArray.flatten),
-		);
+			onNonEmpty: (ixs) =>
+				Effect.log("Building ixs with atlas prime...").pipe(
+					Effect.map(() => EffectArray.chunksOf(ixs, size)),
+					Effect.map((chunks) =>
+						EffectArray.map(chunks, (ixs) =>
+							buildTransactions({
+								ixs,
+								afterIxs,
+							}).pipe(Effect.timeout("30 seconds")),
+						),
+					),
+					Effect.flatMap(Effect.all),
+					Effect.map(EffectArray.flatten),
+				),
+		});
 
 export type BuildAndSignTransactionWithAtlasPrime = (_: {
 	ixs: Array<InstructionReturn>;
