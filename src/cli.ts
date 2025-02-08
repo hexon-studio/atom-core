@@ -49,7 +49,7 @@ const main = async () => {
 		.version(packageJsonVersion)
 		.option("--no-atlas-prime", "Disable the use of Atlas Prime")
 		.option(
-			"-mipt, --max-ixs-per-transaction <mipt>",
+			"--mipt, --max-ixs-per-transaction <mipt>",
 			"Apply a limit of instructions on a transactions",
 			"5",
 		)
@@ -87,7 +87,7 @@ const main = async () => {
 		)
 		.addOption(
 			new Option(
-				"-hr, --heliusRpcUrl <heliusRpc>",
+				"--heliusRpcUrl <heliusRpc>",
 				"Helius rpc url (used to calculate priority fees)",
 			)
 				.env("ATOM_HELIUS_RPC_URL")
@@ -121,7 +121,7 @@ const main = async () => {
 				.makeOptionMandatory(false),
 		)
 		.addOption(
-			new Option("-ws, --webhookSecret <webhookSecret>", "The webhook secret")
+			new Option("--webhookSecret <webhookSecret>", "The webhook secret")
 				.env("ATOM_WEBHOOK_SECRET")
 				.makeOptionMandatory(false),
 		)
@@ -131,9 +131,7 @@ const main = async () => {
 				.makeOptionMandatory(false),
 		)
 		.addOption(
-			new Option("-fu, --feeUrl <feeUrl>", "The fee url").makeOptionMandatory(
-				false,
-			),
+			new Option("--feeUrl <feeUrl>", "The fee url").makeOptionMandatory(false),
 		)
 		.addOption(
 			new Option(
