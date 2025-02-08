@@ -12,7 +12,7 @@ export type WebhookEvent =
 	//   }
 	| {
 			type: "success";
-			payload: { signatures: string[]; removeCredit: boolean };
+			payload: { signatures: string[] };
 	  }
 	| {
 			type: "error";

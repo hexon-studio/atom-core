@@ -2,13 +2,12 @@ import type { Keypair } from "@solana/web3.js";
 import { type AsyncSigner, keypairToAsyncSigner } from "@staratlas/data-source";
 import type { PlayerProfile } from "@staratlas/player-profile";
 import { Effect, Layer, Option, Ref } from "effect";
-import type { RequiredOptions } from "~/types";
+import type { GlobalOptions } from "~/types";
 import { type CreateKeypairError, SolanaService } from "../SolanaService";
 import { type FindFleets, findFleets } from "./methods/findFleets";
 import { type FindGame, findGame } from "./methods/findGame";
 import { type FindPlanets, findAllPlanets } from "./methods/findPlanets";
 import { type InitGame, initGame } from "./methods/initGame";
-import type { Fees } from "./methods/initGame/fetchFees";
 import type { GameInfo } from "./methods/initGame/fetchGameInfo";
 import {
 	type BuildAndSignTransaction,
@@ -25,7 +24,7 @@ import {
 import { type SendTransaction, sendTransaction } from "./utils/sendTransaction";
 
 export interface GameContext {
-	options: RequiredOptions;
+	options: GlobalOptions;
 	gameInfo: GameInfo;
 	playerProfile: PlayerProfile;
 	keyIndexes: {
@@ -33,7 +32,6 @@ export interface GameContext {
 		points: number;
 		profileVault: number;
 	};
-	fees: Fees | null;
 }
 
 export class GameService extends Effect.Tag("app/GameService")<

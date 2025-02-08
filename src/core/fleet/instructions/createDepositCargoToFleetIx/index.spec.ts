@@ -17,7 +17,6 @@ import { findFleets } from "../../../services/GameService/methods/findFleets";
 import { findGame } from "../../../services/GameService/methods/findGame";
 import { findAllPlanets } from "../../../services/GameService/methods/findPlanets";
 import { initGame } from "../../../services/GameService/methods/initGame";
-import type { Fees } from "../../../services/GameService/methods/initGame/fetchFees";
 import type { GameInfo } from "../../../services/GameService/methods/initGame/fetchGameInfo";
 import { SolanaService } from "../../../services/SolanaService";
 import {
@@ -34,7 +33,6 @@ const gameContextRef = Ref.unsafeMake(
 			owner: noopPublicKey,
 		} as RequiredOptions,
 		gameInfo: {} as GameInfo,
-		fees: {} as Fees,
 		playerProfile: {} as PlayerProfile,
 		keyIndexes: {
 			points: 0,

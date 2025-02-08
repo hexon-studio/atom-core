@@ -14,14 +14,14 @@ import { constNull, constUndefined } from "effect/Function";
 import { unloadCargo } from "../core/actions/unloadCargo";
 import { GameService } from "../core/services/GameService";
 import type { UnloadResourceInput } from "../decoders";
-import type { GlobalOptionsWithWebhook } from "../types";
+import type { GlobalOptions } from "../types";
 import { createMainLiveService } from "../utils/createMainLiveService";
 import { runBaseCommand } from "./baseCommand";
 
 type Param = {
 	fleetNameOrAddress: string | PublicKey;
 	items: Array<UnloadResourceInput>;
-	globalOpts: GlobalOptionsWithWebhook;
+	globalOpts: GlobalOptions;
 };
 
 export const runUnloadCargo = async ({

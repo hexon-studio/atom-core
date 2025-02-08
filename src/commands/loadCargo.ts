@@ -12,14 +12,14 @@ import {
 import { loadCargo } from "../core/actions/loadCargo";
 import { GameService } from "../core/services/GameService";
 import type { LoadResourceInput } from "../decoders";
-import type { GlobalOptionsWithWebhook } from "../types";
+import type { GlobalOptions } from "../types";
 import { createMainLiveService } from "../utils/createMainLiveService";
 import { runBaseCommand } from "./baseCommand";
 
 type Param = {
 	fleetNameOrAddress: string | PublicKey;
 	items: Array<LoadResourceInput>;
-	globalOpts: GlobalOptionsWithWebhook;
+	globalOpts: GlobalOptions;
 };
 
 export const runLoadCargo = async ({

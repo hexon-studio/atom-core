@@ -10,12 +10,12 @@ import {
 } from "effect";
 import { getFleetAccountByNameOrAddress } from "~/libs/@staratlas/sage";
 import { GameService } from "../core/services/GameService";
-import type { GlobalOptionsWithWebhook } from "../types";
+import type { GlobalOptions } from "../types";
 import { createMainLiveService } from "../utils/createMainLiveService";
 
 type Param = {
 	fleetNameOrAddress: string | PublicKey;
-	globalOpts: GlobalOptionsWithWebhook;
+	globalOpts: GlobalOptions;
 };
 
 export const runFleetInfo = async ({

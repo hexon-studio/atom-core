@@ -10,13 +10,13 @@ import {
 } from "effect";
 import { startScan } from "~/core/actions/startScan";
 import { GameService } from "../core/services/GameService";
-import type { GlobalOptionsWithWebhook } from "../types";
+import type { GlobalOptions } from "../types";
 import { createMainLiveService } from "../utils/createMainLiveService";
 import { runBaseCommand } from "./baseCommand";
 
 type Param = {
 	fleetNameOrAddress: string | PublicKey;
-	globalOpts: GlobalOptionsWithWebhook;
+	globalOpts: GlobalOptions;
 };
 
 export const runStartScan = async ({

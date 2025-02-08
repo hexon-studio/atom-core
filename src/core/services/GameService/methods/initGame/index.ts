@@ -1,10 +1,8 @@
 import { Data, Effect, Option, Ref } from "effect";
-import { constNull } from "effect/Function";
 import { programIds } from "~/constants/programs";
 import type { GameContext } from "~/core/services/GameService";
 import { getPlayerProfileAccout } from "~/libs/@staratlas/player-profile";
-import type { RequiredOptions } from "~/types";
-import { fetchFees } from "./fetchFees";
+import type { GlobalOptions } from "~/types";
 import { fetchGameInfoOrAccounts } from "./fetchGameInfoOrAccount";
 
 export class GameAlreadyInitializedError extends Data.TaggedError(
@@ -19,16 +17,10 @@ export class SolNotEnoughError extends Data.TaggedError("SolNotEnoughError") {}
 
 export const initGame = (
 	contextRef: Ref.Ref<Option.Option<GameContext>>,
-	options: RequiredOptions,
+	options: GlobalOptions,
 ) =>
 	Effect.gen(function* () {
-		const {
-			atlasPrime,
-			owner,
-			playerProfile: playerProfileAddress,
-			keypair,
-			feeUrl,
-		} = options;
+		const { owner, playerProfile: playerProfileAddress, keypair } = options;
 
 		const context = yield* Ref.get(contextRef);
 
@@ -36,12 +28,8 @@ export const initGame = (
 			return yield* Effect.fail(new GameAlreadyInitializedError());
 		}
 
-		const [playerProfile, gameInfo, fees] = yield* Effect.all(
-			[
-				getPlayerProfileAccout(playerProfileAddress),
-				fetchGameInfoOrAccounts(),
-				feeUrl ? fetchFees({ feeUrl, owner }) : Effect.sync(constNull),
-			],
+		const [playerProfile, gameInfo] = yield* Effect.all(
+			[getPlayerProfileAccout(playerProfileAddress), fetchGameInfoOrAccounts()],
 			{ concurrency: "unbounded" },
 		);
 
@@ -72,7 +60,6 @@ export const initGame = (
 					points: pointsSignerKeyIndex,
 					profileVault: profileVaultSignerKeyIndex,
 				},
-				fees,
 			}),
 		);
 	});

@@ -37,8 +37,8 @@ import {
 	unloadResourceDecoder,
 } from "./decoders";
 import type { CliGlobalOptions } from "./types";
-import { createOptionsWithWebhook } from "./utils/creactOptionsWithWebhook";
 import { parseSecretKey } from "./utils/keypair";
+import { parseOptions } from "./utils/parseOptions";
 import { isPublicKey, parsePublicKey } from "./utils/public-key";
 
 Dotenv.config();
@@ -47,7 +47,26 @@ const main = async () => {
 	const program = commander
 		.name("atom")
 		.version(packageJsonVersion)
-		.option("--no-atlas-prime", "Disable the use of Atlas Prime")
+		.option("--atlas-prime", "Enable Atlas Prime fees", false)
+		.addOption(
+			new Option("--feeLamports <feeLamports>", "The atom fee in lamports")
+				.argParser((feeLamports) =>
+					z.coerce.number().optional().parse(feeLamports),
+				)
+				.implies({ atlasPrime: false })
+				.makeOptionMandatory(false),
+		)
+		.addOption(
+			new Option("--feeAtlas <feeAtlas>", "The atom fee in lamports")
+				.argParser((feeAtlas) => z.coerce.number().optional().parse(feeAtlas))
+				.implies({ atlasPrime: true })
+				.makeOptionMandatory(false),
+		)
+		.option(
+			"--feeRecipient <feeRecipient>",
+			"The atom fee recipient",
+			parsePublicKey,
+		)
 		.option(
 			"-mipt, --max-ixs-per-transaction <mipt>",
 			"Apply a limit of instructions on a transactions",
@@ -130,11 +149,7 @@ const main = async () => {
 				.env("ATOM_LOGGING_TOKEN")
 				.makeOptionMandatory(false),
 		)
-		.addOption(
-			new Option("-fu, --feeUrl <feeUrl>", "The fee url").makeOptionMandatory(
-				false,
-			),
-		)
+
 		.addOption(
 			new Option(
 				"--contextId <contextId>",
@@ -145,9 +160,7 @@ const main = async () => {
 	program
 		.command("fleet-info <fleetNameOrAddress>")
 		.action(async (fleetNameOrAddress: string) => {
-			const globalOpts = createOptionsWithWebhook(
-				program.opts<CliGlobalOptions>(),
-			);
+			const globalOpts = parseOptions(program.opts<CliGlobalOptions>());
 
 			return runFleetInfo({
 				globalOpts,
@@ -158,9 +171,7 @@ const main = async () => {
 		});
 
 	program.command("profile-info").action(async () => {
-		const globalOpts = createOptionsWithWebhook(
-			program.opts<CliGlobalOptions>(),
-		);
+		const globalOpts = parseOptions(program.opts<CliGlobalOptions>());
 
 		return runProfileInfo(globalOpts);
 	});
@@ -191,9 +202,7 @@ const main = async () => {
 			) => {
 				const resources = options.resources ?? [];
 
-				const globalOpts = createOptionsWithWebhook(
-					program.opts<CliGlobalOptions>(),
-				);
+				const globalOpts = parseOptions(program.opts<CliGlobalOptions>());
 
 				const items = pipe(
 					resources,
@@ -248,9 +257,7 @@ const main = async () => {
 			) => {
 				const resources = options.resources ?? [];
 
-				const globalOpts = createOptionsWithWebhook(
-					program.opts<CliGlobalOptions>(),
-				);
+				const globalOpts = parseOptions(program.opts<CliGlobalOptions>());
 
 				const items = pipe(
 					resources,
@@ -284,9 +291,7 @@ const main = async () => {
 	program
 		.command("start-scan <fleetNameOrAddress>")
 		.action(async (fleetNameOrAddress: string) => {
-			const globalOpts = createOptionsWithWebhook(
-				program.opts<CliGlobalOptions>(),
-			);
+			const globalOpts = parseOptions(program.opts<CliGlobalOptions>());
 
 			return runStartScan({
 				globalOpts,
@@ -299,9 +304,7 @@ const main = async () => {
 	program
 		.command("dock <fleetNameOrAddress>")
 		.action(async (fleetNameOrAddress: string) => {
-			const globalOpts = createOptionsWithWebhook(
-				program.opts<CliGlobalOptions>(),
-			);
+			const globalOpts = parseOptions(program.opts<CliGlobalOptions>());
 
 			return runDock({
 				globalOpts,
@@ -314,9 +317,7 @@ const main = async () => {
 	program
 		.command("undock <fleetNameOrAddress>")
 		.action(async (fleetNameOrAddress: string) => {
-			const globalOpts = createOptionsWithWebhook(
-				program.opts<CliGlobalOptions>(),
-			);
+			const globalOpts = parseOptions(program.opts<CliGlobalOptions>());
 
 			return runUndock({
 				globalOpts,
@@ -335,9 +336,7 @@ const main = async () => {
 			parsePublicKey,
 		)
 		.action(async (fleetNameOrAddress: string, resourceMint: PublicKey) => {
-			const globalOpts = createOptionsWithWebhook(
-				program.opts<CliGlobalOptions>(),
-			);
+			const globalOpts = parseOptions(program.opts<CliGlobalOptions>());
 
 			return runStartMining({
 				globalOpts,
@@ -351,10 +350,8 @@ const main = async () => {
 	program
 		.command("stop-mining")
 		.argument("<fleetNameOrAddress>", "The fleet to stop mining")
-		.action(async (fleetNameOrAddress: string, resourceMint: PublicKey) => {
-			const globalOpts = createOptionsWithWebhook(
-				program.opts<CliGlobalOptions>(),
-			);
+		.action(async (fleetNameOrAddress: string) => {
+			const globalOpts = parseOptions(program.opts<CliGlobalOptions>());
 
 			return runStopMining({
 				globalOpts,
@@ -373,9 +370,7 @@ const main = async () => {
 			z.coerce.number().parse,
 		)
 		.action(async (fleetNameOrAddress: string, crewAmount: number) => {
-			const globalOpts = createOptionsWithWebhook(
-				program.opts<CliGlobalOptions>(),
-			);
+			const globalOpts = parseOptions(program.opts<CliGlobalOptions>());
 
 			return runLoadCrew({
 				globalOpts,
@@ -404,9 +399,7 @@ const main = async () => {
 				crewAmount: number,
 				options: { allowUnloadRequiredCrew: boolean },
 			) => {
-				const globalOpts = createOptionsWithWebhook(
-					program.opts<CliGlobalOptions>(),
-				);
+				const globalOpts = parseOptions(program.opts<CliGlobalOptions>());
 
 				return runUnloadCrew({
 					globalOpts,
@@ -424,9 +417,7 @@ const main = async () => {
 		.argument("<fleetNameOrAddress>", "The fleet to stop mining")
 		.argument("<targetSector>", "The coordinates of the target sector")
 		.action(async (fleetNameOrAddress: string, targetSectorArg: string) => {
-			const globalOpts = createOptionsWithWebhook(
-				program.opts<CliGlobalOptions>(),
-			);
+			const globalOpts = parseOptions(program.opts<CliGlobalOptions>());
 
 			const maybeSector = EffectString.split(targetSectorArg, ",");
 
@@ -453,9 +444,7 @@ const main = async () => {
 		.argument("<fleetNameOrAddress>", "The fleet to stop mining")
 		.argument("<targetSector>", "Rhe coordinates of the target sector")
 		.action(async (fleetNameOrAddress: string, targetSectorArg: string) => {
-			const globalOpts = createOptionsWithWebhook(
-				program.opts<CliGlobalOptions>(),
-			);
+			const globalOpts = parseOptions(program.opts<CliGlobalOptions>());
 
 			const maybeSector = EffectString.split(targetSectorArg, ",");
 

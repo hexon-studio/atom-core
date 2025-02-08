@@ -106,14 +106,10 @@ export const runBaseCommand = <E, R>({
 
 		// console.dir({ txs }, { depth: null });
 
-		const context = yield* getGameContext();
-
 		yield* fireWebhookEvent({
 			type: "success",
 			payload: {
 				signatures,
-				removeCredit:
-					!!context.fees && !context.fees.feeAddress && signatures.length > 0,
 			},
 		});
 

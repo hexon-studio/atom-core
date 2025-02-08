@@ -9,10 +9,10 @@ import {
 import { constVoid } from "effect/Function";
 import pino from "pino";
 import { version as packageJsonVersion } from "../../../../package.json";
-import type { GlobalOptionsWithWebhook } from "../../../types";
+import type { GlobalOptions } from "../../../types";
 import { getEnv } from "../../../utils/env";
 
-const createLogger = (opts: GlobalOptionsWithWebhook) => {
+const createLogger = (opts: GlobalOptions) => {
 	const createPino = () => {
 		if (opts.loggingToken) {
 			const transport = pino.transport({
@@ -56,7 +56,7 @@ const createLogger = (opts: GlobalOptionsWithWebhook) => {
 	});
 };
 
-export const createLoggerServiceLive = (opts: GlobalOptionsWithWebhook) => {
+export const createLoggerServiceLive = (opts: GlobalOptions) => {
 	if (opts.logDisabled) {
 		return Logger.remove(Logger.defaultLogger);
 	}

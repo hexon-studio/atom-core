@@ -10,14 +10,14 @@ import {
 } from "effect";
 import { loadCrew } from "~/core/actions/loadCrew";
 import { GameService } from "../core/services/GameService";
-import type { GlobalOptionsWithWebhook } from "../types";
+import type { GlobalOptions } from "../types";
 import { createMainLiveService } from "../utils/createMainLiveService";
 import { runBaseCommand } from "./baseCommand";
 
 type Param = {
 	fleetNameOrAddress: string | PublicKey;
 	crewAmount: number;
-	globalOpts: GlobalOptionsWithWebhook;
+	globalOpts: GlobalOptions;
 };
 
 export const runLoadCrew = async ({

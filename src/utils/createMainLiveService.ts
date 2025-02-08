@@ -3,9 +3,9 @@ import { createGameServiceLive } from "../core/services/GameService";
 import { createLoggerServiceLive } from "../core/services/LoggerService";
 import { createSolanaServiceLive } from "../core/services/SolanaService";
 import { createWebhookServiceLive } from "../core/services/WebhookService";
-import type { GlobalOptionsWithWebhook } from "../types";
+import type { GlobalOptions } from "../types";
 
-export const createMainLiveService = (opts: GlobalOptionsWithWebhook) => {
+export const createMainLiveService = (opts: GlobalOptions) => {
 	const SolanaServiceLive = createSolanaServiceLive(opts);
 
 	const WebhookServiceLive = opts.webhookArgs
