@@ -57,7 +57,7 @@ const main = async () => {
 				.makeOptionMandatory(false),
 		)
 		.addOption(
-			new Option("--feeAtlas <feeAtlas>", "The atom fee in lamports")
+			new Option("--feeAtlas <feeAtlas>", "The atom fee in atlas")
 				.argParser((feeAtlas) => z.coerce.number().optional().parse(feeAtlas))
 				.implies({ atlasPrime: true })
 				.makeOptionMandatory(false),
