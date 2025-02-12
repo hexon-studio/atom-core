@@ -27,26 +27,26 @@
 	"license": "ISC",
 	"description": "",
 	"devDependencies": {
-		"@arethetypeswrong/cli": "^0.16.4",
+		"@arethetypeswrong/cli": "^0.17.3",
 		"@biomejs/biome": "^1.9.4",
-		"@release-it/conventional-changelog": "^9.0.4",
+		"@release-it/conventional-changelog": "^10.0.0",
 		"@total-typescript/ts-reset": "^0.6.1",
 		"@total-typescript/tsconfig": "^1.0.4",
 		"@types/bn.js": "^5.1.6",
 		"@types/mock-fs": "^4.13.4",
-		"@types/node": "^20.17.10",
-		"mock-fs": "^5.4.1",
+		"@types/node": "^22.13.1",
+		"mock-fs": "^5.5.0",
 		"neverthrow": "6.2.2",
-		"release-it": "^17.11.0",
-		"tsup": "^8.3.5",
+		"release-it": "^18.1.2",
+		"tsup": "^8.3.6",
 		"tsx": "^4.19.2",
-		"typescript": "^5.7.2",
+		"typescript": "^5.7.3",
 		"vite-tsconfig-paths": "^5.1.4",
-		"vitest": "^2.1.9"
+		"vitest": "^3.0.5"
 	},
 	"dependencies": {
 		"@logtail/pino": "^0.5.2",
-		"@solana/spl-token": "^0.4.9",
+		"@solana/spl-token": "^0.4.12",
 		"@solana/web3.js": "1.98.0",
 		"@staratlas/anchor": "^0.25.1",
 		"@staratlas/atlas-prime": "^0.13.1",
@@ -66,11 +66,11 @@
 		"@staratlas/score": "^0.12.0",
 		"bn.js": "^5.2.1",
 		"bs58": "^5.0.0",
-		"commander": "^12.1.0",
+		"commander": "^13.1.0",
 		"dotenv": "^16.4.7",
-		"effect": "^3.12.0",
+		"effect": "^3.12.10",
 		"pino": "^9.6.0",
-		"uuid": "^11.0.4",
+		"uuid": "^11.0.5",
 		"zod": "^3.24.1"
 	},
 	"pnpm": {
@@ -79,5 +79,5 @@
 			"neverthrow": "6.2.2"
 		}
 	},
-	"packageManager": "pnpm@9.11.0+sha512.0a203ffaed5a3f63242cd064c8fb5892366c103e328079318f78062f24ea8c9d50bc6a47aa3567cabefd824d170e78fa2745ed1f16b132e16436146b7688f19b"
+	"packageManager": "pnpm@9.15.5+sha512.845196026aab1cc3f098a0474b64dfbab2afe7a1b4e91dd86895d8e4aa32a7a6d03049e2d0ad770bbe4de023a7122fb68c1a1d6e0d033c7076085f9d5d4800d4"
 }

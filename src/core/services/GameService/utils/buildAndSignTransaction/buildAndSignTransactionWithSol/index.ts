@@ -22,19 +22,26 @@ export const buildAndSignTransactionWithSol: BuildAndSignTransactionWithSol = ({
 	afterIxs,
 	size,
 }) =>
-	Effect.log("Building ixs").pipe(
-		Effect.map(() => EffectArray.chunksOf(ixs, size)),
-		Effect.map((chunks) =>
-			EffectArray.map(chunks, (ixs) =>
-				buildTransactions({
-					ixs,
-					afterIxs,
-				}).pipe(Effect.timeout("30 seconds")),
+	EffectArray.match(ixs, {
+		onEmpty: () =>
+			Effect.log("Skip building ixs...").pipe(
+				Effect.map(EffectArray.empty<TransactionReturn>),
 			),
-		),
-		Effect.flatMap(Effect.all),
-		Effect.map(EffectArray.flatten),
-	);
+		onNonEmpty: (ixs) =>
+			Effect.log("Building ixs...").pipe(
+				Effect.map(() => EffectArray.chunksOf(ixs, size)),
+				Effect.map((chunks) =>
+					EffectArray.map(chunks, (ixs) =>
+						buildTransactions({
+							ixs,
+							afterIxs,
+						}).pipe(Effect.timeout("30 seconds")),
+					),
+				),
+				Effect.flatMap(Effect.all),
+				Effect.map(EffectArray.flatten),
+			),
+	});
 
 export type BuildAndSignTransactionWithSol = (_: {
 	ixs: Array<InstructionReturn>;

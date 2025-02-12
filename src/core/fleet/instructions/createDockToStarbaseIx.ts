@@ -132,7 +132,5 @@ export const createDockToStarbaseIx = (fleetAccount: Fleet) =>
 			context.keyIndexes.sage,
 		);
 
-		ixs.push(dockIx);
-
-		return ixs;
+		return [...ixs, dockIx];
 	});

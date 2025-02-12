@@ -17,7 +17,9 @@ export const createPreIxs = ({ fleetAccount, target }: Param) =>
 		state: fleetAccount.state,
 	}).pipe(
 		Match.when({ state: { Idle: Match.defined }, target: "Idle" }, () =>
-			Effect.succeed([]),
+			Effect.log("Fleet is already idle, skipping...").pipe(
+				Effect.flatMap(() => Effect.succeed([])),
+			),
 		),
 		Match.when(
 			{ state: { Idle: Match.defined }, target: "StarbaseLoadingBay" },
@@ -63,7 +65,10 @@ export const createPreIxs = ({ fleetAccount, target }: Param) =>
 				state: { StarbaseLoadingBay: { starbase: Match.defined } },
 				target: "StarbaseLoadingBay",
 			},
-			() => Effect.succeed([]),
+			() =>
+				Effect.log("Fleet is already in StarbaseLoadingBay, skipping...").pipe(
+					Effect.flatMap(() => Effect.succeed([])),
+				),
 		),
 		Match.when(
 			{ state: { MineAsteroid: Match.defined }, target: "Idle" },

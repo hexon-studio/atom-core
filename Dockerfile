@@ -1,9 +1,10 @@
-FROM node:20.12-alpine3.19 AS base
+FROM node:22.13.1-alpine3.21 AS base
 
 ENV PNPM_HOME="/pnpm"
 
 ENV PATH="$PNPM_HOME:$PATH"
 
+RUN npm install -g corepack@latest
 RUN corepack enable
 
 COPY . /app
@@ -17,7 +18,7 @@ FROM base AS build
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
 RUN pnpm run build
 
-FROM node:20.12-alpine3.19
+FROM node:22.13.1-alpine3.21
 
 WORKDIR /app
 
