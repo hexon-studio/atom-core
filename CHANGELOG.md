@@ -1,5 +1,14 @@
 # Changelog
 
+# [1.31.0](https://github.com/hexon-studio/atom-core/compare/v1.30.1...v1.31.0) (2025-02-12)
+
+
+### Features
+
+* small improvements ([ac3ea78](https://github.com/hexon-studio/atom-core/commit/ac3ea7864932ad89fe93d55cfdaa27fd966eab9c))
+* update deps ([a764cc2](https://github.com/hexon-studio/atom-core/commit/a764cc2883e985dcf7d7990cf0c4bc48ad050b89))
+* update node ([81976e7](https://github.com/hexon-studio/atom-core/commit/81976e7585c26a8f6016a5e554cda18804fb9654))
+
 ## [1.30.1](https://github.com/hexon-studio/atom-core/compare/v1.30.0...v1.30.1) (2025-02-07)
 
 # [1.30.0](https://github.com/hexon-studio/atom-core/compare/v1.29.0...v1.30.0) (2025-02-07)
