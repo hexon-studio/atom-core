@@ -18,7 +18,7 @@ export const stopMining = ({
 		if (!fleetAccount.state.MineAsteroid) {
 			yield* Effect.log("Fleet is not mining on asteroid");
 
-			return [];
+			return { signatures: [] };
 		}
 
 		yield* Effect.log("Stop mining...");
@@ -40,11 +40,11 @@ export const stopMining = ({
 			size: maxIxsPerTransaction,
 		});
 
-		const txIds = yield* Effect.all(
+		const signatures = yield* Effect.all(
 			txs.map((tx) => GameService.sendTransaction(tx)),
 		);
 
 		yield* Effect.log("Mining stopped!");
 
-		return txIds;
+		return { signatures };
 	});

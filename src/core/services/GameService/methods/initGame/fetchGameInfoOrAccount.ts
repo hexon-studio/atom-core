@@ -31,6 +31,9 @@ const mapGameAccoutToGameInfo = ({
 			key: gameAccount.key,
 			data: {
 				profile: gameAccount.data.profile,
+				crafting: {
+					domain: gameAccount.data.crafting.domain,
+				},
 				cargo: {
 					statsDefinition: gameAccount.data.cargo.statsDefinition,
 				},

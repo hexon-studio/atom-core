@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 import { PublicKey } from "@solana/web3.js";
+import { BN } from "bn.js";
 import {
 	InvalidArgumentError,
 	InvalidOptionArgumentError,
@@ -29,6 +30,8 @@ import {
 	runWarp,
 } from "./commands";
 import { runLoadCrew } from "./commands/loadCrew";
+import { runRecipeList } from "./commands/runRecipeList";
+import { runStartCrafting } from "./commands/startCrafting";
 import { runStartScan } from "./commands/startScan";
 import { runUnloadCrew } from "./commands/unloadCrew";
 import {
@@ -140,6 +143,57 @@ const main = async () => {
 			).makeOptionMandatory(false),
 		);
 
+	program.command("recipe-list").action(async () => {
+		const globalOpts = createOptionsWithWebhook(
+			program.opts<CliGlobalOptions>(),
+		);
+
+		return runRecipeList({
+			globalOpts,
+		});
+	});
+
+	program
+		.command("start-crafting")
+		.argument(
+			"<crewAmount>",
+			"The amount of crew to start crafting",
+			z.coerce.number().parse,
+		)
+		.argument("<quantity>", "The quantity to craft", z.coerce.number().parse)
+		.argument("<recipe>", "The address of the recipe", parsePublicKey)
+		.argument("<starbaseSector>", "The sector of the starbase")
+		.action(
+			async (
+				crewAmount: number,
+				quantity: number,
+				recipe: PublicKey,
+				starbaseSector: string,
+			) => {
+				const globalOpts = createOptionsWithWebhook(
+					program.opts<CliGlobalOptions>(),
+				);
+
+				const maybeSector = EffectString.split(starbaseSector, ",");
+
+				if (!Tuple.isTupleOf(maybeSector, 2)) {
+					throw new InvalidArgumentError("Invalid sector coordinates");
+				}
+
+				const starbaseCoords = Tuple.mapBoth(maybeSector, {
+					onFirst: (a) => new BN(a),
+					onSecond: (a) => new BN(a),
+				});
+
+				return runStartCrafting({
+					crewAmount,
+					quantity,
+					recipe,
+					starbaseCoords,
+					globalOpts,
+				});
+			},
+		);
 	program
 		.command("fleet-info <fleetNameOrAddress>")
 		.action(async (fleetNameOrAddress: string) => {

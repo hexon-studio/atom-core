@@ -33,7 +33,7 @@ export const unloadCrew = ({
 		);
 
 		const starbaseInfo = yield* getStarbaseInfoByCoords({
-			startbaseCoords: fleetCoords,
+			starbaseCoords: fleetCoords,
 		});
 
 		// check if there are enough crew members in the fleet
@@ -49,7 +49,7 @@ export const unloadCrew = ({
 		if (finalCrewAmount <= 0) {
 			yield* Effect.log("In fleet there are no crew to disembark. Skipping.");
 
-			return [];
+			return { signatures: [] };
 		}
 
 		const ixs: InstructionReturn[] = [];
@@ -85,11 +85,11 @@ export const unloadCrew = ({
 			size: maxIxsPerTransaction,
 		});
 
-		const txIds = yield* Effect.all(
+		const signatures = yield* Effect.all(
 			txs.map((tx) => GameService.sendTransaction(tx)),
 		);
 
 		yield* Effect.log("Crew started unloading");
 
-		return txIds;
+		return { signatures };
 	});

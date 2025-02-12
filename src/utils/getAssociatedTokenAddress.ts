@@ -8,7 +8,7 @@ export class GetAssociatedTokenAddressError extends Data.TaggedError(
 	readonly error: unknown;
 }> {}
 
-export const getAssociatedTokenAddress = (
+export const findAssociatedTokenPda = (
 	mint: PublicKey,
 	owner: PublicKey,
 	allowOwnerOffCurve = false,

@@ -19,6 +19,9 @@ const decoder = z.object({
 			data: z.object({
 				profile: publicKeyDecoder,
 				gameState: publicKeyDecoder,
+				crafting: z.object({
+					domain: publicKeyDecoder,
+				}),
 				points: z.object({
 					lpCategory: z.object({
 						category: publicKeyDecoder,

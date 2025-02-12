@@ -20,7 +20,7 @@ export const dockToStarbase = ({
 		if (!fleetAccount.state.Idle) {
 			yield* Effect.log("Fleet can't be docked to starbase");
 
-			return [];
+			return { signatures: [] };
 		}
 
 		const ixs = yield* createPreIxs({
@@ -40,11 +40,11 @@ export const dockToStarbase = ({
 			size: maxIxsPerTransaction,
 		});
 
-		const txIds = yield* Effect.all(
+		const signatures = yield* Effect.all(
 			txs.map((tx) => GameService.sendTransaction(tx)),
 		);
 
 		yield* Effect.log("Fleet docked!");
 
-		return txIds;
+		return { signatures };
 	});

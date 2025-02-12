@@ -11,7 +11,7 @@ import {
 	findStarbasePdaByCoordinates,
 } from "~/libs/@staratlas/sage";
 import { resourceNameToMint } from "../../../constants/resources";
-import { getAssociatedTokenAddress } from "../../../utils/getAssociatedTokenAddress";
+import { findAssociatedTokenPda } from "../../../utils/getAssociatedTokenAddress";
 import { getSagePrograms } from "../../programs";
 import { GameService } from "../../services/GameService";
 import { getGameContext } from "../../services/GameService/utils";
@@ -118,7 +118,7 @@ export const createAsteroidMiningHandlerIx = ({
 			planet: planetAddress,
 		});
 
-		const resourceTokenFromAta = yield* getAssociatedTokenAddress(
+		const resourceTokenFromAta = yield* findAssociatedTokenPda(
 			resourceMint,
 			mineItemKey,
 			true,

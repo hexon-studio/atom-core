@@ -60,7 +60,7 @@ export const runBaseCommand = <E, R>({
 	self,
 	normalizeError,
 }: {
-	self: () => Effect.Effect<string[], E, R>;
+	self: () => Effect.Effect<{ signatures: string[] }, E, R>;
 	normalizeError: (error: E) => {
 		tag: string;
 		message: string;
@@ -84,7 +84,7 @@ export const runBaseCommand = <E, R>({
 		// 	payload: { balance: balance.toString() },
 		// });
 
-		const signatures = yield* self();
+		const { signatures } = yield* self();
 
 		// const provider = yield* SolanaService.anchorProvider;
 

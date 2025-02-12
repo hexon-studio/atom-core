@@ -31,7 +31,7 @@ import {
 } from "~/libs/@staratlas/sage";
 import { getCargoPodsByAuthority } from "~/libs/@staratlas/sage/getCargoPodsByAuthority";
 import { getCargoTypeResourceMultiplier } from "~/libs/@staratlas/sage/utils/getCargoTypeResourceMultiplier";
-import { getAssociatedTokenAddress } from "~/utils/getAssociatedTokenAddress";
+import { findAssociatedTokenPda } from "~/utils/getAssociatedTokenAddress";
 import { computeWithdrawAmount } from "./computeWithdrawAmount";
 
 export class FleetCargoPodTokenAccountNotFoundError extends Data.TaggedError(
@@ -82,7 +82,7 @@ export const createWithdrawCargoFromFleetIx = ({
 		const [playerFactionAddress] =
 			yield* findProfileFactionPda(playerProfilePubkey);
 
-		const cargoPodTokenAccount = yield* getAssociatedTokenAddress(
+		const cargoPodTokenAccount = yield* findAssociatedTokenPda(
 			resourceMint,
 			cargoPodInfo.cargoPod.key,
 			true,

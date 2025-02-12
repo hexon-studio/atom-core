@@ -14,7 +14,7 @@ import {
 	getCargoUnitsFromTokenAmount,
 } from "~/libs/@staratlas/sage";
 import { getAssociatedTokenAccountBalance } from "~/utils/getAssociatedTokenAccountBalance";
-import { getAssociatedTokenAddress } from "~/utils/getAssociatedTokenAddress";
+import { findAssociatedTokenPda } from "~/utils/getAssociatedTokenAddress";
 
 export const enhanceLoadResourceItem = ({
 	item,
@@ -32,7 +32,7 @@ export const enhanceLoadResourceItem = ({
 
 		const context = yield* getGameContext();
 
-		const starbaseResourceTokenAccount = yield* getAssociatedTokenAddress(
+		const starbaseResourceTokenAccount = yield* findAssociatedTokenPda(
 			resourceMint,
 			starbasePlayerCargoPodsPubkey,
 			true,
