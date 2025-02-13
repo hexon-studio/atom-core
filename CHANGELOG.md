@@ -1,5 +1,15 @@
 # Changelog
 
+# [1.32.0](https://github.com/hexon-studio/atom-core/compare/v1.31.0...v1.32.0) (2025-02-13)
+
+
+### Features
+
+* add start crafting ([88f71d1](https://github.com/hexon-studio/atom-core/commit/88f71d18db1e3c38b1f77dfeba8c0f75d203e064))
+* add stop crafting ([a0ca746](https://github.com/hexon-studio/atom-core/commit/a0ca746230614353b6b4a603a2fc0db1fcf47c0e))
+* add stop crafting options ([9aa8747](https://github.com/hexon-studio/atom-core/commit/9aa87472786808b549267c5b9e8b8edf71a02ec3))
+* export craft functions in vanilla ([0aa7860](https://github.com/hexon-studio/atom-core/commit/0aa7860d9f0f22c1b87148672597b826e97ca224))
+
 # [1.31.0](https://github.com/hexon-studio/atom-core/compare/v1.30.1...v1.31.0) (2025-02-12)
 
 
