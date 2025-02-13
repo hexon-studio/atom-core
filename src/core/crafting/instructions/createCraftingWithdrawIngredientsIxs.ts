@@ -10,7 +10,6 @@ import { SolanaService } from "~/core/services/SolanaService";
 import { getStarbaseInfoByCoords } from "~/core/utils/getStarbaseInfo";
 import { findCargoTypePda } from "~/libs/@staratlas/cargo";
 import {
-	findCraftableItemPda,
 	findCraftingInstancePda,
 	findCraftingProcessPda,
 } from "~/libs/@staratlas/crafting/pdas";
@@ -21,11 +20,11 @@ import { findAssociatedTokenPda } from "~/utils/getAssociatedTokenAddress";
 
 export const createCraftingWithdrawIngredientsIxs = ({
 	craftingId,
-	recipe,
+	recipeAccount,
 	starbaseCoords,
 }: {
 	craftingId: BN;
-	recipe: Recipe;
+	recipeAccount: Recipe;
 	starbaseCoords: [BN, BN];
 }) =>
 	Effect.gen(function* () {
@@ -39,7 +38,7 @@ export const createCraftingWithdrawIngredientsIxs = ({
 		const [craftingProcess] = yield* findCraftingProcessPda({
 			craftingFacility: starbaseInfo.starbaseAccount.data.craftingFacility,
 			craftingId,
-			craftingRecipe: recipe.key,
+			craftingRecipe: recipeAccount.key,
 		});
 
 		const [craftingInstance] = yield* findCraftingInstancePda({
@@ -53,7 +52,7 @@ export const createCraftingWithdrawIngredientsIxs = ({
 
 		const signer = yield* GameService.signer;
 
-		const { inputs } = divideRecipeIngredients(recipe);
+		const { inputs } = divideRecipeIngredients(recipeAccount);
 
 		const provider = yield* SolanaService.anchorProvider;
 
@@ -85,15 +84,14 @@ export const createCraftingWithdrawIngredientsIxs = ({
 				ixs.push(createDestinationAta.instructions);
 			}
 
-			const [craftableItem] = yield* findCraftableItemPda(inputIngredient.mint);
-
-			const craftableItemAta = yield* findAssociatedTokenPda(
+			const inputIngridientAta = yield* findAssociatedTokenPda(
 				inputIngredient.mint,
-				craftableItem,
+				craftingProcess,
 				true,
 			);
 
-			const amount = yield* getAssociatedTokenAccountBalance(craftableItemAta);
+			const amount =
+				yield* getAssociatedTokenAccountBalance(inputIngridientAta);
 
 			const ix = CraftingInstance.withdrawCraftingIngredient(
 				programs.sage,
@@ -107,11 +105,11 @@ export const createCraftingWithdrawIngredientsIxs = ({
 				craftingInstance,
 				craftingProcess,
 				starbaseInfo.starbaseAccount.data.craftingFacility,
-				recipe.key,
+				recipeAccount.key,
 				starbaseInfo.starbasePlayerCargoPodsAccountPubkey,
 				cargoTypePda,
 				context.gameInfo.cargoStatsDefinition.key,
-				craftableItemAta,
+				inputIngridientAta,
 				createDestinationAta.address,
 				inputIngredient.mint,
 				context.gameInfo.game.key,

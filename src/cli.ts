@@ -165,21 +165,21 @@ const main = async () => {
 			z.coerce.number().parse(value),
 		)
 		.option("--recipe <recipe>", "The address of the recipe", parsePublicKey)
-		.option("--sector <starbaseSector>", "The sector of the starbase")
+		.option("--sector <sector>", "The sector of the starbase")
 		.action(
 			async (options: {
 				crewAmount: number;
 				quantity: number;
 				recipe: PublicKey;
-				starbaseSector: string;
+				sector: string;
 			}) => {
-				const { crewAmount, quantity, recipe, starbaseSector } = options;
+				const { crewAmount, quantity, recipe, sector } = options;
 
 				const globalOpts = createOptionsWithWebhook(
 					program.opts<CliGlobalOptions>(),
 				);
 
-				const maybeSector = EffectString.split(starbaseSector, ",");
+				const maybeSector = EffectString.split(sector, ",");
 
 				if (!Tuple.isTupleOf(maybeSector, 2)) {
 					throw new InvalidArgumentError("Invalid sector coordinates");
