@@ -2,53 +2,50 @@ import type { PublicKey } from "@solana/web3.js";
 import type BN from "bn.js";
 import { Effect } from "effect";
 import { getRecipeAccount } from "~/libs/@staratlas/crafting/accounts";
-import { generateCraftingProcessId } from "~/libs/@staratlas/crafting/utils";
-import { createCraftingDepositIngredientsIxs } from "../crafting/instructions/createCraftingDepositIngredientsIxs";
-import { createCraftingProcessIx } from "../crafting/instructions/createCraftingProcessIx";
-import { createCraftingStartIxs } from "../crafting/instructions/createCraftingStartIxs";
+import { createCraftingBurnConsumablesIxs } from "../crafting/instructions/createCraftingBurnConsumablesIxs";
+import { createCraftingClaimOutputsIxs } from "../crafting/instructions/createCraftingClaimOutputsIxs";
+import { createCraftingCloseProcessIx } from "../crafting/instructions/createCraftingCloseProcessIx";
 import { GameService } from "../services/GameService";
 import { getGameContext } from "../services/GameService/utils";
 import { createDrainVaultIx } from "../vault/instructions/createDrainVaultIx";
 
-export const startCrafting = ({
+export const stopCrafting = ({
+	craftingId,
 	recipe,
 	starbaseCoords,
-	crewAmount,
-	quantity,
 }: {
+	craftingId: BN;
 	starbaseCoords: [BN, BN];
 	recipe: PublicKey;
-	crewAmount: number;
-	quantity: number;
 }) =>
 	Effect.gen(function* () {
-		const craftingId = generateCraftingProcessId();
-
-		yield* Effect.log("Start crafting...").pipe(
+		yield* Effect.log("Stop crafting...").pipe(
 			Effect.annotateLogs({ craftingId: craftingId.toString() }),
 		);
 
 		const recipeAccount = yield* getRecipeAccount(recipe);
 
+		// if (recipeAccount.data.status !== RecipeStatus.Active) {
+
+		// 	yield* Effect.fail(new Error("Recipe is not active"));
+		// }
+
 		yield* Effect.log("Crafting recipe loaded").pipe(
 			Effect.annotateLogs({ recipeAccount }),
 		);
 
-		const [createIx, depositIxs, startIxs] = yield* Effect.all([
-			createCraftingProcessIx({
+		const [burnIxs, claimIxs, stopIx] = yield* Effect.all([
+			createCraftingBurnConsumablesIxs({
 				recipeAccount,
 				starbaseCoords,
 				craftingId,
-				numCrew: crewAmount,
-				quantity,
 			}),
-			createCraftingDepositIngredientsIxs({
+			createCraftingClaimOutputsIxs({
 				craftingId,
-				quantity,
 				recipeAccount,
 				starbaseCoords,
 			}),
-			createCraftingStartIxs({
+			createCraftingCloseProcessIx({
 				craftingId,
 				recipeAccount,
 				starbaseCoords,
@@ -62,7 +59,7 @@ export const startCrafting = ({
 		} = yield* getGameContext();
 
 		const txs = yield* GameService.buildAndSignTransaction({
-			ixs: [createIx, ...depositIxs, ...startIxs],
+			ixs: [...burnIxs, ...claimIxs, stopIx],
 			afterIxs: drainVaultIx,
 			size: maxIxsPerTransaction,
 		});
@@ -71,7 +68,7 @@ export const startCrafting = ({
 			txs.map((tx) => GameService.sendTransaction(tx)),
 		);
 
-		yield* Effect.log("Craft started!");
+		yield* Effect.log("Craft stopped!");
 
-		return { signatures, craftingId: craftingId.toJSON() };
+		return { signatures };
 	});

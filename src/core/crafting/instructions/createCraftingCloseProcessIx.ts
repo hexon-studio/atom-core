@@ -17,11 +17,11 @@ import { findAssociatedTokenPda } from "~/utils/getAssociatedTokenAddress";
 
 export const createCraftingCloseProcessIx = ({
 	craftingId,
-	recipe,
+	recipeAccount,
 	starbaseCoords,
 }: {
 	craftingId: BN;
-	recipe: Recipe;
+	recipeAccount: Recipe;
 	starbaseCoords: [BN, BN];
 }) =>
 	Effect.gen(function* () {
@@ -41,7 +41,7 @@ export const createCraftingCloseProcessIx = ({
 		const [craftingProcess] = yield* findCraftingProcessPda({
 			craftingFacility: starbaseInfo.starbaseAccount.data.craftingFacility,
 			craftingId,
-			craftingRecipe: recipe.key,
+			craftingRecipe: recipeAccount.key,
 		});
 
 		const [craftingInstance] = yield* findCraftingInstancePda({
@@ -62,6 +62,7 @@ export const createCraftingCloseProcessIx = ({
 		const tokenFrom = yield* findAssociatedTokenPda(
 			tokenMints.atlas,
 			craftingProcess,
+			true,
 		);
 
 		return CraftingInstance.closeCraftingProcess(
@@ -77,7 +78,7 @@ export const createCraftingCloseProcessIx = ({
 			craftingInstance,
 			craftingProcess,
 			starbaseInfo.starbaseAccount.data.craftingFacility,
-			recipe.key,
+			recipeAccount.key,
 			craftingXpKey,
 			context.gameInfo.game.data.points.craftingXpCategory.category,
 			context.gameInfo.game.data.points.craftingXpCategory.modifier,
@@ -88,6 +89,6 @@ export const createCraftingCloseProcessIx = ({
 			context.gameInfo.game.data.gameState,
 			{ keyIndex: context.keyIndexes.sage },
 			tokenFrom,
-			recipe.data.feeRecipient.key,
+			recipeAccount.data.feeRecipient.key,
 		);
 	});

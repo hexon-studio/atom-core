@@ -1,6 +1,5 @@
-import { Recipe } from "@staratlas/crafting";
+import { Recipe, RecipeStatus } from "@staratlas/crafting";
 import { readAllFromRPC } from "@staratlas/data-source";
-import { BN } from "bn.js";
 import {
 	Cause,
 	Effect,
@@ -11,17 +10,9 @@ import {
 	ManagedRuntime,
 	Option,
 } from "effect";
-import { resourceNameToMint } from "~/constants/resources";
 import { getSagePrograms } from "~/core/programs";
 import { GameService } from "~/core/services/GameService";
-import { getGameContext } from "~/core/services/GameService/utils";
 import { SolanaService } from "~/core/services/SolanaService";
-import { getCraftingFacilityAccount } from "~/libs/@staratlas/crafting/accounts";
-import { divideRecipeIngredients } from "~/libs/@staratlas/crafting/utils";
-import {
-	findStarbasePdaByCoordinates,
-	getStarbaseAccount,
-} from "~/libs/@staratlas/sage";
 import type { GlobalOptionsWithWebhook } from "../types";
 import { createMainLiveService } from "../utils/createMainLiveService";
 
@@ -47,37 +38,10 @@ export const runRecipeList = async ({ globalOpts }: Param) => {
 		),
 		Effect.map(
 			EffectArray.filterMap((res) =>
-				res.type === "ok" ? Option.some(res.data) : Option.none(),
+				res.type === "ok" && res.data.data.status === RecipeStatus.Active
+					? Option.some(res.data)
+					: Option.none(),
 			),
-		),
-		Effect.flatMap((recipes) =>
-			Effect.gen(function* () {
-				const context = yield* getGameContext();
-
-				const [starbasePubkey] = yield* findStarbasePdaByCoordinates(
-					context.gameInfo.game.key,
-					[new BN(0), new BN(-39)],
-				);
-
-				const starbaseAccount = yield* getStarbaseAccount(starbasePubkey);
-
-				const craftingFacility = yield* getCraftingFacilityAccount(
-					starbaseAccount.data.craftingFacility,
-				);
-
-				return EffectArray.filter(recipes, (recipe) => {
-					const {
-						outputs: [output],
-					} = divideRecipeIngredients(recipe);
-
-					return (
-						(output?.mint.equals(resourceNameToMint.Fuel) ?? false) &&
-						craftingFacility.recipeCategories
-							.map((pubkey) => pubkey.toBase58())
-							.includes(recipe.data.category.toBase58())
-					);
-				});
-			}),
 		),
 		Effect.tap((recipes) =>
 			Effect.logInfo("Recipes list found").pipe(

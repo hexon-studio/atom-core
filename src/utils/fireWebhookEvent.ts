@@ -5,7 +5,7 @@ import {
 	WebhookService,
 } from "../core/services/WebhookService";
 
-export const fireWebhookEvent = (event: WebhookEvent) =>
+export const fireWebhookEvent = <A>(event: WebhookEvent<A>) =>
 	Effect.serviceOptional(WebhookService).pipe(
 		Effect.tap(() =>
 			Effect.log(`[WebhookService] Firing "${event.type}" event`).pipe(

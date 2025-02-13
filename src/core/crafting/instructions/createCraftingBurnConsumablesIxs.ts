@@ -14,13 +14,11 @@ import { findAssociatedTokenPda } from "~/utils/getAssociatedTokenAddress";
 
 export const createCraftingBurnConsumablesIxs = ({
 	craftingId,
-	quantity,
-	recipe,
+	recipeAccount,
 	starbaseCoords,
 }: {
 	craftingId: BN;
-	quantity: number;
-	recipe: Recipe;
+	recipeAccount: Recipe;
 	starbaseCoords: [BN, BN];
 }) =>
 	Effect.gen(function* () {
@@ -34,7 +32,7 @@ export const createCraftingBurnConsumablesIxs = ({
 		const [craftingProcess] = yield* findCraftingProcessPda({
 			craftingFacility: starbaseInfo.starbaseAccount.data.craftingFacility,
 			craftingId,
-			craftingRecipe: recipe.key,
+			craftingRecipe: recipeAccount.key,
 		});
 
 		const [craftingInstance] = yield* findCraftingInstancePda({
@@ -42,7 +40,7 @@ export const createCraftingBurnConsumablesIxs = ({
 			starbasePlayer: starbaseInfo.starbasePlayerPubkey,
 		});
 
-		const { inputs } = divideRecipeIngredients(recipe);
+		const { inputs } = divideRecipeIngredients(recipeAccount);
 
 		const ixs = [];
 
@@ -61,7 +59,7 @@ export const createCraftingBurnConsumablesIxs = ({
 				craftingInstance,
 				craftingProcess,
 				starbaseInfo.starbaseAccount.data.craftingFacility,
-				recipe.key,
+				recipeAccount.key,
 				context.gameInfo.game.key,
 				context.gameInfo.game.data.gameState,
 				ingredientAta,

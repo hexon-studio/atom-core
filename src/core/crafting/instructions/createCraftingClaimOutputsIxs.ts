@@ -15,7 +15,6 @@ import {
 	findCraftingProcessPda,
 } from "~/libs/@staratlas/crafting/pdas";
 import { divideRecipeIngredients } from "~/libs/@staratlas/crafting/utils";
-import { getCargoPodsByAuthority } from "~/libs/@staratlas/sage";
 import { findAssociatedTokenPda } from "~/utils/getAssociatedTokenAddress";
 
 export class CraftingOutputItemNotFoundError extends Data.TaggedError(
@@ -24,11 +23,11 @@ export class CraftingOutputItemNotFoundError extends Data.TaggedError(
 
 export const createCraftingClaimOutputsIxs = ({
 	craftingId,
-	recipe,
+	recipeAccount,
 	starbaseCoords,
 }: {
 	craftingId: BN;
-	recipe: Recipe;
+	recipeAccount: Recipe;
 	starbaseCoords: [BN, BN];
 }) =>
 	Effect.gen(function* () {
@@ -38,7 +37,7 @@ export const createCraftingClaimOutputsIxs = ({
 		const {
 			inputs,
 			outputs: [outputItem],
-		} = divideRecipeIngredients(recipe);
+		} = divideRecipeIngredients(recipeAccount);
 
 		if (!outputItem) {
 			return yield* new CraftingOutputItemNotFoundError();
@@ -51,7 +50,7 @@ export const createCraftingClaimOutputsIxs = ({
 		const [craftingProcess] = yield* findCraftingProcessPda({
 			craftingFacility: starbaseInfo.starbaseAccount.data.craftingFacility,
 			craftingId,
-			craftingRecipe: recipe.key,
+			craftingRecipe: recipeAccount.key,
 		});
 
 		const [craftingInstance] = yield* findCraftingInstancePda({
@@ -66,10 +65,6 @@ export const createCraftingClaimOutputsIxs = ({
 			true,
 		);
 
-		const starbasePlayerPod = yield* getCargoPodsByAuthority(
-			starbaseInfo.starbasePlayerPubkey,
-		);
-
 		const [cargoTypePda] = yield* findCargoTypePda(
 			outputItem.mint,
 			context.gameInfo.cargoStatsDefinition.key,
@@ -81,7 +76,7 @@ export const createCraftingClaimOutputsIxs = ({
 		const createDestinationAta =
 			yield* GameService.createAssociatedTokenAccountIdempotent(
 				outputItem.mint,
-				starbasePlayerPod.key,
+				starbaseInfo.starbasePlayerCargoPodsAccountPubkey,
 				true,
 			);
 
@@ -110,9 +105,9 @@ export const createCraftingClaimOutputsIxs = ({
 				craftingInstance,
 				craftingProcess,
 				starbaseInfo.starbaseAccount.data.craftingFacility,
-				recipe.key,
+				recipeAccount.key,
 				craftableItem,
-				starbasePlayerPod.key,
+				starbaseInfo.starbasePlayerCargoPodsAccountPubkey,
 				cargoTypePda,
 				context.gameInfo.cargoStatsDefinition.key,
 				context.gameInfo.game.key,

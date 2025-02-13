@@ -30,9 +30,10 @@ import {
 	runWarp,
 } from "./commands";
 import { runLoadCrew } from "./commands/loadCrew";
-import { runRecipeList } from "./commands/runRecipeList";
+import { runRecipeList } from "./commands/recipeList";
 import { runStartCrafting } from "./commands/startCrafting";
 import { runStartScan } from "./commands/startScan";
+import { runStopCrafting } from "./commands/stopCrafting";
 import { runUnloadCrew } from "./commands/unloadCrew";
 import {
 	cargoPodKinds,
@@ -155,21 +156,25 @@ const main = async () => {
 
 	program
 		.command("start-crafting")
-		.argument(
-			"<crewAmount>",
+		.option(
+			"-c, --crewAmount <crewAmount>",
 			"The amount of crew to start crafting",
-			z.coerce.number().parse,
+			(value) => z.coerce.number().parse(value),
 		)
-		.argument("<quantity>", "The quantity to craft", z.coerce.number().parse)
-		.argument("<recipe>", "The address of the recipe", parsePublicKey)
-		.argument("<starbaseSector>", "The sector of the starbase")
+		.option("-q, --quantity <quantity>", "The quantity to craft", (value) =>
+			z.coerce.number().parse(value),
+		)
+		.option("--recipe <recipe>", "The address of the recipe", parsePublicKey)
+		.option("--sector <starbaseSector>", "The sector of the starbase")
 		.action(
-			async (
-				crewAmount: number,
-				quantity: number,
-				recipe: PublicKey,
-				starbaseSector: string,
-			) => {
+			async (options: {
+				crewAmount: number;
+				quantity: number;
+				recipe: PublicKey;
+				starbaseSector: string;
+			}) => {
+				const { crewAmount, quantity, recipe, starbaseSector } = options;
+
 				const globalOpts = createOptionsWithWebhook(
 					program.opts<CliGlobalOptions>(),
 				);
@@ -194,6 +199,38 @@ const main = async () => {
 				});
 			},
 		);
+
+	program
+		.command("stop-crafting")
+		.argument("<craftingId>", "The crafting id", z.coerce.number().parse)
+		.argument("<recipe>", "The address of the recipe", parsePublicKey)
+		.argument("<starbaseSector>", "The sector of the starbase")
+		.action(
+			async (craftingId: number, recipe: PublicKey, starbaseSector: string) => {
+				const globalOpts = createOptionsWithWebhook(
+					program.opts<CliGlobalOptions>(),
+				);
+
+				const maybeSector = EffectString.split(starbaseSector, ",");
+
+				if (!Tuple.isTupleOf(maybeSector, 2)) {
+					throw new InvalidArgumentError("Invalid sector coordinates");
+				}
+
+				const starbaseCoords = Tuple.mapBoth(maybeSector, {
+					onFirst: (a) => new BN(a),
+					onSecond: (a) => new BN(a),
+				});
+
+				return runStopCrafting({
+					craftingId,
+					recipe,
+					starbaseCoords,
+					globalOpts,
+				});
+			},
+		);
+
 	program
 		.command("fleet-info <fleetNameOrAddress>")
 		.action(async (fleetNameOrAddress: string) => {

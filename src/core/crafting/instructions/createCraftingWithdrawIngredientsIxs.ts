@@ -10,32 +10,27 @@ import { SolanaService } from "~/core/services/SolanaService";
 import { getStarbaseInfoByCoords } from "~/core/utils/getStarbaseInfo";
 import { findCargoTypePda } from "~/libs/@staratlas/cargo";
 import {
+	findCraftableItemPda,
 	findCraftingInstancePda,
 	findCraftingProcessPda,
 } from "~/libs/@staratlas/crafting/pdas";
 import { divideRecipeIngredients } from "~/libs/@staratlas/crafting/utils";
 import { findProfileFactionPda } from "~/libs/@staratlas/profile-faction";
+import { getAssociatedTokenAccountBalance } from "~/utils/getAssociatedTokenAccountBalance";
+import { findAssociatedTokenPda } from "~/utils/getAssociatedTokenAddress";
 
-export const createCraftingDepositIngredientsIxs = ({
+export const createCraftingWithdrawIngredientsIxs = ({
 	craftingId,
-	quantity,
-	recipeAccount,
+	recipe,
 	starbaseCoords,
 }: {
 	craftingId: BN;
-	quantity: number;
-	recipeAccount: Recipe;
+	recipe: Recipe;
 	starbaseCoords: [BN, BN];
 }) =>
 	Effect.gen(function* () {
 		const context = yield* getGameContext();
 		const programs = yield* getSagePrograms();
-
-		const signer = yield* GameService.signer;
-
-		const [profileFaction] = yield* findProfileFactionPda(
-			context.options.playerProfile,
-		);
 
 		const starbaseInfo = yield* getStarbaseInfoByCoords({
 			starbaseCoords,
@@ -44,7 +39,7 @@ export const createCraftingDepositIngredientsIxs = ({
 		const [craftingProcess] = yield* findCraftingProcessPda({
 			craftingFacility: starbaseInfo.starbaseAccount.data.craftingFacility,
 			craftingId,
-			craftingRecipe: recipeAccount.key,
+			craftingRecipe: recipe.key,
 		});
 
 		const [craftingInstance] = yield* findCraftingInstancePda({
@@ -52,7 +47,13 @@ export const createCraftingDepositIngredientsIxs = ({
 			starbasePlayer: starbaseInfo.starbasePlayerPubkey,
 		});
 
-		const { inputs } = divideRecipeIngredients(recipeAccount);
+		const [profileFaction] = yield* findProfileFactionPda(
+			context.options.playerProfile,
+		);
+
+		const signer = yield* GameService.signer;
+
+		const { inputs } = divideRecipeIngredients(recipe);
 
 		const provider = yield* SolanaService.anchorProvider;
 
@@ -65,47 +66,36 @@ export const createCraftingDepositIngredientsIxs = ({
 				context.gameInfo.cargoStatsDefinition.data.seqId,
 			);
 
-			const createIngredientAta =
-				yield* GameService.createAssociatedTokenAccountIdempotent(
-					inputIngredient.mint,
-					craftingProcess,
-					true,
-				);
-
-			const maybeIngredientAtaAccount = yield* Effect.tryPromise(() =>
-				getAccount(
-					provider.connection,
-					createIngredientAta.address,
-					"confirmed",
-				),
-			).pipe(Effect.option);
-
-			if (Option.isNone(maybeIngredientAtaAccount)) {
-				ixs.push(createIngredientAta.instructions);
-			}
-
-			const createStarbasePodMintAta =
+			const createDestinationAta =
 				yield* GameService.createAssociatedTokenAccountIdempotent(
 					inputIngredient.mint,
 					starbaseInfo.starbasePlayerCargoPodsAccountPubkey,
 					true,
 				);
 
-			const maybeStarbasePodMintAta = yield* Effect.tryPromise(() =>
+			const maybeDestinationAta = yield* Effect.tryPromise(() =>
 				getAccount(
 					provider.connection,
-					createStarbasePodMintAta.address,
+					createDestinationAta.address,
 					"confirmed",
 				),
 			).pipe(Effect.option);
 
-			if (Option.isNone(maybeStarbasePodMintAta)) {
-				ixs.push(createStarbasePodMintAta.instructions);
+			if (Option.isNone(maybeDestinationAta)) {
+				ixs.push(createDestinationAta.instructions);
 			}
 
-			const amount = inputIngredient.amount.muln(quantity);
+			const [craftableItem] = yield* findCraftableItemPda(inputIngredient.mint);
 
-			const ix = CraftingInstance.depositCraftingIngredient(
+			const craftableItemAta = yield* findAssociatedTokenPda(
+				inputIngredient.mint,
+				craftableItem,
+				true,
+			);
+
+			const amount = yield* getAssociatedTokenAccountBalance(craftableItemAta);
+
+			const ix = CraftingInstance.withdrawCraftingIngredient(
 				programs.sage,
 				programs.cargo,
 				programs.crafting,
@@ -117,12 +107,13 @@ export const createCraftingDepositIngredientsIxs = ({
 				craftingInstance,
 				craftingProcess,
 				starbaseInfo.starbaseAccount.data.craftingFacility,
-				recipeAccount.key,
+				recipe.key,
 				starbaseInfo.starbasePlayerCargoPodsAccountPubkey,
 				cargoTypePda,
 				context.gameInfo.cargoStatsDefinition.key,
-				createStarbasePodMintAta.address,
-				createIngredientAta.address,
+				craftableItemAta,
+				createDestinationAta.address,
+				inputIngredient.mint,
 				context.gameInfo.game.key,
 				context.gameInfo.game.data.gameState,
 				{
