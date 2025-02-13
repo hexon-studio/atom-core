@@ -54,7 +54,7 @@ export const warpToSector = ({
 		if (!warpIxs.length) {
 			yield* Effect.log("Fleet already in target sector. Skipping");
 
-			return [];
+			return { signatures: [] };
 		}
 
 		ixs.push(...warpIxs);
@@ -71,11 +71,11 @@ export const warpToSector = ({
 			size: maxIxsPerTransaction,
 		});
 
-		const txId = yield* Effect.all(
+		const signatures = yield* Effect.all(
 			txs.map((tx) => GameService.sendTransaction(tx)),
 		);
 
 		yield* Effect.log(`Warping to - X: ${targetSectorX} | Y: ${targetSectorY}`);
 
-		return txId;
+		return { signatures };
 	});

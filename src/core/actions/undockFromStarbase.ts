@@ -16,7 +16,7 @@ export const undockFromStarbase = ({
 		if (!fleetAccount.state.StarbaseLoadingBay) {
 			yield* Effect.log("Fleet can't be undocked from starbase");
 
-			return [];
+			return { signatures: [] };
 		}
 
 		yield* Effect.log("Undocking from starbase...");
@@ -35,11 +35,11 @@ export const undockFromStarbase = ({
 			size: maxIxsPerTransaction,
 		});
 
-		const txIds = yield* Effect.all(
+		const signatures = yield* Effect.all(
 			txs.map((tx) => GameService.sendTransaction(tx)),
 		);
 
 		yield* Effect.log("Fleet undocked!");
 
-		return txIds;
+		return { signatures };
 	});

@@ -7,7 +7,7 @@ import {
 } from "~/libs/@staratlas/cargo";
 import { findProfileFactionPda } from "~/libs/@staratlas/profile-faction";
 import { resourceNameToMint } from "../../../constants/resources";
-import { getAssociatedTokenAddress } from "../../../utils/getAssociatedTokenAddress";
+import { findAssociatedTokenPda } from "../../../utils/getAssociatedTokenAddress";
 import { getSagePrograms } from "../../programs";
 import { GameService } from "../../services/GameService";
 import { getGameContext } from "../../services/GameService/utils";
@@ -81,7 +81,7 @@ export const createWarpToCoordinateIx = ({
 			context.gameInfo.cargoStatsDefinition.data.seqId,
 		);
 
-		const fuelBankAta = yield* getAssociatedTokenAddress(
+		const fuelBankAta = yield* findAssociatedTokenPda(
 			resourceNameToMint.Fuel,
 			fleetAccount.data.fuelTank,
 			true,

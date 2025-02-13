@@ -44,7 +44,7 @@ export const subwarpToSector = ({
 		if (!subwarpIxs.length) {
 			yield* Effect.log("Fleet already in target sector. Skipping");
 
-			return [];
+			return { signatures: [] };
 		}
 
 		ixs.push(...subwarpIxs);
@@ -61,7 +61,7 @@ export const subwarpToSector = ({
 			size: maxIxsPerTransaction,
 		});
 
-		const txId = yield* Effect.all(
+		const signatures = yield* Effect.all(
 			txs.map((tx) => GameService.sendTransaction(tx)),
 		);
 
@@ -69,5 +69,5 @@ export const subwarpToSector = ({
 			`Subwarping to - X: ${targetSectorX} | Y: ${targetSectorY}`,
 		);
 
-		return txId;
+		return { signatures };
 	});

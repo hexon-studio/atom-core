@@ -33,7 +33,7 @@ export const loadCrew = ({
 		);
 
 		const starbaseInfo = yield* getStarbaseInfoByCoords({
-			startbaseCoords: fleetCoords,
+			starbaseCoords: fleetCoords,
 		});
 
 		// check if there are enough crew members in the starbase
@@ -52,7 +52,7 @@ export const loadCrew = ({
 		if (starbaseAvailableCrewCount <= 0) {
 			yield* Effect.log("In starbase there are no crew to load. Skipping.");
 
-			return [];
+			return { signatures: [] };
 		}
 
 		// check if there is enough passenger space in the fleet
@@ -71,7 +71,7 @@ export const loadCrew = ({
 		if (finalCrewAmount <= 0) {
 			yield* Effect.log("Not enough passenger space in fleet. Skipping.");
 
-			return [];
+			return { signatures: [] };
 		}
 
 		const ixs: InstructionReturn[] = [];
@@ -107,11 +107,11 @@ export const loadCrew = ({
 			size: maxIxsPerTransaction,
 		});
 
-		const txIds = yield* Effect.all(
+		const signatures = yield* Effect.all(
 			txs.map((tx) => GameService.sendTransaction(tx)),
 		);
 
 		yield* Effect.log("Crew started loading");
 
-		return txIds;
+		return { signatures };
 	});

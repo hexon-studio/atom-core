@@ -120,7 +120,7 @@ export const loadCargo = ({
 		);
 
 		const starbaseInfo = yield* getStarbaseInfoByCoords({
-			startbaseCoords: fleetCoords,
+			starbaseCoords: fleetCoords,
 		});
 
 		let enhancedItems: EnhancedResourceItem[] = [];
@@ -224,7 +224,7 @@ export const loadCargo = ({
 		if (EffectArray.isEmptyArray(loadCargoIxs)) {
 			yield* Effect.log("Nothing to load. Skipping");
 
-			return [];
+			return { signatures: [] };
 		}
 
 		ixs.push(...loadCargoIxs);
@@ -250,7 +250,7 @@ export const loadCargo = ({
 
 		if (EffectArray.isEmptyArray(errors)) {
 			// NOTE: All transactions succeeded
-			return [...preIxsSignatures, ...signatures];
+			return { signatures: [...preIxsSignatures, ...signatures] };
 		}
 
 		// NOTE: Some transactions failed

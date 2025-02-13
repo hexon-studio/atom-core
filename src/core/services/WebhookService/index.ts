@@ -2,7 +2,7 @@ import { Context, Data, Effect, Layer } from "effect";
 import type { WebhookOptions } from "../../../types";
 import { getGameContext } from "../GameService/utils";
 
-export type WebhookEvent =
+export type WebhookEvent<A> =
 	| {
 			type: "start";
 	  }
@@ -12,7 +12,7 @@ export type WebhookEvent =
 	//   }
 	| {
 			type: "success";
-			payload: { signatures: string[]; removeCredit: boolean };
+			payload: A & { removeCredit: boolean };
 	  }
 	| {
 			type: "error";
@@ -34,7 +34,7 @@ export class FireWebhookEventError extends Data.TaggedError(
 
 const fireWebhookEvent =
 	({ contextId, webhookSecret, webhookUrl }: WebhookOptions) =>
-	(event: WebhookEvent) =>
+	<A>(event: WebhookEvent<A>) =>
 		getGameContext().pipe(
 			Effect.flatMap(({ options, playerProfile }) =>
 				Effect.retry(

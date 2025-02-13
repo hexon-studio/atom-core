@@ -14,7 +14,7 @@ import {
 	findSectorPdaByCoordinates,
 	getSectorAccount,
 } from "~/libs/@staratlas/sage";
-import { getAssociatedTokenAddress } from "~/utils/getAssociatedTokenAddress";
+import { findAssociatedTokenPda } from "~/utils/getAssociatedTokenAddress";
 import {
 	GetSurveyDataUnitTrackerError,
 	GetSurveyDataUnitTrackerNotFoundError,
@@ -74,7 +74,7 @@ export const createScanIx = ({ fleetAccount }: { fleetAccount: Fleet }) =>
 			context.gameInfo.cargoStatsDefinition.data.seqId,
 		);
 
-		const sduTokenFrom = yield* getAssociatedTokenAddress(
+		const sduTokenFrom = yield* findAssociatedTokenPda(
 			resourceNameToMint.SurveyDataUnit,
 			surveyDataUnitTracker.value.data.data.signer,
 			true,
@@ -121,7 +121,7 @@ export const createScanIx = ({ fleetAccount }: { fleetAccount: Fleet }) =>
 			ixs.push(sduTokenToIx.instructions);
 		}
 
-		const foodTokenFrom = yield* getAssociatedTokenAddress(
+		const foodTokenFrom = yield* findAssociatedTokenPda(
 			resourceNameToMint.Food,
 			fleetAccount.data.cargoHold,
 			true,

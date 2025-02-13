@@ -2,6 +2,11 @@ import type { ManagedRuntime } from "effect";
 import type { GameService } from "~/core/services/GameService";
 import type { SolanaService } from "~/core/services/SolanaService";
 import { findCargoPodPda } from "~/libs/@staratlas/cargo/pdas";
+import {
+	findCraftableItemPda,
+	findCraftingInstancePda,
+	findCraftingProcessPda,
+} from "~/libs/@staratlas/crafting/pdas";
 import { findUserPointsPda } from "~/libs/@staratlas/points/pdas";
 import { findProfileFactionPda } from "~/libs/@staratlas/profile-faction/pdas";
 import {
@@ -18,6 +23,14 @@ export const createPdasApi = (
 	runtime: ManagedRuntime.ManagedRuntime<SolanaService | GameService, never>,
 ) => {
 	return {
+		findCraftableItemPda: (...args: Parameters<typeof findCraftableItemPda>) =>
+			findCraftableItemPda(...args).pipe(runtime.runPromise),
+		findCraftingInstancePda: (
+			...args: Parameters<typeof findCraftingInstancePda>
+		) => findCraftingInstancePda(...args).pipe(runtime.runPromise),
+		findCraftingProcessPda: (
+			...args: Parameters<typeof findCraftingProcessPda>
+		) => findCraftingProcessPda(...args).pipe(runtime.runPromise),
 		findCargoPodPda: (...args: Parameters<typeof findCargoPodPda>) =>
 			findCargoPodPda(...args).pipe(runtime.runPromise),
 		findFleetPdaByName: (...args: Parameters<typeof findFleetPdaByName>) =>

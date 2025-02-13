@@ -56,11 +56,11 @@ const checkSolBalance = () =>
 		return solBalance;
 	});
 
-export const runBaseCommand = <E, R>({
+export const runBaseCommand = <A extends { signatures: string[] }, E, R>({
 	self,
 	normalizeError,
 }: {
-	self: () => Effect.Effect<string[], E, R>;
+	self: () => Effect.Effect<A, E, R>;
 	normalizeError: (error: E) => {
 		tag: string;
 		message: string;
@@ -79,12 +79,7 @@ export const runBaseCommand = <E, R>({
 			yield* checkSolBalance();
 		}
 
-		// yield* fireWebhookEvent({
-		// 	type: "atlas-balance",
-		// 	payload: { balance: balance.toString() },
-		// });
-
-		const signatures = yield* self();
+		const result = yield* self();
 
 		// const provider = yield* SolanaService.anchorProvider;
 
@@ -111,13 +106,15 @@ export const runBaseCommand = <E, R>({
 		yield* fireWebhookEvent({
 			type: "success",
 			payload: {
-				signatures,
+				...result,
 				removeCredit:
-					!!context.fees && !context.fees.feeAddress && signatures.length > 0,
+					!!context.fees &&
+					!context.fees.feeAddress &&
+					result.signatures.length > 0,
 			},
 		});
 
-		return signatures;
+		return result.signatures;
 	}).pipe(
 		Effect.tapError((error) => {
 			const { tag, message, signatures, context } = normalizeError(

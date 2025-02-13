@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 import { PublicKey } from "@solana/web3.js";
+import { BN } from "bn.js";
 import {
 	InvalidArgumentError,
 	InvalidOptionArgumentError,
@@ -29,7 +30,10 @@ import {
 	runWarp,
 } from "./commands";
 import { runLoadCrew } from "./commands/loadCrew";
+import { runRecipeList } from "./commands/recipeList";
+import { runStartCrafting } from "./commands/startCrafting";
 import { runStartScan } from "./commands/startScan";
+import { runStopCrafting } from "./commands/stopCrafting";
 import { runUnloadCrew } from "./commands/unloadCrew";
 import {
 	cargoPodKinds,
@@ -138,6 +142,99 @@ const main = async () => {
 				"--contextId <contextId>",
 				"If passed the webhook will be called with the contextId",
 			).makeOptionMandatory(false),
+		);
+
+	program.command("recipe-list").action(async () => {
+		const globalOpts = createOptionsWithWebhook(
+			program.opts<CliGlobalOptions>(),
+		);
+
+		return runRecipeList({
+			globalOpts,
+		});
+	});
+
+	program
+		.command("start-crafting")
+		.option(
+			"-c, --crewAmount <crewAmount>",
+			"The amount of crew to start crafting",
+			(value) => z.coerce.number().parse(value),
+		)
+		.option("-q, --quantity <quantity>", "The quantity to craft", (value) =>
+			z.coerce.number().parse(value),
+		)
+		.option("--recipe <recipe>", "The address of the recipe", parsePublicKey)
+		.option("--sector <sector>", "The sector of the starbase")
+		.action(
+			async (options: {
+				crewAmount: number;
+				quantity: number;
+				recipe: PublicKey;
+				sector: string;
+			}) => {
+				const { crewAmount, quantity, recipe, sector } = options;
+
+				const globalOpts = createOptionsWithWebhook(
+					program.opts<CliGlobalOptions>(),
+				);
+
+				const maybeSector = EffectString.split(sector, ",");
+
+				if (!Tuple.isTupleOf(maybeSector, 2)) {
+					throw new InvalidArgumentError("Invalid sector coordinates");
+				}
+
+				const starbaseCoords = Tuple.mapBoth(maybeSector, {
+					onFirst: (a) => new BN(a),
+					onSecond: (a) => new BN(a),
+				});
+
+				return runStartCrafting({
+					crewAmount,
+					quantity,
+					recipe,
+					starbaseCoords,
+					globalOpts,
+				});
+			},
+		);
+
+	program
+		.command("stop-crafting")
+		.option("--cid, --craftingId <craftingId>", "The crafting id", (value) =>
+			z.coerce.number().parse(value),
+		)
+		.option("--recipe <recipe>", "The address of the recipe", parsePublicKey)
+		.option("--sector <sector>", "The sector of the starbase")
+		.action(
+			async ({
+				craftingId,
+				recipe,
+				sector,
+			}: { craftingId: number; recipe: PublicKey; sector: string }) => {
+				const globalOpts = createOptionsWithWebhook(
+					program.opts<CliGlobalOptions>(),
+				);
+
+				const maybeSector = EffectString.split(sector, ",");
+
+				if (!Tuple.isTupleOf(maybeSector, 2)) {
+					throw new InvalidArgumentError("Invalid sector coordinates");
+				}
+
+				const starbaseCoords = Tuple.mapBoth(maybeSector, {
+					onFirst: (a) => new BN(a),
+					onSecond: (a) => new BN(a),
+				});
+
+				return runStopCrafting({
+					craftingId,
+					recipe,
+					starbaseCoords,
+					globalOpts,
+				});
+			},
 		);
 
 	program

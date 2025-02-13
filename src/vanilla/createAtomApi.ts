@@ -4,8 +4,10 @@ import { type ResourceName, resourceNameToMint } from "~/constants/resources";
 import { dockToStarbase } from "~/core/actions/dockToStarbase";
 import { loadCargo } from "~/core/actions/loadCargo";
 import { loadCrew } from "~/core/actions/loadCrew";
+import { startCrafting } from "~/core/actions/startCrafting";
 import { startMining } from "~/core/actions/startMining";
 import { startScan } from "~/core/actions/startScan";
+import { stopCrafting } from "~/core/actions/stopCrafting";
 import { stopMining } from "~/core/actions/stopMining";
 import { subwarpToSector } from "~/core/actions/subwarpToSector";
 import { undockFromStarbase } from "~/core/actions/undockFromStarbase";
@@ -16,7 +18,7 @@ import { GameService } from "~/core/services/GameService";
 import { getFleetAccountByNameOrAddress } from "~/libs/@staratlas/sage";
 import type { RequiredOptions } from "~/types";
 import { createMainLiveService } from "~/utils/createMainLiveService";
-import { createPdasApi } from "./pda";
+import { createPdasApi } from "./createPdasApi";
 
 export const createAtomApi = (
 	options: Omit<RequiredOptions, "logDisabled">,
@@ -55,6 +57,10 @@ export const createAtomApi = (
 				// ),
 				runtime.runPromise,
 			),
+		startCrafting: (...args: Parameters<typeof startCrafting>) =>
+			startCrafting(...args).pipe(runtime.runPromise),
+		stopCrafting: (...args: Parameters<typeof stopCrafting>) =>
+			stopCrafting(...args).pipe(runtime.runPromise),
 		startMining: ({
 			fleetNameOrAddress,
 			resource,

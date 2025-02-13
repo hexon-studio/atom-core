@@ -117,7 +117,7 @@ export const unloadCargo = ({
 		if (EffectArray.isEmptyArray(unloadCargoIxs)) {
 			yield* Effect.log("Nothing to unload. Skipping");
 
-			return [];
+			return { signatures: [] };
 		}
 
 		ixs.push(...unloadCargoIxs);
@@ -147,7 +147,7 @@ export const unloadCargo = ({
 
 		// NOTE: All transactions succeeded
 		if (EffectArray.isEmptyArray(errors)) {
-			return [...preIxsSignatures, ...signatures];
+			return { signatures: [...preIxsSignatures, ...signatures] };
 		}
 
 		// NOTE: Some transactions failed

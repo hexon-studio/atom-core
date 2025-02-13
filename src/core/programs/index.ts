@@ -2,6 +2,7 @@ import { PublicKey } from "@solana/web3.js";
 import { Program } from "@staratlas/anchor";
 import { ATLAS_FEE_PAYER_IDL } from "@staratlas/atlas-prime";
 import { CARGO_IDL } from "@staratlas/cargo";
+import { CRAFTING_IDL } from "@staratlas/crafting";
 import { PLAYER_PROFILE_IDL } from "@staratlas/player-profile";
 import { POINTS_IDL } from "@staratlas/points";
 import { PROFILE_FACTION_IDL } from "@staratlas/profile-faction";
@@ -10,7 +11,6 @@ import { SAGE_IDL } from "@staratlas/sage";
 import { Effect } from "effect";
 import { programIds } from "../../constants/programs";
 import { SolanaService } from "../services/SolanaService";
-
 export const getSagePrograms = () =>
 	SolanaService.anchorProvider.pipe(
 		Effect.map((anchorProvider) => ({
@@ -27,6 +27,11 @@ export const getSagePrograms = () =>
 			cargo: new Program(
 				CARGO_IDL,
 				new PublicKey(programIds.cargoProgramId),
+				anchorProvider,
+			),
+			crafting: new Program(
+				CRAFTING_IDL,
+				new PublicKey(programIds.craftingProgramId),
 				anchorProvider,
 			),
 			points: new Program(
