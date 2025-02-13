@@ -202,16 +202,22 @@ const main = async () => {
 
 	program
 		.command("stop-crafting")
-		.argument("<craftingId>", "The crafting id", z.coerce.number().parse)
-		.argument("<recipe>", "The address of the recipe", parsePublicKey)
-		.argument("<starbaseSector>", "The sector of the starbase")
+		.option("--cid, --craftingId <craftingId>", "The crafting id", (value) =>
+			z.coerce.number().parse(value),
+		)
+		.option("--recipe <recipe>", "The address of the recipe", parsePublicKey)
+		.option("--sector <sector>", "The sector of the starbase")
 		.action(
-			async (craftingId: number, recipe: PublicKey, starbaseSector: string) => {
+			async ({
+				craftingId,
+				recipe,
+				sector,
+			}: { craftingId: number; recipe: PublicKey; sector: string }) => {
 				const globalOpts = createOptionsWithWebhook(
 					program.opts<CliGlobalOptions>(),
 				);
 
-				const maybeSector = EffectString.split(starbaseSector, ",");
+				const maybeSector = EffectString.split(sector, ",");
 
 				if (!Tuple.isTupleOf(maybeSector, 2)) {
 					throw new InvalidArgumentError("Invalid sector coordinates");
