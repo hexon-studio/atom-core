@@ -61,8 +61,8 @@ export const createCraftingWithdrawIngredientsIxs = ({
 		for (const [ingredientIndex, inputIngredient] of inputs.entries()) {
 			const [cargoTypePda] = yield* findCargoTypePda(
 				inputIngredient.mint,
-				context.gameInfo.cargoStatsDefinition.key,
-				context.gameInfo.cargoStatsDefinition.data.seqId,
+				context.gameInfo.cargoStatsDefinitionId,
+				context.gameInfo.cargoStatsDefinitionSeqId,
 			);
 
 			const createDestinationAta =
@@ -108,12 +108,12 @@ export const createCraftingWithdrawIngredientsIxs = ({
 				recipeAccount.key,
 				starbaseInfo.starbasePlayerCargoPodsAccountPubkey,
 				cargoTypePda,
-				context.gameInfo.cargoStatsDefinition.key,
+				context.gameInfo.cargoStatsDefinitionId,
 				inputIngridientAta,
 				createDestinationAta.address,
 				inputIngredient.mint,
-				context.gameInfo.game.key,
-				context.gameInfo.game.data.gameState,
+				context.gameInfo.gameId,
+				context.gameInfo.gameStateId,
 				{
 					amount,
 					ingredientIndex,

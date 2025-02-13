@@ -67,8 +67,8 @@ export const createCraftingClaimOutputsIxs = ({
 
 		const [cargoTypePda] = yield* findCargoTypePda(
 			outputItem.mint,
-			context.gameInfo.cargoStatsDefinition.key,
-			context.gameInfo.cargoStatsDefinition.data.seqId,
+			context.gameInfo.cargoStatsDefinitionId,
+			context.gameInfo.cargoStatsDefinitionSeqId,
 		);
 
 		const ixs = [];
@@ -109,9 +109,9 @@ export const createCraftingClaimOutputsIxs = ({
 				craftableItem,
 				starbaseInfo.starbasePlayerCargoPodsAccountPubkey,
 				cargoTypePda,
-				context.gameInfo.cargoStatsDefinition.key,
-				context.gameInfo.game.key,
-				context.gameInfo.game.data.gameState,
+				context.gameInfo.cargoStatsDefinitionId,
+				context.gameInfo.gameId,
+				context.gameInfo.gameStateId,
 				craftableItemAta,
 				createDestinationAta.address,
 				{

@@ -20,79 +20,66 @@ const mapGameAccoutToGameInfo = ({
 	cargoStatsDefinition: CargoStatsDefinition;
 }): GameInfo => {
 	return {
-		cargoStatsDefinition: {
-			key: cargoStatsDefinition.key,
-			data: {
-				seqId: cargoStatsDefinition.data.seqId,
-				statsCount: cargoStatsDefinition.data.statsCount,
+		cargoStatsDefinitionId: cargoStatsDefinition.key,
+		cargoStatsDefinitionSeqId: cargoStatsDefinition.data.seqId,
+		gameId: gameAccount.key,
+		gameStateId: gameAccount.data.gameState,
+		craftingDomain: gameAccount.data.gameState,
+		points: {
+			pilotXpCategory: {
+				category:
+					// @ts-ignore
+					gameAccount.data.points.pilotXpCategory.category,
+				modifier:
+					// @ts-ignore
+					gameAccount.data.points.pilotXpCategory.modifier,
 			},
-		},
-		game: {
-			key: gameAccount.key,
-			data: {
-				profile: gameAccount.data.profile,
-				crafting: {
-					domain: gameAccount.data.crafting.domain,
-				},
-				cargo: {
-					statsDefinition: gameAccount.data.cargo.statsDefinition,
-				},
-				gameState: gameAccount.data.gameState,
-				points: {
-					pilotXpCategory: {
-						category:
-							// @ts-ignore
-							gameAccount.data.points.pilotXpCategory.category,
-						modifier:
-							// @ts-ignore
-							gameAccount.data.points.pilotXpCategory.modifier,
-					},
-					councilRankXpCategory: {
-						category:
-							// @ts-ignore
-							gameAccount.data.points.councilRankXpCategory.category,
+			councilRankXpCategory: {
+				category:
+					// @ts-ignore
+					gameAccount.data.points.councilRankXpCategory.category,
 
-						modifier:
-							// @ts-ignore
-							gameAccount.data.points.councilRankXpCategory.modifier,
-					},
-					craftingXpCategory: {
-						category:
-							// @ts-ignore
-							gameAccount.data.points.craftingXpCategory.category,
-						modifier:
-							// @ts-ignore
-							gameAccount.data.points.craftingXpCategory.modifier,
-					},
-					lpCategory: {
-						// @ts-ignore
-						category: gameAccount.data.points.lpCategory.category,
-						// @ts-ignore
-						modifier: gameAccount.data.points.lpCategory.modifier,
-					},
-					miningXpCategory: {
-						category:
-							// @ts-ignore
-							gameAccount.data.points.miningXpCategory.category,
-						modifier:
-							// @ts-ignore
-							gameAccount.data.points.miningXpCategory.modifier,
-					},
-					dataRunningXpCategory: {
-						category:
-							// @ts-ignore
-							gameAccount.data.points.dataRunningXpCategory.category,
-						modifier:
-							// @ts-ignore
-							gameAccount.data.points.dataRunningXpCategory.modifier,
-					},
-				},
+				modifier:
+					// @ts-ignore
+					gameAccount.data.points.councilRankXpCategory.modifier,
+			},
+			craftingXpCategory: {
+				category:
+					// @ts-ignore
+					gameAccount.data.points.craftingXpCategory.category,
+				modifier:
+					// @ts-ignore
+					gameAccount.data.points.craftingXpCategory.modifier,
+			},
+			lpCategory: {
+				// @ts-ignore
+				category: gameAccount.data.points.lpCategory.category,
+				// @ts-ignore
+				modifier: gameAccount.data.points.lpCategory.modifier,
+			},
+			miningXpCategory: {
+				category:
+					// @ts-ignore
+					gameAccount.data.points.miningXpCategory.category,
+				modifier:
+					// @ts-ignore
+					gameAccount.data.points.miningXpCategory.modifier,
+			},
+			dataRunningXpCategory: {
+				category:
+					// @ts-ignore
+					gameAccount.data.points.dataRunningXpCategory.category,
+				modifier:
+					// @ts-ignore
+					gameAccount.data.points.dataRunningXpCategory.modifier,
 			},
 		},
 	};
 };
 
-export const fetchGameInfoOrAccounts = (): Effect.Effect<
+export const fetchGameInfoOrAccounts = (
+	commonApiUrl?: string,
+): Effect.Effect<
 	GameInfo,
 	| CreateKeypairError
 	| CreateProviderError
@@ -100,7 +87,8 @@ export const fetchGameInfoOrAccounts = (): Effect.Effect<
 	| ReadFromRPCError,
 	SolanaService
 > =>
-	fetchGameInfo().pipe(
+	Effect.fromNullable(commonApiUrl).pipe(
+		Effect.flatMap(fetchGameInfo),
 		Effect.orElse(() =>
 			Effect.Do.pipe(
 				Effect.bind("gameAccount", () =>

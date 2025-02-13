@@ -50,7 +50,7 @@ export const findCraftableItemPda = (itemMint: PublicKey) =>
 			Effect.try(() =>
 				CraftableItem.findAddress(
 					programs.crafting,
-					context.gameInfo.game.data.crafting.domain,
+					context.gameInfo.craftingDomain,
 					itemMint,
 				),
 			),

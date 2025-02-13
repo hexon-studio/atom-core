@@ -1,4 +1,4 @@
-import { PublicKey } from "@solana/web3.js";
+import type { PublicKey } from "@solana/web3.js";
 import type { CargoType } from "@staratlas/cargo";
 import type { CargoStats, Fleet } from "@staratlas/sage";
 import BN from "bn.js";
@@ -65,8 +65,8 @@ export const getFleetCargoPodInfoByType = ({
 				Effect.gen(function* () {
 					const [cargoTypeKey] = yield* findCargoTypePda(
 						cargoPodTokenAccount.mint,
-						new PublicKey(context.gameInfo.cargoStatsDefinition.key),
-						context.gameInfo.cargoStatsDefinition.data.seqId,
+						context.gameInfo.cargoStatsDefinitionId,
+						context.gameInfo.cargoStatsDefinitionSeqId,
 					);
 
 					const cargoTypeAccount = yield* getCargoTypeAccount(cargoTypeKey);

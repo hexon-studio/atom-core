@@ -64,14 +64,14 @@ export const createScanIx = ({ fleetAccount }: { fleetAccount: Fleet }) =>
 
 		const [sduCargoTypeAddress] = yield* findCargoTypePda(
 			resourceNameToMint.SurveyDataUnit,
-			context.gameInfo.cargoStatsDefinition.key,
-			context.gameInfo.cargoStatsDefinition.data.seqId,
+			context.gameInfo.cargoStatsDefinitionId,
+			context.gameInfo.cargoStatsDefinitionSeqId,
 		);
 
 		const [foodCargoTypeAddress] = yield* findCargoTypePda(
 			resourceNameToMint.Food,
-			context.gameInfo.cargoStatsDefinition.key,
-			context.gameInfo.cargoStatsDefinition.data.seqId,
+			context.gameInfo.cargoStatsDefinitionId,
+			context.gameInfo.cargoStatsDefinitionSeqId,
 		);
 
 		const sduTokenFrom = yield* findAssociatedTokenPda(
@@ -94,8 +94,8 @@ export const createScanIx = ({ fleetAccount }: { fleetAccount: Fleet }) =>
 					context.playerProfile.key,
 					profileFaction,
 					fleetAccount.key,
-					context.gameInfo.game.key,
-					context.gameInfo.game.data.gameState,
+					context.gameInfo.gameId,
+					context.gameInfo.gameStateId,
 					sectorCoordinates,
 					context.keyIndexes.sage,
 				).instructions,
@@ -152,19 +152,19 @@ export const createScanIx = ({ fleetAccount }: { fleetAccount: Fleet }) =>
 				fleetAccount.data.cargoHold,
 				sduCargoTypeAddress,
 				foodCargoTypeAddress,
-				context.gameInfo.cargoStatsDefinition.key,
+				context.gameInfo.cargoStatsDefinitionId,
 				sduTokenFrom,
 				sduTokenToIx.address,
 				foodTokenFrom,
 				resourceNameToMint.Food,
 				dataRunningXpPda,
-				context.gameInfo.game.data.points.dataRunningXpCategory.category,
-				context.gameInfo.game.data.points.dataRunningXpCategory.modifier,
+				context.gameInfo.points.dataRunningXpCategory.category,
+				context.gameInfo.points.dataRunningXpCategory.modifier,
 				councilRankXpPda,
-				context.gameInfo.game.data.points.councilRankXpCategory.category,
-				context.gameInfo.game.data.points.councilRankXpCategory.modifier,
-				context.gameInfo.game.key,
-				context.gameInfo.game.data.gameState,
+				context.gameInfo.points.councilRankXpCategory.category,
+				context.gameInfo.points.councilRankXpCategory.modifier,
+				context.gameInfo.gameId,
+				context.gameInfo.gameStateId,
 				{ keyIndex: context.keyIndexes.sage },
 			),
 		];

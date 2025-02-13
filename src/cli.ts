@@ -51,12 +51,6 @@ const main = async () => {
 	const program = commander
 		.name("atom")
 		.version(packageJsonVersion)
-		.option("--no-atlas-prime", "Disable the use of Atlas Prime")
-		.option(
-			"--mipt, --max-ixs-per-transaction <mipt>",
-			"Apply a limit of instructions on a transactions",
-			"5",
-		)
 		.addOption(
 			new Option(
 				"-o, --owner <publickKey>",
@@ -90,6 +84,11 @@ const main = async () => {
 				.makeOptionMandatory(true),
 		)
 		.addOption(
+			new Option("-w, --webhookUrl <webhookUrl>", "The webhook url")
+				.env("ATOM_WEBHOOK_URL")
+				.makeOptionMandatory(false),
+		)
+		.addOption(
 			new Option(
 				"--heliusRpcUrl <heliusRpc>",
 				"Helius rpc url (used to calculate priority fees)",
@@ -120,11 +119,6 @@ const main = async () => {
 				.makeOptionMandatory(false),
 		)
 		.addOption(
-			new Option("-w, --webhookUrl <webhookUrl>", "The webhook url")
-				.env("ATOM_WEBHOOK_URL")
-				.makeOptionMandatory(false),
-		)
-		.addOption(
 			new Option("--webhookSecret <webhookSecret>", "The webhook secret")
 				.env("ATOM_WEBHOOK_SECRET")
 				.makeOptionMandatory(false),
@@ -139,9 +133,23 @@ const main = async () => {
 		)
 		.addOption(
 			new Option(
+				"--commonApiUrl <commonApiUrl>",
+				"An cache api endpoint returning common game data, if not provided data will be fetched from the blockchain",
+			)
+				.env("ATOM_COMMON_API_URL")
+				.makeOptionMandatory(false),
+		)
+		.addOption(
+			new Option(
 				"--contextId <contextId>",
 				"If passed the webhook will be called with the contextId",
 			).makeOptionMandatory(false),
+		)
+		.option("--no-atlas-prime", "Disable the use of Atlas Prime")
+		.option(
+			"--mipt, --max-ixs-per-transaction <mipt>",
+			"Apply a limit of instructions on a transactions",
+			"5",
 		);
 
 	program.command("recipe-list").action(async () => {

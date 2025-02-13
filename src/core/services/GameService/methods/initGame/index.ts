@@ -23,11 +23,11 @@ export const initGame = (
 ) =>
 	Effect.gen(function* () {
 		const {
-			atlasPrime,
 			owner,
 			playerProfile: playerProfileAddress,
 			keypair,
 			feeUrl,
+			commonApiUrl,
 		} = options;
 
 		const context = yield* Ref.get(contextRef);
@@ -39,7 +39,7 @@ export const initGame = (
 		const [playerProfile, gameInfo, fees] = yield* Effect.all(
 			[
 				getPlayerProfileAccout(playerProfileAddress),
-				fetchGameInfoOrAccounts(),
+				fetchGameInfoOrAccounts(commonApiUrl),
 				feeUrl ? fetchFees({ feeUrl, owner }) : Effect.sync(constNull),
 			],
 			{ concurrency: "unbounded" },

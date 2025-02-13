@@ -94,7 +94,7 @@ export const createWithdrawCargoFromFleetIx = ({
 		);
 
 		const [starbaseAddress] = yield* findStarbasePdaByCoordinates(
-			context.gameInfo.game.key,
+			context.gameInfo.gameId,
 			fleetCoords,
 		);
 
@@ -110,8 +110,8 @@ export const createWithdrawCargoFromFleetIx = ({
 		const programs = yield* getSagePrograms();
 		const signer = yield* GameService.signer;
 
-		const gameId = context.gameInfo.game.key;
-		const gameState = context.gameInfo.game.data.gameState;
+		const gameId = context.gameInfo.gameId;
+		const gameState = context.gameInfo.gameStateId;
 
 		// This PDA account is the owner of all player resource token accounts
 		// in the starbase where the fleet is located (Starbase Cargo Pods - Deposito merci nella Starbase)
@@ -135,7 +135,7 @@ export const createWithdrawCargoFromFleetIx = ({
 								context.playerProfile.key,
 								playerFactionAddress,
 								starbaseAddress,
-								context.gameInfo.cargoStatsDefinition.key,
+								context.gameInfo.cargoStatsDefinitionId,
 								gameId,
 								gameState,
 								{
@@ -183,8 +183,8 @@ export const createWithdrawCargoFromFleetIx = ({
 
 		const [cargoTypeAddress] = yield* findCargoTypePda(
 			resourceMint,
-			context.gameInfo.cargoStatsDefinition.key,
-			context.gameInfo.cargoStatsDefinition.data.seqId,
+			context.gameInfo.cargoStatsDefinitionId,
+			context.gameInfo.cargoStatsDefinitionSeqId,
 		);
 
 		const cargoTypeAccount = yield* getCargoTypeAccount(cargoTypeAddress);
@@ -261,7 +261,7 @@ export const createWithdrawCargoFromFleetIx = ({
 			cargoPodInfo.cargoPod.key,
 			starbasePlayerCargoPodAddress,
 			cargoTypeAddress,
-			context.gameInfo.cargoStatsDefinition.key,
+			context.gameInfo.cargoStatsDefinitionId,
 			cargoPodTokenAccount,
 			starbasePlayerResourceMintAta,
 			resourceMint,

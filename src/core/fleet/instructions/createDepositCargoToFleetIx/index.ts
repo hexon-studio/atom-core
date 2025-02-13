@@ -96,15 +96,15 @@ export const createDepositCargoToFleetIx = ({
 
 		const [cargoTypeAddress] = yield* findCargoTypePda(
 			resourceMint,
-			context.gameInfo.cargoStatsDefinition.key,
-			context.gameInfo.cargoStatsDefinition.data.seqId,
+			context.gameInfo.cargoStatsDefinitionId,
+			context.gameInfo.cargoStatsDefinitionSeqId,
 		);
 
 		const programs = yield* getSagePrograms();
 		const signer = yield* GameService.signer;
 
-		const gameId = context.gameInfo.game.key;
-		const gameState = context.gameInfo.game.data.gameState;
+		const gameId = context.gameInfo.gameId;
+		const gameState = context.gameInfo.gameStateId;
 
 		yield* Effect.log("Creating depositCargoToFleet IX").pipe(
 			Effect.annotateLogs({
@@ -128,7 +128,7 @@ export const createDepositCargoToFleetIx = ({
 			starbasePlayerCargoPodsAccountPubkey,
 			cargoPodPublicKey,
 			cargoTypeAddress,
-			context.gameInfo.cargoStatsDefinition.key,
+			context.gameInfo.cargoStatsDefinitionId,
 			starbaseResourceTokenAccount,
 			tokenAccountToPubkey,
 			resourceMint,
