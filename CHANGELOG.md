@@ -1,5 +1,12 @@
 # Changelog
 
+# [1.34.0](https://github.com/hexon-studio/atom-core/compare/v1.33.0...v1.34.0) (2025-02-14)
+
+
+### Features
+
+* export all errors ([26f393f](https://github.com/hexon-studio/atom-core/commit/26f393ff7a0559c43f86343de633299e6136415e))
+
 # [1.33.0](https://github.com/hexon-studio/atom-core/compare/v1.32.0...v1.33.0) (2025-02-14)
 
 
