@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 import { PublicKey } from "@solana/web3.js";
+import { BN } from "bn.js";
 import {
 	InvalidArgumentError,
 	InvalidOptionArgumentError,
@@ -29,14 +30,17 @@ import {
 	runWarp,
 } from "./commands";
 import { runLoadCrew } from "./commands/loadCrew";
+import { runRecipeList } from "./commands/recipeList";
+import { runStartCrafting } from "./commands/startCrafting";
 import { runStartScan } from "./commands/startScan";
+import { runStopCrafting } from "./commands/stopCrafting";
 import { runUnloadCrew } from "./commands/unloadCrew";
+import type { CliGlobalOptions } from "./types";
 import {
 	cargoPodKinds,
 	loadResourceDecoder,
 	unloadResourceDecoder,
-} from "./decoders";
-import type { CliGlobalOptions } from "./types";
+} from "./utils/decoders";
 import { parseSecretKey } from "./utils/keypair";
 import { parseOptions } from "./utils/parseOptions";
 import { isPublicKey, parsePublicKey } from "./utils/public-key";
@@ -47,31 +51,6 @@ const main = async () => {
 	const program = commander
 		.name("atom")
 		.version(packageJsonVersion)
-		.option("--atlas-prime", "Enable Atlas Prime fees", false)
-		.addOption(
-			new Option("--feeLamports <feeLamports>", "The atom fee in lamports")
-				.argParser((feeLamports) =>
-					z.coerce.number().optional().parse(feeLamports),
-				)
-				.implies({ atlasPrime: false })
-				.makeOptionMandatory(false),
-		)
-		.addOption(
-			new Option("--feeAtlas <feeAtlas>", "The atom fee in atlas")
-				.argParser((feeAtlas) => z.coerce.number().optional().parse(feeAtlas))
-				.implies({ atlasPrime: true })
-				.makeOptionMandatory(false),
-		)
-		.option(
-			"--feeRecipient <feeRecipient>",
-			"The atom fee recipient",
-			parsePublicKey,
-		)
-		.option(
-			"-mipt, --max-ixs-per-transaction <mipt>",
-			"Apply a limit of instructions on a transactions",
-			"5",
-		)
 		.addOption(
 			new Option(
 				"-o, --owner <publickKey>",
@@ -105,8 +84,13 @@ const main = async () => {
 				.makeOptionMandatory(true),
 		)
 		.addOption(
+			new Option("-w, --webhookUrl <webhookUrl>", "The webhook url")
+				.env("ATOM_WEBHOOK_URL")
+				.makeOptionMandatory(false),
+		)
+		.addOption(
 			new Option(
-				"-hr, --heliusRpcUrl <heliusRpc>",
+				"--heliusRpcUrl <heliusRpc>",
 				"Helius rpc url (used to calculate priority fees)",
 			)
 				.env("ATOM_HELIUS_RPC_URL")
@@ -135,12 +119,7 @@ const main = async () => {
 				.makeOptionMandatory(false),
 		)
 		.addOption(
-			new Option("-w, --webhookUrl <webhookUrl>", "The webhook url")
-				.env("ATOM_WEBHOOK_URL")
-				.makeOptionMandatory(false),
-		)
-		.addOption(
-			new Option("-ws, --webhookSecret <webhookSecret>", "The webhook secret")
+			new Option("--webhookSecret <webhookSecret>", "The webhook secret")
 				.env("ATOM_WEBHOOK_SECRET")
 				.makeOptionMandatory(false),
 		)
@@ -149,12 +128,112 @@ const main = async () => {
 				.env("ATOM_LOGGING_TOKEN")
 				.makeOptionMandatory(false),
 		)
-
+		.addOption(
+			new Option(
+				"--commonApiUrl <commonApiUrl>",
+				"An cache api endpoint returning common game data, if not provided data will be fetched from the blockchain",
+			)
+				.env("ATOM_COMMON_API_URL")
+				.makeOptionMandatory(false),
+		)
 		.addOption(
 			new Option(
 				"--contextId <contextId>",
 				"If passed the webhook will be called with the contextId",
 			).makeOptionMandatory(false),
+		)
+		.option("--no-atlas-prime", "Disable the use of Atlas Prime")
+		.option(
+			"--mipt, --max-ixs-per-transaction <mipt>",
+			"Apply a limit of instructions on a transactions",
+			"5",
+		);
+
+	program.command("recipe-list").action(async () => {
+		const globalOpts = parseOptions(program.opts<CliGlobalOptions>());
+
+		return runRecipeList({
+			globalOpts,
+		});
+	});
+
+	program
+		.command("start-crafting")
+		.option(
+			"-c, --crewAmount <crewAmount>",
+			"The amount of crew to start crafting",
+			(value) => z.coerce.number().parse(value),
+		)
+		.option("-q, --quantity <quantity>", "The quantity to craft", (value) =>
+			z.coerce.number().parse(value),
+		)
+		.option("--recipe <recipe>", "The address of the recipe", parsePublicKey)
+		.option("--sector <sector>", "The sector of the starbase")
+		.action(
+			async (options: {
+				crewAmount: number;
+				quantity: number;
+				recipe: PublicKey;
+				sector: string;
+			}) => {
+				const { crewAmount, quantity, recipe, sector } = options;
+
+				const globalOpts = parseOptions(program.opts<CliGlobalOptions>());
+
+				const maybeSector = EffectString.split(sector, ",");
+
+				if (!Tuple.isTupleOf(maybeSector, 2)) {
+					throw new InvalidArgumentError("Invalid sector coordinates");
+				}
+
+				const starbaseCoords = Tuple.mapBoth(maybeSector, {
+					onFirst: (a) => new BN(a),
+					onSecond: (a) => new BN(a),
+				});
+
+				return runStartCrafting({
+					crewAmount,
+					quantity,
+					recipe,
+					starbaseCoords,
+					globalOpts,
+				});
+			},
+		);
+
+	program
+		.command("stop-crafting")
+		.option("--cid, --craftingId <craftingId>", "The crafting id", (value) =>
+			z.coerce.number().parse(value),
+		)
+		.option("--recipe <recipe>", "The address of the recipe", parsePublicKey)
+		.option("--sector <sector>", "The sector of the starbase")
+		.action(
+			async ({
+				craftingId,
+				recipe,
+				sector,
+			}: { craftingId: number; recipe: PublicKey; sector: string }) => {
+				const globalOpts = parseOptions(program.opts<CliGlobalOptions>());
+
+				const maybeSector = EffectString.split(sector, ",");
+
+				if (!Tuple.isTupleOf(maybeSector, 2)) {
+					throw new InvalidArgumentError("Invalid sector coordinates");
+				}
+
+				const starbaseCoords = Tuple.mapBoth(maybeSector, {
+					onFirst: (a) => new BN(a),
+					onSecond: (a) => new BN(a),
+				});
+
+				return runStopCrafting({
+					craftingId,
+					recipe,
+					starbaseCoords,
+					globalOpts,
+				});
+			},
 		);
 
 	program

@@ -15,10 +15,7 @@ import { GameService } from "~/core/services/GameService";
 import { getGameContext } from "~/core/services/GameService/utils";
 import { SolanaService } from "~/core/services/SolanaService";
 import { getHeliusEstimatedTransactionFee } from "~/core/utils/getHeliusEstimatedTransactionFee";
-import {
-	BuildAndSignTransactionError,
-	BuildOptimalTxError,
-} from "../../buildAndSignTransaction";
+import { BuildAndSignTransactionError, BuildOptimalTxError } from "~/errors";
 
 export const buildTransactions = ({
 	ixs,

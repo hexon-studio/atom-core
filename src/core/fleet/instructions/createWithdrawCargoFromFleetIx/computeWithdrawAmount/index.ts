@@ -1,8 +1,8 @@
 import type { PublicKey } from "@solana/web3.js";
 import BN from "bn.js";
 import { Effect, Match } from "effect";
-import type { UnloadResourceInput } from "../../../../../decoders";
-import { ResourceNotEnoughError } from "../../../errors";
+import { ResourceNotEnoughError } from "../../../../../errors";
+import type { UnloadResourceInput } from "../../../../../utils/decoders";
 
 export const computeWithdrawAmount =
 	({

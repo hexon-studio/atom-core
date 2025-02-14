@@ -1,12 +1,14 @@
 import type { PublicKey } from "@solana/web3.js";
 import BN from "bn.js";
 import { Effect, Match } from "effect";
-import type { CargoPodKind, LoadResourceInput } from "../../../../../decoders";
 import {
 	FleetNotEnoughSpaceError,
-	FleetNotEnoughSpaceFixedError,
 	ResourceNotEnoughError,
-} from "../../../errors";
+} from "../../../../../errors";
+import type {
+	CargoPodKind,
+	LoadResourceInput,
+} from "../../../../../utils/decoders";
 
 type Param = {
 	mode: LoadResourceInput["mode"];
@@ -42,6 +44,7 @@ export const computeDepositAmount =
 					value: fixedAmount,
 					resourceAmountInStarbase,
 					freeCargoUnitsInFleet,
+					mode,
 				}) =>
 					Effect.gen(function* () {
 						if (resourceAmountInStarbase.lt(new BN(fixedAmount))) {
@@ -58,7 +61,7 @@ export const computeDepositAmount =
 
 						if (freeCargoUnitsInFleet.lt(new BN(fixedAmount))) {
 							return yield* Effect.fail(
-								new FleetNotEnoughSpaceFixedError({
+								new FleetNotEnoughSpaceError({
 									amountAdded: fixedAmount.toString(),
 									amountAvailable: freeCargoUnitsInFleet.toString(),
 									cargoKind: cargoPodKind,
@@ -95,6 +98,7 @@ export const computeDepositAmount =
 			Match.when(
 				{ mode: "min" },
 				({
+					mode,
 					value: floorThreshold,
 					resourceAmountInFleet,
 					resourceAmountInStarbase,

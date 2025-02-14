@@ -1,10 +1,7 @@
 import type { PublicKey } from "@solana/web3.js";
 import { createAssociatedTokenAccountIdempotent as sageCreateAssociatedTokenAccountIdempotent } from "@staratlas/data-source";
-import { Data, Effect } from "effect";
-
-export class CreateAssociatedTokenAccountIdempotentError extends Data.TaggedError(
-	"CreateAssociatedTokenAccountIdempotentError",
-)<{ readonly error: unknown }> {}
+import { Effect } from "effect";
+import { CreateAssociatedTokenAccountIdempotentError } from "~/errors";
 
 export const createAssociatedTokenAccountIdempotent = (
 	mint: PublicKey,

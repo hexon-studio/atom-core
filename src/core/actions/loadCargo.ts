@@ -17,14 +17,14 @@ import {
 } from "~/libs/@staratlas/sage";
 import { getCargoTypeResourceMultiplier } from "~/libs/@staratlas/sage/utils/getCargoTypeResourceMultiplier";
 import {
+	LoadUnloadFailedError,
+	LoadUnloadPartiallyFailedError,
+} from "../../errors";
+import {
 	type CargoPodKind,
 	type LoadResourceInput,
 	cargoPodKinds,
-} from "../../decoders";
-import {
-	LoadUnloadFailedError,
-	LoadUnloadPartiallyFailedError,
-} from "../fleet/errors";
+} from "../../utils/decoders";
 import { createDepositCargoToFleetIx } from "../fleet/instructions";
 import { createPreIxs } from "../fleet/instructions/createPreIxs";
 import {
@@ -120,7 +120,7 @@ export const loadCargo = ({
 		);
 
 		const starbaseInfo = yield* getStarbaseInfoByCoords({
-			startbaseCoords: fleetCoords,
+			starbaseCoords: fleetCoords,
 		});
 
 		let enhancedItems: EnhancedResourceItem[] = [];
@@ -150,7 +150,9 @@ export const loadCargo = ({
 				starbasePlayerCargoPodsPubkey:
 					starbaseInfo.starbasePlayerCargoPodsAccountPubkey,
 			}).pipe(
-				Effect.catchTag("FleetNotEnoughSpaceError", () => Effect.succeed(null)),
+				Effect.catchTag("FleetNotEnoughSpaceError", (error) =>
+					item.mode !== "fixed" ? Effect.succeed(null) : Effect.fail(error),
+				),
 			);
 
 			if (!enhancedItem) {
@@ -224,7 +226,7 @@ export const loadCargo = ({
 		if (EffectArray.isEmptyArray(loadCargoIxs)) {
 			yield* Effect.log("Nothing to load. Skipping");
 
-			return [];
+			return { signatures: [] };
 		}
 
 		ixs.push(...loadCargoIxs);
@@ -250,7 +252,7 @@ export const loadCargo = ({
 
 		if (EffectArray.isEmptyArray(errors)) {
 			// NOTE: All transactions succeeded
-			return [...preIxsSignatures, ...signatures];
+			return { signatures: [...preIxsSignatures, ...signatures] };
 		}
 
 		// NOTE: Some transactions failed

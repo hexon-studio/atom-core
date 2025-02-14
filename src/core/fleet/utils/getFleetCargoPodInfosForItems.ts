@@ -2,29 +2,25 @@ import type { Fleet } from "@staratlas/sage";
 import { Effect, Record } from "effect";
 import type { UnknownException } from "effect/Cause";
 import type { GameService } from "~/core/services/GameService";
-import type { GameNotInitializedError } from "~/core/services/GameService/utils";
-import type { GetParsedTokenAccountsByOwnerError } from "~/core/services/GameService/utils/getParsedTokenAccountsByOwner";
+import type { SolanaService } from "~/core/services/SolanaService";
 import type {
-	CreateKeypairError,
-	CreateProviderError,
-	SolanaService,
-} from "~/core/services/SolanaService";
-import type { CargoPodKind } from "~/decoders";
+	FindPdaError,
+	GameNotInitializedError,
+	GetParsedTokenAccountsByOwnerError,
+	ReadFromRPCError,
+} from "~/errors";
 import {
 	type CargoPodEnhanced,
-	type FindPdaError,
 	getFleetCargoPodInfoByType,
 } from "~/libs/@staratlas/cargo";
-import type { ReadFromRPCError } from "~/libs/@staratlas/data-source/readFromSage";
+import type { CargoPodKind } from "~/utils/decoders";
 
 export const getFleetCargoPodInfosForItems = ({
 	fleetAccount,
 	cargoPodKinds,
 }: { fleetAccount: Fleet; cargoPodKinds: CargoPodKind[] }): Effect.Effect<
 	Partial<Record<CargoPodKind, CargoPodEnhanced>>,
-	| CreateProviderError
 	| ReadFromRPCError
-	| CreateKeypairError
 	| GetParsedTokenAccountsByOwnerError
 	| GameNotInitializedError
 	| FindPdaError

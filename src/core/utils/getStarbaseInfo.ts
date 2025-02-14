@@ -10,21 +10,21 @@ import {
 import { getGameContext } from "../services/GameService/utils";
 
 export const getStarbaseInfoByCoords = ({
-	startbaseCoords,
+	starbaseCoords,
 }: {
-	startbaseCoords: [BN, BN];
+	starbaseCoords: [BN, BN];
 }) =>
 	Effect.gen(function* () {
 		const context = yield* getGameContext();
 
 		const [sagePlayerProfilePubkey] = yield* findSagePlayerProfilePda(
-			context.gameInfo.game.key,
+			context.gameInfo.gameId,
 			context.playerProfile.key,
 		);
 
 		const [starbasePubkey] = yield* findStarbasePdaByCoordinates(
-			context.gameInfo.game.key,
-			startbaseCoords,
+			context.gameInfo.gameId,
+			starbaseCoords,
 		);
 
 		const starbaseAccount = yield* getStarbaseAccount(starbasePubkey);

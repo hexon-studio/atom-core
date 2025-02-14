@@ -22,7 +22,7 @@ export const findFleetPdaByName = (fleetName: string) =>
 
 				return Fleet.findAddress(
 					programs.sage,
-					context.gameInfo.game.key,
+					context.gameInfo.gameId,
 					context.playerProfile.key,
 					fleetLabel,
 				);
@@ -92,11 +92,7 @@ export const findSectorPdaByCoordinates = (coordinates: [BN, BN]) =>
 	Effect.all([getSagePrograms(), getGameContext()]).pipe(
 		Effect.flatMap(([programs, context]) =>
 			Effect.try(() =>
-				Sector.findAddress(
-					programs.sage,
-					context.gameInfo.game.key,
-					coordinates,
-				),
+				Sector.findAddress(programs.sage, context.gameInfo.gameId, coordinates),
 			),
 		),
 	);

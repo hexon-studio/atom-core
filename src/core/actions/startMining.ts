@@ -28,7 +28,7 @@ export const startMining = ({
 				`Fleet is already mining on asteroid (${fleetAccount.state.MineAsteroid.asteroid}). Skipping...`,
 			);
 
-			return [];
+			return { signatures: [] };
 		}
 
 		const ixs: InstructionReturn[] = [];
@@ -56,11 +56,11 @@ export const startMining = ({
 			size: maxIxsPerTransaction,
 		});
 
-		const txIds = yield* Effect.all(
+		const signatures = yield* Effect.all(
 			txs.map((tx) => GameService.sendTransaction(tx)),
 		);
 
 		yield* Effect.log("Mining started!");
 
-		return txIds;
+		return { signatures };
 	});

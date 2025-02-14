@@ -1,18 +1,15 @@
-import { Context, Data, Effect, Layer } from "effect";
+import { Context, Effect, Layer } from "effect";
+import { FireWebhookEventError } from "~/errors";
 import type { WebhookOptions } from "../../../types";
 import { getGameContext } from "../GameService/utils";
 
-export type WebhookEvent =
+export type WebhookEvent<A> =
 	| {
 			type: "start";
 	  }
-	// | {
-	// 		type: "atlas-balance";
-	// 		payload: { balance: string };
-	//   }
 	| {
 			type: "success";
-			payload: { signatures: string[] };
+			payload: A;
 	  }
 	| {
 			type: "error";
@@ -24,17 +21,9 @@ export type WebhookEvent =
 			};
 	  };
 
-export class FireWebhookEventError extends Data.TaggedError(
-	"FireWebhookEventError",
-)<{ error: unknown }> {
-	override get message() {
-		return `Fail to fire webhook event: ${this.error}`;
-	}
-}
-
 const fireWebhookEvent =
 	({ contextId, webhookSecret, webhookUrl }: WebhookOptions) =>
-	(event: WebhookEvent) =>
+	<A>(event: WebhookEvent<A>) =>
 		getGameContext().pipe(
 			Effect.flatMap(({ options, playerProfile }) =>
 				Effect.retry(

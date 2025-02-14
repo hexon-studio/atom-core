@@ -1,5 +1,31 @@
 # Changelog
 
+# [1.33.0](https://github.com/hexon-studio/atom-core/compare/v1.32.0...v1.33.0) (2025-02-14)
+
+
+### Features
+
+* remove hardcoded game cache api ([6bccbab](https://github.com/hexon-studio/atom-core/commit/6bccbab7ddb8edef1dc2c73843830e91df6e09ba))
+
+# [1.32.0](https://github.com/hexon-studio/atom-core/compare/v1.31.0...v1.32.0) (2025-02-13)
+
+
+### Features
+
+* add start crafting ([88f71d1](https://github.com/hexon-studio/atom-core/commit/88f71d18db1e3c38b1f77dfeba8c0f75d203e064))
+* add stop crafting ([a0ca746](https://github.com/hexon-studio/atom-core/commit/a0ca746230614353b6b4a603a2fc0db1fcf47c0e))
+* add stop crafting options ([9aa8747](https://github.com/hexon-studio/atom-core/commit/9aa87472786808b549267c5b9e8b8edf71a02ec3))
+* export craft functions in vanilla ([0aa7860](https://github.com/hexon-studio/atom-core/commit/0aa7860d9f0f22c1b87148672597b826e97ca224))
+
+# [1.31.0](https://github.com/hexon-studio/atom-core/compare/v1.30.1...v1.31.0) (2025-02-12)
+
+
+### Features
+
+* small improvements ([ac3ea78](https://github.com/hexon-studio/atom-core/commit/ac3ea7864932ad89fe93d55cfdaa27fd966eab9c))
+* update deps ([a764cc2](https://github.com/hexon-studio/atom-core/commit/a764cc2883e985dcf7d7990cf0c4bc48ad050b89))
+* update node ([81976e7](https://github.com/hexon-studio/atom-core/commit/81976e7585c26a8f6016a5e554cda18804fb9654))
+
 ## [1.30.1](https://github.com/hexon-studio/atom-core/compare/v1.30.0...v1.30.1) (2025-02-07)
 
 # [1.30.0](https://github.com/hexon-studio/atom-core/compare/v1.29.0...v1.30.0) (2025-02-07)

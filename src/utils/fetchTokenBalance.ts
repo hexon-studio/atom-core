@@ -3,7 +3,7 @@ import { BN } from "bn.js";
 import { Effect } from "effect";
 import { SolanaService } from "../core/services/SolanaService";
 
-export const getAssociatedTokenAccountBalance = (
+export const fetchTokenBalance = (
 	tokenAccount: PublicKey,
 	commitment: Commitment = "confirmed",
 ) =>

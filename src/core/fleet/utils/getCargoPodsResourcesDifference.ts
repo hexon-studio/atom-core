@@ -1,9 +1,9 @@
 import type { PublicKey } from "@solana/web3.js";
 import BN from "bn.js";
 import { Match, Record, pipe } from "effect";
-import type { CargoPodKind } from "~/decoders";
 import type { CargoPodEnhancedResource } from "~/libs/@staratlas/cargo";
 import { getCargoTypeResourceMultiplier } from "~/libs/@staratlas/sage/utils/getCargoTypeResourceMultiplier";
+import type { CargoPodKind } from "~/utils/decoders";
 
 export const getCargoPodsResourcesDifference = ({
 	cargoPodKind,

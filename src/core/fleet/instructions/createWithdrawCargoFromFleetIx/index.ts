@@ -3,17 +3,16 @@ import { Keypair } from "@solana/web3.js";
 import type { InstructionReturn } from "@staratlas/data-source";
 import { Fleet, StarbasePlayer } from "@staratlas/sage";
 import BN from "bn.js";
-import { Data, Effect, Option, Record, pipe } from "effect";
-import {
-	InvalidAmountError,
-	InvalidResourceForPodKindError,
-} from "~/core/fleet/errors";
+import { Effect, Option, Record, pipe } from "effect";
 import { getCurrentFleetSectorCoordinates } from "~/core/fleet/utils/getCurrentFleetSectorCoordinates";
 import { getSagePrograms } from "~/core/programs";
 import { GameService } from "~/core/services/GameService";
 import { getGameContext } from "~/core/services/GameService/utils";
 import { SolanaService } from "~/core/services/SolanaService";
-import type { UnloadResourceInput } from "~/decoders";
+import {
+	FleetInvalidResourceForPodKindError,
+	InvalidAmountError,
+} from "~/errors";
 import {
 	type CargoPodEnhanced,
 	findCargoPodPda,
@@ -29,14 +28,11 @@ import {
 	getCargoUnitsFromTokenAmount,
 	getStarbaseAccount,
 } from "~/libs/@staratlas/sage";
-import { getCargoPodsByAuthority } from "~/libs/@staratlas/sage/getCargoPodsByAuthority";
+import { getCargoPodsByAuthority } from "~/libs/@staratlas/sage/utils/getCargoPodsByAuthority";
 import { getCargoTypeResourceMultiplier } from "~/libs/@staratlas/sage/utils/getCargoTypeResourceMultiplier";
-import { getAssociatedTokenAddress } from "~/utils/getAssociatedTokenAddress";
+import type { UnloadResourceInput } from "~/utils/decoders";
+import { findAssociatedTokenPda } from "~/utils/findAssociatedTokenPda";
 import { computeWithdrawAmount } from "./computeWithdrawAmount";
-
-export class FleetCargoPodTokenAccountNotFoundError extends Data.TaggedError(
-	"FleetCargoPodTokenAccountNotFoundError",
-) {}
 
 export const createWithdrawCargoFromFleetIx = ({
 	fleetAccount,
@@ -61,7 +57,7 @@ export const createWithdrawCargoFromFleetIx = ({
 
 		if (!isAllowed) {
 			return yield* Effect.fail(
-				new InvalidResourceForPodKindError({
+				new FleetInvalidResourceForPodKindError({
 					cargoPodKind,
 					resourceMint,
 				}),
@@ -82,11 +78,10 @@ export const createWithdrawCargoFromFleetIx = ({
 		const [playerFactionAddress] =
 			yield* findProfileFactionPda(playerProfilePubkey);
 
-		const cargoPodTokenAccount = yield* getAssociatedTokenAddress(
-			resourceMint,
-			cargoPodInfo.cargoPod.key,
-			true,
-		);
+		const cargoPodTokenAccount = yield* findAssociatedTokenPda({
+			mint: resourceMint,
+			owner: cargoPodInfo.cargoPod.key,
+		});
 
 		// Starbase where the fleet is located
 		const fleetCoords = yield* getCurrentFleetSectorCoordinates(
@@ -94,7 +89,7 @@ export const createWithdrawCargoFromFleetIx = ({
 		);
 
 		const [starbaseAddress] = yield* findStarbasePdaByCoordinates(
-			context.gameInfo.game.key,
+			context.gameInfo.gameId,
 			fleetCoords,
 		);
 
@@ -110,8 +105,8 @@ export const createWithdrawCargoFromFleetIx = ({
 		const programs = yield* getSagePrograms();
 		const signer = yield* GameService.signer;
 
-		const gameId = context.gameInfo.game.key;
-		const gameState = context.gameInfo.game.data.gameState;
+		const gameId = context.gameInfo.gameId;
+		const gameState = context.gameInfo.gameStateId;
 
 		// This PDA account is the owner of all player resource token accounts
 		// in the starbase where the fleet is located (Starbase Cargo Pods - Deposito merci nella Starbase)
@@ -135,7 +130,7 @@ export const createWithdrawCargoFromFleetIx = ({
 								context.playerProfile.key,
 								playerFactionAddress,
 								starbaseAddress,
-								context.gameInfo.cargoStatsDefinition.key,
+								context.gameInfo.cargoStatsDefinitionId,
 								gameId,
 								gameState,
 								{
@@ -163,7 +158,7 @@ export const createWithdrawCargoFromFleetIx = ({
 		const {
 			address: starbasePlayerResourceMintAta,
 			instructions: createStarbasePlayerResourceMintAtaIx,
-		} = yield* GameService.createAssociatedTokenAccountIdempotent(
+		} = yield* SolanaService.createAssociatedTokenAccountIdempotent(
 			resourceMint,
 			starbasePlayerCargoPodAddress,
 			true,
@@ -183,8 +178,8 @@ export const createWithdrawCargoFromFleetIx = ({
 
 		const [cargoTypeAddress] = yield* findCargoTypePda(
 			resourceMint,
-			context.gameInfo.cargoStatsDefinition.key,
-			context.gameInfo.cargoStatsDefinition.data.seqId,
+			context.gameInfo.cargoStatsDefinitionId,
+			context.gameInfo.cargoStatsDefinitionSeqId,
 		);
 
 		const cargoTypeAccount = yield* getCargoTypeAccount(cargoTypeAddress);
@@ -261,7 +256,7 @@ export const createWithdrawCargoFromFleetIx = ({
 			cargoPodInfo.cargoPod.key,
 			starbasePlayerCargoPodAddress,
 			cargoTypeAddress,
-			context.gameInfo.cargoStatsDefinition.key,
+			context.gameInfo.cargoStatsDefinitionId,
 			cargoPodTokenAccount,
 			starbasePlayerResourceMintAta,
 			resourceMint,

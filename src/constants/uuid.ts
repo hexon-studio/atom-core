@@ -1,6 +1,6 @@
 import type { PublicKey } from "@solana/web3.js";
 import { v5 } from "uuid";
-import type { CargoPodKind } from "~/decoders";
+import type { CargoPodKind } from "~/utils/decoders";
 
 const uuidV5Namespace = "cede0066-1e42-4a1f-b845-5bc3aea74896";
 

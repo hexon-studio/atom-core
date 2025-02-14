@@ -1,5 +1,10 @@
 import type { PublicKey } from "@solana/web3.js";
-import { Fleet, PlanetType, StarbasePlayer } from "@staratlas/sage";
+import {
+	Fleet,
+	type MovementStats,
+	PlanetType,
+	StarbasePlayer,
+} from "@staratlas/sage";
 import type BN from "bn.js";
 import { Effect, Option, Record } from "effect";
 import { isNone } from "effect/Option";
@@ -15,13 +20,13 @@ import {
 	getStarbasePlayerAccount,
 } from "~/libs/@staratlas/sage";
 import { resourceNameToMint } from "../../../constants/resources";
-import { getSagePrograms } from "../../programs";
-import { GameService } from "../../services/GameService";
-import { getGameContext } from "../../services/GameService/utils";
 import {
 	FleetNotEnoughFuelError,
 	PlanetNotFoundInSectorError,
-} from "../errors";
+} from "../../../errors";
+import { getSagePrograms } from "../../programs";
+import { GameService } from "../../services/GameService";
+import { getGameContext } from "../../services/GameService/utils";
 import { getCurrentFleetSectorCoordinates } from "../utils/getCurrentFleetSectorCoordinates";
 import { createMovementHandlerIx } from "./createMovementHandlerIx";
 
@@ -39,8 +44,8 @@ export const createStartMiningIx = ({
 
 		const context = yield* getGameContext();
 
-		const gameId = context.gameInfo.game.key;
-		const gameState = context.gameInfo.game.data.gameState;
+		const gameId = context.gameInfo.gameId;
+		const gameState = context.gameInfo.gameStateId;
 
 		const fleetCoordinates = yield* getCurrentFleetSectorCoordinates(
 			fleetAccount.state,
@@ -62,9 +67,9 @@ export const createStartMiningIx = ({
 		);
 
 		if (isNone(maybePlanet)) {
-			return yield* Effect.fail(
-				new PlanetNotFoundInSectorError({ sector: fleetCoordinates }),
-			);
+			return yield* new PlanetNotFoundInSectorError({
+				sector: fleetCoordinates,
+			});
 		}
 
 		const planetPubkey = maybePlanet.value.key;
@@ -138,10 +143,18 @@ export const createStartMiningIx = ({
 		);
 
 		if (Option.isNone(maybeFuelInTankData)) {
-			return yield* Effect.fail(new FleetNotEnoughFuelError());
+			return yield* new FleetNotEnoughFuelError();
 		}
 
 		const fuelInTankData = maybeFuelInTankData.value;
+
+		const requiredFuelAmount = (
+			fleetAccount.data.stats.movementStats as MovementStats
+		).planetExitFuelAmount;
+
+		if (fuelInTankData.amountInCargoUnits.ltn(requiredFuelAmount)) {
+			return yield* new FleetNotEnoughFuelError();
+		}
 
 		yield* Effect.log("Creating startMiningAsteroid IX");
 
@@ -156,8 +169,8 @@ export const createStartMiningIx = ({
 			mineItemKey,
 			resourceKey,
 			planetPubkey,
-			context.gameInfo.game.data.gameState,
-			context.gameInfo.game.key,
+			context.gameInfo.gameStateId,
+			context.gameInfo.gameId,
 			fuelInTankData.tokenAccountKey,
 			{ keyIndex: context.keyIndexes.sage },
 		);

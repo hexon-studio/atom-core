@@ -4,17 +4,13 @@ import type {
 } from "@staratlas/data-source";
 import { type Cause, Effect, Array as EffectArray } from "effect";
 import type { GameService } from "~/core/services/GameService";
-import type { GameNotInitializedError } from "~/core/services/GameService/utils";
-import type {
-	CreateKeypairError,
-	CreateProviderError,
-	SolanaService,
-} from "~/core/services/SolanaService";
-import type { ReadFromRPCError } from "~/libs/@staratlas/data-source";
+import type { SolanaService } from "~/core/services/SolanaService";
 import type {
 	BuildAndSignTransactionError,
 	BuildOptimalTxError,
-} from "../../buildAndSignTransaction";
+	GameNotInitializedError,
+	ReadFromRPCError,
+} from "~/errors";
 import { buildTransactions } from "./buildTransactions";
 
 export const buildAndSignTransactionWithSol: BuildAndSignTransactionWithSol = ({
@@ -22,19 +18,26 @@ export const buildAndSignTransactionWithSol: BuildAndSignTransactionWithSol = ({
 	afterIxs,
 	size,
 }) =>
-	Effect.log("Building ixs").pipe(
-		Effect.map(() => EffectArray.chunksOf(ixs, size)),
-		Effect.map((chunks) =>
-			EffectArray.map(chunks, (ixs) =>
-				buildTransactions({
-					ixs,
-					afterIxs,
-				}).pipe(Effect.timeout("30 seconds")),
+	EffectArray.match(ixs, {
+		onEmpty: () =>
+			Effect.log("Skip building ixs...").pipe(
+				Effect.map(EffectArray.empty<TransactionReturn>),
 			),
-		),
-		Effect.flatMap(Effect.all),
-		Effect.map(EffectArray.flatten),
-	);
+		onNonEmpty: (ixs) =>
+			Effect.log("Building ixs...").pipe(
+				Effect.map(() => EffectArray.chunksOf(ixs, size)),
+				Effect.map((chunks) =>
+					EffectArray.map(chunks, (ixs) =>
+						buildTransactions({
+							ixs,
+							afterIxs,
+						}).pipe(Effect.timeout("30 seconds")),
+					),
+				),
+				Effect.flatMap(Effect.all),
+				Effect.map(EffectArray.flatten),
+			),
+	});
 
 export type BuildAndSignTransactionWithSol = (_: {
 	ixs: Array<InstructionReturn>;
@@ -44,10 +47,8 @@ export type BuildAndSignTransactionWithSol = (_: {
 	TransactionReturn[],
 	| BuildAndSignTransactionError
 	| BuildOptimalTxError
-	| CreateKeypairError
 	| ReadFromRPCError
 	| GameNotInitializedError
-	| CreateProviderError
 	| Cause.TimeoutException,
 	SolanaService | GameService
 >;

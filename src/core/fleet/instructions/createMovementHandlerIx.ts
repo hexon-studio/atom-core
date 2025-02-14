@@ -1,5 +1,4 @@
 import { getAccount } from "@solana/spl-token";
-import { PublicKey } from "@solana/web3.js";
 import { Fleet } from "@staratlas/sage";
 import { Effect, Match, Option } from "effect";
 import { SolanaService } from "~/core/services/SolanaService";
@@ -7,7 +6,6 @@ import { findCargoTypePda } from "~/libs/@staratlas/cargo";
 import { findUserPointsPda } from "~/libs/@staratlas/points";
 import { resourceNameToMint } from "../../../constants/resources";
 import { getSagePrograms } from "../../programs";
-import { GameService } from "../../services/GameService";
 import { getGameContext } from "../../services/GameService/utils";
 
 export const createMovementHandlerIx = (fleetAccount: Fleet) =>
@@ -20,7 +18,7 @@ export const createMovementHandlerIx = (fleetAccount: Fleet) =>
 		const ixs = [];
 
 		const createFuelFuelTankAta =
-			yield* GameService.createAssociatedTokenAccountIdempotent(
+			yield* SolanaService.createAssociatedTokenAccountIdempotent(
 				resourceNameToMint.Fuel,
 				fleetAccount.data.fuelTank,
 				true,
@@ -50,8 +48,8 @@ export const createMovementHandlerIx = (fleetAccount: Fleet) =>
 
 		const [cargoTypeAddress] = yield* findCargoTypePda(
 			resourceNameToMint.Fuel,
-			new PublicKey(context.gameInfo.cargoStatsDefinition.key),
-			context.gameInfo.cargoStatsDefinition.data.seqId,
+			context.gameInfo.cargoStatsDefinitionId,
+			context.gameInfo.cargoStatsDefinitionSeqId,
 		);
 
 		const maybeMoveHandlerIx = Match.value(fleetAccount.state).pipe(
@@ -62,12 +60,12 @@ export const createMovementHandlerIx = (fleetAccount: Fleet) =>
 					context.playerProfile.key,
 					fleetAccount.key,
 					pilotXpKey,
-					context.gameInfo.game.data.points.pilotXpCategory.category,
-					context.gameInfo.game.data.points.pilotXpCategory.modifier,
+					context.gameInfo.points.pilotXpCategory.category,
+					context.gameInfo.points.pilotXpCategory.modifier,
 					councilRankXpKey,
-					context.gameInfo.game.data.points.councilRankXpCategory.category,
-					context.gameInfo.game.data.points.councilRankXpCategory.modifier,
-					context.gameInfo.game.key,
+					context.gameInfo.points.councilRankXpCategory.category,
+					context.gameInfo.points.councilRankXpCategory.modifier,
+					context.gameInfo.gameId,
 				),
 			),
 			Match.when({ MoveSubwarp: Match.defined }, () =>
@@ -79,16 +77,16 @@ export const createMovementHandlerIx = (fleetAccount: Fleet) =>
 					fleetAccount.key,
 					fleetAccount.data.fuelTank,
 					cargoTypeAddress,
-					context.gameInfo.cargoStatsDefinition.key,
+					context.gameInfo.cargoStatsDefinitionId,
 					createFuelFuelTankAta.address,
 					resourceNameToMint.Fuel,
 					pilotXpKey,
-					context.gameInfo.game.data.points.pilotXpCategory.category,
-					context.gameInfo.game.data.points.pilotXpCategory.modifier,
+					context.gameInfo.points.pilotXpCategory.category,
+					context.gameInfo.points.pilotXpCategory.modifier,
 					councilRankXpKey,
-					context.gameInfo.game.data.points.councilRankXpCategory.category,
-					context.gameInfo.game.data.points.councilRankXpCategory.modifier,
-					context.gameInfo.game.key,
+					context.gameInfo.points.councilRankXpCategory.category,
+					context.gameInfo.points.councilRankXpCategory.modifier,
+					context.gameInfo.gameId,
 				),
 			),
 			Match.orElse(() => null),

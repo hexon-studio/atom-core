@@ -17,13 +17,13 @@ import {
 	getStarbasePlayerAccount,
 } from "~/libs/@staratlas/sage";
 import { resourceNameToMint } from "../../../constants/resources";
-import { getSagePrograms } from "../../programs";
-import { GameService } from "../../services/GameService";
-import { getGameContext } from "../../services/GameService/utils";
 import {
 	FleetNotEnoughFuelError,
 	PlanetNotFoundInSectorError,
-} from "../errors";
+} from "../../../errors";
+import { getSagePrograms } from "../../programs";
+import { GameService } from "../../services/GameService";
+import { getGameContext } from "../../services/GameService/utils";
 import { getCurrentFleetSectorCoordinates } from "../utils/getCurrentFleetSectorCoordinates";
 import { createAsteroidMiningHandlerIx } from "./createAsteroidMiningHandlerIx";
 
@@ -41,8 +41,8 @@ export const createStopMiningIx = ({
 
 		const context = yield* getGameContext();
 
-		const gameId = context.gameInfo.game.key;
-		const gameState = context.gameInfo.game.data.gameState;
+		const gameId = context.gameInfo.gameId;
+		const gameState = context.gameInfo.gameStateId;
 
 		const fleetCoordinates = yield* getCurrentFleetSectorCoordinates(
 			fleetAccount.state,
@@ -179,18 +179,18 @@ export const createStopMiningIx = ({
 			planetAddress,
 			fleetAccount.data.fuelTank,
 			fuelInTankData.cargoTypeAccount.key,
-			context.gameInfo.cargoStatsDefinition.key,
+			context.gameInfo.cargoStatsDefinitionId,
 			miningXpKey,
-			context.gameInfo.game.data.points.miningXpCategory.category,
-			context.gameInfo.game.data.points.miningXpCategory.modifier,
+			context.gameInfo.points.miningXpCategory.category,
+			context.gameInfo.points.miningXpCategory.modifier,
 			pilotXpKey,
-			context.gameInfo.game.data.points.pilotXpCategory.category,
-			context.gameInfo.game.data.points.pilotXpCategory.modifier,
+			context.gameInfo.points.pilotXpCategory.category,
+			context.gameInfo.points.pilotXpCategory.modifier,
 			councilRankXpKey,
-			context.gameInfo.game.data.points.councilRankXpCategory.category,
-			context.gameInfo.game.data.points.councilRankXpCategory.modifier,
-			context.gameInfo.game.data.gameState,
-			context.gameInfo.game.key,
+			context.gameInfo.points.councilRankXpCategory.category,
+			context.gameInfo.points.councilRankXpCategory.modifier,
+			context.gameInfo.gameStateId,
+			context.gameInfo.gameId,
 			fuelInTankData.tokenAccountKey,
 			resourceNameToMint.Fuel,
 			{ keyIndex: context.keyIndexes.sage },

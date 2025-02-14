@@ -1,5 +1,5 @@
 import { getAccount } from "@solana/spl-token";
-import { PublicKey } from "@solana/web3.js";
+import type { PublicKey } from "@solana/web3.js";
 import type { InstructionReturn } from "@staratlas/data-source";
 import { Fleet } from "@staratlas/sage";
 import { Effect, Match, Option } from "effect";
@@ -11,9 +11,8 @@ import {
 	findStarbasePdaByCoordinates,
 } from "~/libs/@staratlas/sage";
 import { resourceNameToMint } from "../../../constants/resources";
-import { getAssociatedTokenAddress } from "../../../utils/getAssociatedTokenAddress";
+import { findAssociatedTokenPda } from "../../../utils/findAssociatedTokenPda";
 import { getSagePrograms } from "../../programs";
-import { GameService } from "../../services/GameService";
 import { getGameContext } from "../../services/GameService/utils";
 import { getCurrentFleetSectorCoordinates } from "../utils/getCurrentFleetSectorCoordinates";
 
@@ -37,7 +36,7 @@ export const createAsteroidMiningHandlerIx = ({
 		const ixs: InstructionReturn[] = [];
 
 		const { address: foodCargoHoldAta, instructions: foodIx } =
-			yield* GameService.createAssociatedTokenAccountIdempotent(
+			yield* SolanaService.createAssociatedTokenAccountIdempotent(
 				resourceNameToMint.Food,
 				fleetAccount.data.cargoHold,
 				true,
@@ -52,7 +51,7 @@ export const createAsteroidMiningHandlerIx = ({
 		}
 
 		const createAmmoBankAta =
-			yield* GameService.createAssociatedTokenAccountIdempotent(
+			yield* SolanaService.createAssociatedTokenAccountIdempotent(
 				resourceNameToMint.Ammunition,
 				fleetAccount.data.ammoBank,
 				true,
@@ -67,7 +66,7 @@ export const createAsteroidMiningHandlerIx = ({
 		}
 
 		const { address: resourceCargoHoldAta, instructions: resourceIx } =
-			yield* GameService.createAssociatedTokenAccountIdempotent(
+			yield* SolanaService.createAssociatedTokenAccountIdempotent(
 				resourceMint,
 				fleetAccount.data.cargoHold,
 				true,
@@ -83,20 +82,20 @@ export const createAsteroidMiningHandlerIx = ({
 
 		const [foodCargoTypeAddress] = yield* findCargoTypePda(
 			resourceNameToMint.Food,
-			new PublicKey(context.gameInfo.cargoStatsDefinition.key),
-			context.gameInfo.cargoStatsDefinition.data.seqId,
+			context.gameInfo.cargoStatsDefinitionId,
+			context.gameInfo.cargoStatsDefinitionSeqId,
 		);
 
 		const [ammoCargoTypeAddress] = yield* findCargoTypePda(
 			resourceNameToMint.Ammunition,
-			new PublicKey(context.gameInfo.cargoStatsDefinition.key),
-			context.gameInfo.cargoStatsDefinition.data.seqId,
+			context.gameInfo.cargoStatsDefinitionId,
+			context.gameInfo.cargoStatsDefinitionSeqId,
 		);
 
 		const [resourceCargoTypeAddress] = yield* findCargoTypePda(
 			resourceMint,
-			new PublicKey(context.gameInfo.cargoStatsDefinition.key),
-			context.gameInfo.cargoStatsDefinition.data.seqId,
+			context.gameInfo.cargoStatsDefinitionId,
+			context.gameInfo.cargoStatsDefinitionSeqId,
 		);
 
 		const fleetCoordinates = yield* getCurrentFleetSectorCoordinates(
@@ -118,11 +117,10 @@ export const createAsteroidMiningHandlerIx = ({
 			planet: planetAddress,
 		});
 
-		const resourceTokenFromAta = yield* getAssociatedTokenAddress(
-			resourceMint,
-			mineItemKey,
-			true,
-		);
+		const resourceTokenFromAta = yield* findAssociatedTokenPda({
+			mint: resourceMint,
+			owner: mineItemKey,
+		});
 
 		const maybeAsteroidMiningHandlerIx = Match.value(fleetAccount.state).pipe(
 			Match.when({ MineAsteroid: Match.defined }, () =>
@@ -139,9 +137,9 @@ export const createAsteroidMiningHandlerIx = ({
 					foodCargoTypeAddress,
 					ammoCargoTypeAddress,
 					resourceCargoTypeAddress,
-					context.gameInfo.cargoStatsDefinition.key,
-					context.gameInfo.game.data.gameState,
-					context.gameInfo.game.key,
+					context.gameInfo.cargoStatsDefinitionId,
+					context.gameInfo.gameStateId,
+					context.gameInfo.gameId,
 					foodCargoHoldAta,
 					createAmmoBankAta.address,
 					resourceTokenFromAta,

@@ -1,9 +1,6 @@
-import { Data, Effect, identity } from "effect";
+import { Effect, identity } from "effect";
+import { GameNotInitializedError } from "~/errors";
 import { GameService } from "..";
-
-export class GameNotInitializedError extends Data.TaggedError(
-	"GameNotInitializedError",
-) {}
 
 export const getGameContext = () =>
 	GameService.gameContext.pipe(

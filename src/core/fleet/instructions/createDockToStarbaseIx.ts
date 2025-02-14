@@ -11,11 +11,11 @@ import {
 	getStarbaseAccount,
 	getStarbasePlayerAccount,
 } from "~/libs/@staratlas/sage";
-import { getCargoPodsByAuthority } from "~/libs/@staratlas/sage/getCargoPodsByAuthority";
+import { getCargoPodsByAuthority } from "~/libs/@staratlas/sage/utils/getCargoPodsByAuthority";
+import { InvalidFleetStateError } from "../../../errors";
 import { getSagePrograms } from "../../programs";
 import { GameService } from "../../services/GameService";
 import { getGameContext } from "../../services/GameService/utils";
-import { InvalidFleetStateError } from "../errors";
 import { getCurrentFleetSectorCoordinates } from "../utils/getCurrentFleetSectorCoordinates";
 
 export const createDockToStarbaseIx = (fleetAccount: Fleet) =>
@@ -68,8 +68,8 @@ export const createDockToStarbaseIx = (fleetAccount: Fleet) =>
 
 		const context = yield* getGameContext();
 
-		const gameId = context.gameInfo.game.key;
-		const gameState = context.gameInfo.game.data.gameState;
+		const gameId = context.gameInfo.gameId;
+		const gameState = context.gameInfo.gameStateId;
 
 		if (isNone(starbasePlayerAccount)) {
 			const ix_0 = StarbasePlayer.registerStarbasePlayer(
@@ -101,7 +101,7 @@ export const createDockToStarbaseIx = (fleetAccount: Fleet) =>
 				context.playerProfile.key,
 				playerFactionAddress,
 				starbaseAddress,
-				context.gameInfo.cargoStatsDefinition.key,
+				context.gameInfo.cargoStatsDefinitionId,
 				gameId,
 				gameState,
 				{
@@ -127,12 +127,10 @@ export const createDockToStarbaseIx = (fleetAccount: Fleet) =>
 			fleetAccount.key,
 			starbaseAddress,
 			starbasePlayerAddress,
-			context.gameInfo.game.key,
-			context.gameInfo.game.data.gameState,
+			context.gameInfo.gameId,
+			context.gameInfo.gameStateId,
 			context.keyIndexes.sage,
 		);
 
-		ixs.push(dockIx);
-
-		return ixs;
+		return [...ixs, dockIx];
 	});

@@ -14,11 +14,11 @@ import {
 	findSectorPdaByCoordinates,
 	getSectorAccount,
 } from "~/libs/@staratlas/sage";
-import { getAssociatedTokenAddress } from "~/utils/getAssociatedTokenAddress";
+import { findAssociatedTokenPda } from "~/utils/findAssociatedTokenPda";
 import {
 	GetSurveyDataUnitTrackerError,
 	GetSurveyDataUnitTrackerNotFoundError,
-} from "../errors";
+} from "../../../errors";
 import { getCurrentFleetSectorCoordinates } from "../utils/getCurrentFleetSectorCoordinates";
 import { createMovementHandlerIx } from "./createMovementHandlerIx";
 
@@ -64,21 +64,20 @@ export const createScanIx = ({ fleetAccount }: { fleetAccount: Fleet }) =>
 
 		const [sduCargoTypeAddress] = yield* findCargoTypePda(
 			resourceNameToMint.SurveyDataUnit,
-			context.gameInfo.cargoStatsDefinition.key,
-			context.gameInfo.cargoStatsDefinition.data.seqId,
+			context.gameInfo.cargoStatsDefinitionId,
+			context.gameInfo.cargoStatsDefinitionSeqId,
 		);
 
 		const [foodCargoTypeAddress] = yield* findCargoTypePda(
 			resourceNameToMint.Food,
-			context.gameInfo.cargoStatsDefinition.key,
-			context.gameInfo.cargoStatsDefinition.data.seqId,
+			context.gameInfo.cargoStatsDefinitionId,
+			context.gameInfo.cargoStatsDefinitionSeqId,
 		);
 
-		const sduTokenFrom = yield* getAssociatedTokenAddress(
-			resourceNameToMint.SurveyDataUnit,
-			surveyDataUnitTracker.value.data.data.signer,
-			true,
-		);
+		const sduTokenFrom = yield* findAssociatedTokenPda({
+			mint: resourceNameToMint.SurveyDataUnit,
+			owner: surveyDataUnitTracker.value.data.data.signer,
+		});
 
 		const ixs = [];
 
@@ -94,8 +93,8 @@ export const createScanIx = ({ fleetAccount }: { fleetAccount: Fleet }) =>
 					context.playerProfile.key,
 					profileFaction,
 					fleetAccount.key,
-					context.gameInfo.game.key,
-					context.gameInfo.game.data.gameState,
+					context.gameInfo.gameId,
+					context.gameInfo.gameStateId,
 					sectorCoordinates,
 					context.keyIndexes.sage,
 				).instructions,
@@ -107,7 +106,7 @@ export const createScanIx = ({ fleetAccount }: { fleetAccount: Fleet }) =>
 		ixs.push(...maybeMoveHandlerIx);
 
 		const sduTokenToIx =
-			yield* GameService.createAssociatedTokenAccountIdempotent(
+			yield* SolanaService.createAssociatedTokenAccountIdempotent(
 				resourceNameToMint.SurveyDataUnit,
 				fleetAccount.data.cargoHold,
 				true,
@@ -121,11 +120,10 @@ export const createScanIx = ({ fleetAccount }: { fleetAccount: Fleet }) =>
 			ixs.push(sduTokenToIx.instructions);
 		}
 
-		const foodTokenFrom = yield* getAssociatedTokenAddress(
-			resourceNameToMint.Food,
-			fleetAccount.data.cargoHold,
-			true,
-		);
+		const foodTokenFrom = yield* findAssociatedTokenPda({
+			mint: resourceNameToMint.Food,
+			owner: fleetAccount.data.cargoHold,
+		});
 
 		const [dataRunningXpPda] = yield* findUserPointsPda({
 			category: "dataRunningXp",
@@ -152,19 +150,19 @@ export const createScanIx = ({ fleetAccount }: { fleetAccount: Fleet }) =>
 				fleetAccount.data.cargoHold,
 				sduCargoTypeAddress,
 				foodCargoTypeAddress,
-				context.gameInfo.cargoStatsDefinition.key,
+				context.gameInfo.cargoStatsDefinitionId,
 				sduTokenFrom,
 				sduTokenToIx.address,
 				foodTokenFrom,
 				resourceNameToMint.Food,
 				dataRunningXpPda,
-				context.gameInfo.game.data.points.dataRunningXpCategory.category,
-				context.gameInfo.game.data.points.dataRunningXpCategory.modifier,
+				context.gameInfo.points.dataRunningXpCategory.category,
+				context.gameInfo.points.dataRunningXpCategory.modifier,
 				councilRankXpPda,
-				context.gameInfo.game.data.points.councilRankXpCategory.category,
-				context.gameInfo.game.data.points.councilRankXpCategory.modifier,
-				context.gameInfo.game.key,
-				context.gameInfo.game.data.gameState,
+				context.gameInfo.points.councilRankXpCategory.category,
+				context.gameInfo.points.councilRankXpCategory.modifier,
+				context.gameInfo.gameId,
+				context.gameInfo.gameStateId,
 				{ keyIndex: context.keyIndexes.sage },
 			),
 		];

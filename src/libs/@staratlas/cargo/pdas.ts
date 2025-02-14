@@ -1,17 +1,8 @@
 import type { PublicKey } from "@solana/web3.js";
 import { CargoPod, CargoType } from "@staratlas/cargo";
-import { Data, Effect } from "effect";
+import { Effect } from "effect";
 import { getSagePrograms } from "~/core/programs";
-
-export class FindPdaError extends Data.TaggedError("FindPdaError")<{
-	error: unknown;
-}> {
-	override get message() {
-		return this.error instanceof Error
-			? this.error.message
-			: String(this.error);
-	}
-}
+import { FindPdaError } from "~/errors";
 
 export const findCargoTypePda = (
 	mint: PublicKey,

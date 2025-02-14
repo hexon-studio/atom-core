@@ -11,9 +11,9 @@ import {
 	Option,
 } from "effect";
 import { constNull, constUndefined } from "effect/Function";
+import type { UnloadResourceInput } from "~/utils/decoders";
 import { unloadCargo } from "../core/actions/unloadCargo";
 import { GameService } from "../core/services/GameService";
-import type { UnloadResourceInput } from "../decoders";
 import type { GlobalOptions } from "../types";
 import { createMainLiveService } from "../utils/createMainLiveService";
 import { runBaseCommand } from "./baseCommand";

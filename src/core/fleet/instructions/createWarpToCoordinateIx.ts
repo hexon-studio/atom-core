@@ -7,11 +7,11 @@ import {
 } from "~/libs/@staratlas/cargo";
 import { findProfileFactionPda } from "~/libs/@staratlas/profile-faction";
 import { resourceNameToMint } from "../../../constants/resources";
-import { getAssociatedTokenAddress } from "../../../utils/getAssociatedTokenAddress";
+import { FleetNotEnoughFuelError, SectorTooFarError } from "../../../errors";
+import { findAssociatedTokenPda } from "../../../utils/findAssociatedTokenPda";
 import { getSagePrograms } from "../../programs";
 import { GameService } from "../../services/GameService";
 import { getGameContext } from "../../services/GameService/utils";
-import { FleetNotEnoughFuelError, SectorTooFarError } from "../errors";
 import { getCurrentFleetSectorCoordinates } from "../utils/getCurrentFleetSectorCoordinates";
 import { createMovementHandlerIx } from "./createMovementHandlerIx";
 
@@ -77,15 +77,14 @@ export const createWarpToCoordinateIx = ({
 
 		const [cargoTypeAddress] = yield* findCargoTypePda(
 			resourceNameToMint.Fuel,
-			context.gameInfo.cargoStatsDefinition.key,
-			context.gameInfo.cargoStatsDefinition.data.seqId,
+			context.gameInfo.cargoStatsDefinitionId,
+			context.gameInfo.cargoStatsDefinitionSeqId,
 		);
 
-		const fuelBankAta = yield* getAssociatedTokenAddress(
-			resourceNameToMint.Fuel,
-			fleetAccount.data.fuelTank,
-			true,
-		);
+		const fuelBankAta = yield* findAssociatedTokenPda({
+			mint: resourceNameToMint.Fuel,
+			owner: fleetAccount.data.fuelTank,
+		});
 
 		const [playerFactionAddress] = yield* findProfileFactionPda(
 			fleetAccount.data.ownerProfile,
@@ -111,11 +110,11 @@ export const createWarpToCoordinateIx = ({
 			fleetAccount.key,
 			fleetAccount.data.fuelTank,
 			cargoTypeAddress,
-			context.gameInfo.cargoStatsDefinition.key,
+			context.gameInfo.cargoStatsDefinitionId,
 			fuelBankAta,
 			resourceNameToMint.Fuel,
-			context.gameInfo.game.data.gameState,
-			context.gameInfo.game.key,
+			context.gameInfo.gameStateId,
+			context.gameInfo.gameId,
 			programs.cargo,
 			{
 				keyIndex: context.keyIndexes.sage,

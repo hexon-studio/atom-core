@@ -43,6 +43,7 @@ export const requiredOptionsDecoder = z.object({
 	feeAtlas: z.number().optional(),
 	feeLamports: z.number().optional(),
 	feeRecipient: z.instanceof(PublicKey).optional(),
+	commonApiUrl: z.string().optional(),
 	feeLimit: z.number().optional(),
 	heliusRpcUrl: z.string().optional(),
 	logDisabled: z.boolean().optional(),

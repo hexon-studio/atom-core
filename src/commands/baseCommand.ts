@@ -3,14 +3,11 @@ import { LAMPORTS_PER_SOL } from "@solana/web3.js";
 import { ProfileVault } from "@staratlas/profile-vault";
 import { Effect, Array as EffectArray, unsafeCoerce } from "effect";
 import { GameService } from "~/core/services/GameService";
-import { getAssociatedTokenAccountBalance } from "~/utils/getAssociatedTokenAccountBalance";
+import { AtlasNotEnoughError, SolNotEnoughError } from "~/errors";
+import { fetchTokenBalance } from "~/utils/fetchTokenBalance";
 import { getSolBalance } from "~/utils/getSolBalance";
 import { MIN_ATLAS_QTY, MIN_SOL_QTY, tokenMints } from "../constants/tokens";
 import { getSagePrograms } from "../core/programs";
-import {
-	AtlasNotEnoughError,
-	SolNotEnoughError,
-} from "../core/services/GameService/methods/initGame";
 import { getGameContext } from "../core/services/GameService/utils";
 import { fireWebhookEvent } from "../utils/fireWebhookEvent";
 
@@ -32,7 +29,7 @@ const checkAtlasBalance = () =>
 			true,
 		);
 
-		const atlasBalance = yield* getAssociatedTokenAccountBalance(funderVault);
+		const atlasBalance = yield* fetchTokenBalance(funderVault);
 
 		if (atlasBalance.ltn(MIN_ATLAS_QTY)) {
 			return yield* Effect.fail(new AtlasNotEnoughError());
@@ -56,11 +53,11 @@ const checkSolBalance = () =>
 		return solBalance;
 	});
 
-export const runBaseCommand = <E, R>({
+export const runBaseCommand = <A extends { signatures: string[] }, E, R>({
 	self,
 	normalizeError,
 }: {
-	self: () => Effect.Effect<string[], E, R>;
+	self: () => Effect.Effect<A, E, R>;
 	normalizeError: (error: E) => {
 		tag: string;
 		message: string;
@@ -79,12 +76,7 @@ export const runBaseCommand = <E, R>({
 			yield* checkSolBalance();
 		}
 
-		// yield* fireWebhookEvent({
-		// 	type: "atlas-balance",
-		// 	payload: { balance: balance.toString() },
-		// });
-
-		const signatures = yield* self();
+		const result = yield* self();
 
 		// const provider = yield* SolanaService.anchorProvider;
 
@@ -108,12 +100,10 @@ export const runBaseCommand = <E, R>({
 
 		yield* fireWebhookEvent({
 			type: "success",
-			payload: {
-				signatures,
-			},
+			payload: result,
 		});
 
-		return signatures;
+		return result.signatures;
 	}).pipe(
 		Effect.tapError((error) => {
 			const { tag, message, signatures, context } = normalizeError(

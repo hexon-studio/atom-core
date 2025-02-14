@@ -9,16 +9,16 @@ import { GameService } from "~/core/services/GameService";
 import { getGameContext } from "~/core/services/GameService/utils";
 import { SolanaService } from "~/core/services/SolanaService";
 import type { StarbaseInfo } from "~/core/utils/getStarbaseInfo";
-import type { CargoPodKind } from "~/decoders";
 import {
 	findCargoTypePda,
 	isResourceAllowedForCargoPod,
 } from "~/libs/@staratlas/cargo";
 import { findProfileFactionPda } from "~/libs/@staratlas/profile-faction";
+import type { CargoPodKind } from "~/utils/decoders";
 import {
+	FleetInvalidResourceForPodKindError,
 	InvalidAmountError,
-	InvalidResourceForPodKindError,
-} from "../../errors";
+} from "../../../../errors";
 
 export const createDepositCargoToFleetIx = ({
 	cargoPodPublicKey,
@@ -63,7 +63,7 @@ export const createDepositCargoToFleetIx = ({
 
 		if (!isAllowed) {
 			return yield* Effect.fail(
-				new InvalidResourceForPodKindError({
+				new FleetInvalidResourceForPodKindError({
 					cargoPodKind,
 					resourceMint,
 				}),
@@ -78,7 +78,7 @@ export const createDepositCargoToFleetIx = ({
 			yield* findProfileFactionPda(playerProfilePubkey);
 
 		const targetTokenIx =
-			yield* GameService.createAssociatedTokenAccountIdempotent(
+			yield* SolanaService.createAssociatedTokenAccountIdempotent(
 				resourceMint,
 				cargoPodPublicKey,
 				true,
@@ -96,15 +96,15 @@ export const createDepositCargoToFleetIx = ({
 
 		const [cargoTypeAddress] = yield* findCargoTypePda(
 			resourceMint,
-			context.gameInfo.cargoStatsDefinition.key,
-			context.gameInfo.cargoStatsDefinition.data.seqId,
+			context.gameInfo.cargoStatsDefinitionId,
+			context.gameInfo.cargoStatsDefinitionSeqId,
 		);
 
 		const programs = yield* getSagePrograms();
 		const signer = yield* GameService.signer;
 
-		const gameId = context.gameInfo.game.key;
-		const gameState = context.gameInfo.game.data.gameState;
+		const gameId = context.gameInfo.gameId;
+		const gameState = context.gameInfo.gameStateId;
 
 		yield* Effect.log("Creating depositCargoToFleet IX").pipe(
 			Effect.annotateLogs({
@@ -128,7 +128,7 @@ export const createDepositCargoToFleetIx = ({
 			starbasePlayerCargoPodsAccountPubkey,
 			cargoPodPublicKey,
 			cargoTypeAddress,
-			context.gameInfo.cargoStatsDefinition.key,
+			context.gameInfo.cargoStatsDefinitionId,
 			starbaseResourceTokenAccount,
 			tokenAccountToPubkey,
 			resourceMint,
