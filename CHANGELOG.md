@@ -1,5 +1,12 @@
 # Changelog
 
+# [1.33.0](https://github.com/hexon-studio/atom-core/compare/v1.32.0...v1.33.0) (2025-02-14)
+
+
+### Features
+
+* remove hardcoded game cache api ([6bccbab](https://github.com/hexon-studio/atom-core/commit/6bccbab7ddb8edef1dc2c73843830e91df6e09ba))
+
 # [1.32.0](https://github.com/hexon-studio/atom-core/compare/v1.31.0...v1.32.0) (2025-02-13)
 
 
