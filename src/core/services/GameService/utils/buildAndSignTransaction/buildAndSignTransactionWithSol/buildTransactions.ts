@@ -9,7 +9,7 @@ import { Effect, Array as EffectArray, Option } from "effect";
 import type { Result } from "neverthrow";
 import { SolanaService } from "~/core/services/SolanaService";
 import { getHeliusEstimatedTransactionFee } from "~/core/utils/getHeliusEstimatedTransactionFee";
-import { BuildAndSignTransactionError, BuildOptimalTxError } from "..";
+import { BuildAndSignTransactionError, BuildOptimalTxError } from "~/errors";
 import { GameService } from "../../..";
 
 export const buildTransactions = ({

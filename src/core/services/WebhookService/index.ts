@@ -1,4 +1,5 @@
-import { Context, Data, Effect, Layer } from "effect";
+import { Context, Effect, Layer } from "effect";
+import { FireWebhookEventError } from "~/errors";
 import type { WebhookOptions } from "../../../types";
 import { getGameContext } from "../GameService/utils";
 
@@ -23,14 +24,6 @@ export type WebhookEvent<A> =
 				context?: Record<string, unknown>;
 			};
 	  };
-
-export class FireWebhookEventError extends Data.TaggedError(
-	"FireWebhookEventError",
-)<{ error: unknown }> {
-	override get message() {
-		return `Fail to fire webhook event: ${this.error}`;
-	}
-}
 
 const fireWebhookEvent =
 	({ contextId, webhookSecret, webhookUrl }: WebhookOptions) =>

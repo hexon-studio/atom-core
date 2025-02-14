@@ -12,9 +12,9 @@ import { getStarbaseInfoByCoords } from "~/core/utils/getStarbaseInfo";
 import {
 	findCraftingInstancePda,
 	findCraftingProcessPda,
-} from "~/libs/@staratlas/crafting/pdas";
+} from "~/libs/@staratlas/crafting";
 import { findProfileFactionPda } from "~/libs/@staratlas/profile-faction";
-import { findAssociatedTokenPda } from "~/utils/getAssociatedTokenAddress";
+import { findAssociatedTokenPda } from "~/utils/findAssociatedTokenPda";
 
 export const createCraftingStartIxs = ({
 	craftingId,
@@ -50,14 +50,13 @@ export const createCraftingStartIxs = ({
 			starbasePlayer: starbaseInfo.starbasePlayerPubkey,
 		});
 
-		const tokenFrom = yield* findAssociatedTokenPda(
-			tokenMints.atlas,
-			signer.publicKey(),
-			true,
-		);
+		const tokenFrom = yield* findAssociatedTokenPda({
+			mint: tokenMints.atlas,
+			owner: signer.publicKey(),
+		});
 
 		const createTokenToAta =
-			yield* GameService.createAssociatedTokenAccountIdempotent(
+			yield* SolanaService.createAssociatedTokenAccountIdempotent(
 				tokenMints.atlas,
 				craftingProcess,
 				true,

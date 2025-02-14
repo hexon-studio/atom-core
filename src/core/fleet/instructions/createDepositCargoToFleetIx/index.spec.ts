@@ -7,23 +7,22 @@ import { BN } from "bn.js";
 import { Effect, Exit, Layer, ManagedRuntime, Option, Ref } from "effect";
 import { constant, unsafeCoerce } from "effect/Function";
 import mock from "mock-fs";
+import { findAllPlanets } from "~/core/services/GameService/methods/findPlanets";
 import type { RequiredOptions } from "~/types";
 import { createDepositCargoToFleetIx } from ".";
 import { resourceNameToMint } from "../../../../constants/resources";
 import { noopPublicKey } from "../../../../constants/tokens";
-import type { CargoPodKind } from "../../../../decoders";
+import {
+	FleetInvalidResourceForPodKindError,
+	InvalidAmountError,
+} from "../../../../errors";
+import type { CargoPodKind } from "../../../../utils/decoders";
 import { type GameContext, GameService } from "../../../services/GameService";
-import { findFleets } from "../../../services/GameService/methods/findFleets";
 import { findGame } from "../../../services/GameService/methods/findGame";
-import { findAllPlanets } from "../../../services/GameService/methods/findPlanets";
 import { initGame } from "../../../services/GameService/methods/initGame";
 import type { Fees } from "../../../services/GameService/methods/initGame/fetchFees";
 import type { GameInfo } from "../../../services/GameService/methods/initGame/fetchGameInfo";
 import { SolanaService } from "../../../services/SolanaService";
-import {
-	InvalidAmountError,
-	InvalidResourceForPodKindError,
-} from "../../errors";
 
 vi.mock("../../../utils/accounts");
 
@@ -49,8 +48,12 @@ const createMockedSolanaService = (signer: Keypair) =>
 		SolanaService,
 		SolanaService.of({
 			helius: Effect.succeed(Option.none()),
-			anchorProvider: Effect.succeed(AnchorProvider.env()),
+			anchorProvider: AnchorProvider.env(),
 			signer,
+			getParsedTokenAccountsByOwner: constant(Effect.succeed(unsafeCoerce([]))),
+			createAssociatedTokenAccountIdempotent: constant(
+				Effect.succeed(unsafeCoerce({})),
+			),
 		}),
 	);
 
@@ -60,15 +63,10 @@ const MockedGameService = Layer.effect(
 		GameService.of({
 			gameContext: gameContextRef,
 			initGame,
-			findFleets,
-			findPlanets: findAllPlanets,
 			findGame,
+			findPlanets: findAllPlanets,
 			signer: SolanaService.signer.pipe(Effect.map(keypairToAsyncSigner)),
 			buildAndSignTransaction: constant(Effect.succeed(unsafeCoerce([]))),
-			getParsedTokenAccountsByOwner: constant(Effect.succeed(unsafeCoerce([]))),
-			createAssociatedTokenAccountIdempotent: constant(
-				Effect.succeed(unsafeCoerce({})),
-			),
 			sendTransaction: constant(Effect.succeed("")),
 		}),
 	),
@@ -164,7 +162,7 @@ describe("createDepositCargoToFleetIx", () => {
 
 			expect(result).toStrictEqual(
 				Exit.fail(
-					new InvalidResourceForPodKindError({
+					new FleetInvalidResourceForPodKindError({
 						cargoPodKind,
 						resourceMint: new PublicKey(resourceMint),
 					}),

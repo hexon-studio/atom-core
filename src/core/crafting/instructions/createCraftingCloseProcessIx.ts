@@ -10,10 +10,10 @@ import { getStarbaseInfoByCoords } from "~/core/utils/getStarbaseInfo";
 import {
 	findCraftingInstancePda,
 	findCraftingProcessPda,
-} from "~/libs/@staratlas/crafting/pdas";
+} from "~/libs/@staratlas/crafting";
 import { findUserPointsPda } from "~/libs/@staratlas/points";
 import { findProfileFactionPda } from "~/libs/@staratlas/profile-faction";
-import { findAssociatedTokenPda } from "~/utils/getAssociatedTokenAddress";
+import { findAssociatedTokenPda } from "~/utils/findAssociatedTokenPda";
 
 export const createCraftingCloseProcessIx = ({
 	craftingId,
@@ -59,11 +59,10 @@ export const createCraftingCloseProcessIx = ({
 			playerProfile: context.playerProfile.key,
 		});
 
-		const tokenFrom = yield* findAssociatedTokenPda(
-			tokenMints.atlas,
-			craftingProcess,
-			true,
-		);
+		const tokenFrom = yield* findAssociatedTokenPda({
+			mint: tokenMints.atlas,
+			owner: craftingProcess,
+		});
 
 		return CraftingInstance.closeCraftingProcess(
 			programs.sage,

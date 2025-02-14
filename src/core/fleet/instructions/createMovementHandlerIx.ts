@@ -6,7 +6,6 @@ import { findCargoTypePda } from "~/libs/@staratlas/cargo";
 import { findUserPointsPda } from "~/libs/@staratlas/points";
 import { resourceNameToMint } from "../../../constants/resources";
 import { getSagePrograms } from "../../programs";
-import { GameService } from "../../services/GameService";
 import { getGameContext } from "../../services/GameService/utils";
 
 export const createMovementHandlerIx = (fleetAccount: Fleet) =>
@@ -19,7 +18,7 @@ export const createMovementHandlerIx = (fleetAccount: Fleet) =>
 		const ixs = [];
 
 		const createFuelFuelTankAta =
-			yield* GameService.createAssociatedTokenAccountIdempotent(
+			yield* SolanaService.createAssociatedTokenAccountIdempotent(
 				resourceNameToMint.Fuel,
 				fleetAccount.data.fuelTank,
 				true,

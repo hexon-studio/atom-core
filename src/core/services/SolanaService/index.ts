@@ -1,42 +1,35 @@
 import { Connection, type Keypair } from "@solana/web3.js";
 import { AnchorProvider, Wallet } from "@staratlas/anchor";
-import { Data, Effect, Layer, type Option } from "effect";
+import { Effect, Layer, type Option } from "effect";
 import type { FeeMode, GlobalOptionsWithWebhook } from "../../../types";
+import type { CreateAssociatedTokenAccountIdempotent } from "./createAssociatedTokenAccountIdempotent";
+import { createAssociatedTokenAccountIdempotent } from "./createAssociatedTokenAccountIdempotent";
+import type { GetParsedTokenAccountsByOwner } from "./getParsedTokenAccountsByOwner";
+import { createGetParsedTokenAccountsByOwner } from "./getParsedTokenAccountsByOwner";
 
 export class SolanaService extends Effect.Tag("app/SolanaService")<
 	SolanaService,
 	{
 		signer: Keypair;
-		anchorProvider: Effect.Effect<AnchorProvider, CreateProviderError>;
+		anchorProvider: AnchorProvider;
 		helius: Effect.Effect<
 			Option.Option<{ rpc: string; feeMode: FeeMode; feeLimit?: number }>
 		>;
+
+		getParsedTokenAccountsByOwner: GetParsedTokenAccountsByOwner;
+		createAssociatedTokenAccountIdempotent: CreateAssociatedTokenAccountIdempotent;
 	}
 >() {}
-
-export class CreateKeypairError extends Data.TaggedError("CreateKeypairError")<{
-	error: unknown;
-}> {}
-
-export class CreateProviderError extends Data.TaggedError(
-	"CreateProviderError",
-)<{
-	error: unknown;
-}> {}
 
 const createAnchorProvider = ({
 	rpcUrl,
 	keypair,
 }: { keypair: Keypair; rpcUrl: string }) =>
-	Effect.try({
-		try: () =>
-			new AnchorProvider(
-				new Connection(rpcUrl, "confirmed"),
-				new Wallet(keypair),
-				AnchorProvider.defaultOptions(),
-			),
-		catch: (error) => new CreateProviderError({ error }),
-	});
+	new AnchorProvider(
+		new Connection(rpcUrl, "confirmed"),
+		new Wallet(keypair),
+		AnchorProvider.defaultOptions(),
+	);
 
 export const createSolanaServiceLive = ({
 	keypair,
@@ -44,15 +37,22 @@ export const createSolanaServiceLive = ({
 	heliusRpcUrl,
 	feeMode,
 	feeLimit,
-}: GlobalOptionsWithWebhook) =>
-	Layer.succeed(
+}: GlobalOptionsWithWebhook) => {
+	const anchorProvider = createAnchorProvider({ rpcUrl, keypair });
+
+	return Layer.succeed(
 		SolanaService,
 		SolanaService.of({
 			signer: keypair,
-			anchorProvider: createAnchorProvider({ rpcUrl, keypair }),
+			anchorProvider,
 			helius: Effect.fromNullable(heliusRpcUrl).pipe(
 				Effect.map((rpc) => ({ rpc, feeMode, feeLimit })),
 				Effect.option,
 			),
+			getParsedTokenAccountsByOwner: createGetParsedTokenAccountsByOwner(
+				anchorProvider.connection,
+			),
+			createAssociatedTokenAccountIdempotent,
 		}),
 	);
+};

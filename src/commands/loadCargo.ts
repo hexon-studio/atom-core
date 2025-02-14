@@ -11,9 +11,9 @@ import {
 } from "effect";
 import { loadCargo } from "../core/actions/loadCargo";
 import { GameService } from "../core/services/GameService";
-import type { LoadResourceInput } from "../decoders";
 import type { GlobalOptionsWithWebhook } from "../types";
 import { createMainLiveService } from "../utils/createMainLiveService";
+import type { LoadResourceInput } from "../utils/decoders";
 import { runBaseCommand } from "./baseCommand";
 
 type Param = {

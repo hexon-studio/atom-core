@@ -2,24 +2,20 @@ import { getAccount } from "@solana/spl-token";
 import type { Recipe } from "@staratlas/crafting";
 import { CraftingInstance } from "@staratlas/sage";
 import type BN from "bn.js";
-import { Data, Effect, Option } from "effect";
+import { Effect, Option } from "effect";
 import { getSagePrograms } from "~/core/programs";
-import { GameService } from "~/core/services/GameService";
 import { getGameContext } from "~/core/services/GameService/utils";
 import { SolanaService } from "~/core/services/SolanaService";
 import { getStarbaseInfoByCoords } from "~/core/utils/getStarbaseInfo";
+import { CraftingOutputItemNotFoundError } from "~/errors";
 import { findCargoTypePda } from "~/libs/@staratlas/cargo";
 import {
+	divideRecipeIngredients,
 	findCraftableItemPda,
 	findCraftingInstancePda,
 	findCraftingProcessPda,
-} from "~/libs/@staratlas/crafting/pdas";
-import { divideRecipeIngredients } from "~/libs/@staratlas/crafting/utils";
-import { findAssociatedTokenPda } from "~/utils/getAssociatedTokenAddress";
-
-export class CraftingOutputItemNotFoundError extends Data.TaggedError(
-	"CraftingOutputItemNotFoundError",
-) {}
+} from "~/libs/@staratlas/crafting";
+import { findAssociatedTokenPda } from "~/utils/findAssociatedTokenPda";
 
 export const createCraftingClaimOutputsIxs = ({
 	craftingId,
@@ -59,11 +55,10 @@ export const createCraftingClaimOutputsIxs = ({
 		});
 
 		const [craftableItem] = yield* findCraftableItemPda(outputItem.mint);
-		const craftableItemAta = yield* findAssociatedTokenPda(
-			outputItem.mint,
-			craftableItem,
-			true,
-		);
+		const craftableItemAta = yield* findAssociatedTokenPda({
+			mint: outputItem.mint,
+			owner: craftableItem,
+		});
 
 		const [cargoTypePda] = yield* findCargoTypePda(
 			outputItem.mint,
@@ -74,7 +69,7 @@ export const createCraftingClaimOutputsIxs = ({
 		const ixs = [];
 
 		const createDestinationAta =
-			yield* GameService.createAssociatedTokenAccountIdempotent(
+			yield* SolanaService.createAssociatedTokenAccountIdempotent(
 				outputItem.mint,
 				starbaseInfo.starbasePlayerCargoPodsAccountPubkey,
 				true,

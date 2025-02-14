@@ -3,7 +3,6 @@ import BN from "bn.js";
 import { Effect, Option, Record } from "effect";
 import { computeDepositAmount } from "~/core/fleet/instructions/createDepositCargoToFleetIx/computeDepositAmout";
 import { getGameContext } from "~/core/services/GameService/utils";
-import type { LoadResourceInput } from "~/decoders";
 import {
 	type CargoPodEnhanced,
 	findCargoTypePda,
@@ -13,8 +12,9 @@ import {
 	getCargoTypeResourceMultiplier,
 	getCargoUnitsFromTokenAmount,
 } from "~/libs/@staratlas/sage";
-import { getAssociatedTokenAccountBalance } from "~/utils/getAssociatedTokenAccountBalance";
-import { findAssociatedTokenPda } from "~/utils/getAssociatedTokenAddress";
+import type { LoadResourceInput } from "~/utils/decoders";
+import { fetchTokenBalance } from "~/utils/fetchTokenBalance";
+import { findAssociatedTokenPda } from "~/utils/findAssociatedTokenPda";
 
 export const enhanceLoadResourceItem = ({
 	item,
@@ -32,14 +32,14 @@ export const enhanceLoadResourceItem = ({
 
 		const context = yield* getGameContext();
 
-		const starbaseResourceTokenAccount = yield* findAssociatedTokenPda(
-			resourceMint,
-			starbasePlayerCargoPodsPubkey,
-			true,
-		);
+		const starbaseResourceTokenAccount = yield* findAssociatedTokenPda({
+			mint: resourceMint,
+			owner: starbasePlayerCargoPodsPubkey,
+		});
 
-		const starbaseResourceAmountInTokens =
-			yield* getAssociatedTokenAccountBalance(starbaseResourceTokenAccount);
+		const starbaseResourceAmountInTokens = yield* fetchTokenBalance(
+			starbaseResourceTokenAccount,
+		);
 
 		const resourceAmountInFleetInCargoUnits = Record.get(
 			cargoPodInfo.resources,

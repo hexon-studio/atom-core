@@ -10,13 +10,13 @@ import { SolanaService } from "~/core/services/SolanaService";
 import { getStarbaseInfoByCoords } from "~/core/utils/getStarbaseInfo";
 import { findCargoTypePda } from "~/libs/@staratlas/cargo";
 import {
+	divideRecipeIngredients,
 	findCraftingInstancePda,
 	findCraftingProcessPda,
-} from "~/libs/@staratlas/crafting/pdas";
-import { divideRecipeIngredients } from "~/libs/@staratlas/crafting/utils";
+} from "~/libs/@staratlas/crafting";
 import { findProfileFactionPda } from "~/libs/@staratlas/profile-faction";
-import { getAssociatedTokenAccountBalance } from "~/utils/getAssociatedTokenAccountBalance";
-import { findAssociatedTokenPda } from "~/utils/getAssociatedTokenAddress";
+import { fetchTokenBalance } from "~/utils/fetchTokenBalance";
+import { findAssociatedTokenPda } from "~/utils/findAssociatedTokenPda";
 
 export const createCraftingWithdrawIngredientsIxs = ({
 	craftingId,
@@ -66,7 +66,7 @@ export const createCraftingWithdrawIngredientsIxs = ({
 			);
 
 			const createDestinationAta =
-				yield* GameService.createAssociatedTokenAccountIdempotent(
+				yield* SolanaService.createAssociatedTokenAccountIdempotent(
 					inputIngredient.mint,
 					starbaseInfo.starbasePlayerCargoPodsAccountPubkey,
 					true,
@@ -84,14 +84,12 @@ export const createCraftingWithdrawIngredientsIxs = ({
 				ixs.push(createDestinationAta.instructions);
 			}
 
-			const inputIngridientAta = yield* findAssociatedTokenPda(
-				inputIngredient.mint,
-				craftingProcess,
-				true,
-			);
+			const inputIngridientAta = yield* findAssociatedTokenPda({
+				mint: inputIngredient.mint,
+				owner: craftingProcess,
+			});
 
-			const amount =
-				yield* getAssociatedTokenAccountBalance(inputIngridientAta);
+			const amount = yield* fetchTokenBalance(inputIngridientAta);
 
 			const ix = CraftingInstance.withdrawCraftingIngredient(
 				programs.sage,

@@ -6,10 +6,10 @@ import { resourceNameToMint } from "~/constants/resources";
 import { getFleetCargoPodInfoByType } from "~/libs/@staratlas/cargo";
 import { getFleetAccountByNameOrAddress } from "~/libs/@staratlas/sage";
 import {
-	FleetScanCooldownError,
+	FleetCooldownError,
 	NotEnoughCargoSpaceForScanError,
 	NotEnoughFoodForScanError,
-} from "../fleet/errors";
+} from "../../errors";
 import { createPreIxs } from "../fleet/instructions/createPreIxs";
 import { createScanIx } from "../fleet/instructions/createScanIx";
 import { GameService } from "../services/GameService";
@@ -33,8 +33,8 @@ export const startScan = ({
 			yield* Effect.log("Scan is on cooldown");
 
 			return yield* Effect.fail(
-				new FleetScanCooldownError({
-					scanCooldownExpiresAt: new Date(
+				new FleetCooldownError({
+					cooldownExpiresAt: new Date(
 						fleetAccount.data.scanCooldownExpiresAt.toNumber() * 1000,
 					).toISOString(),
 				}),

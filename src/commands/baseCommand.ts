@@ -3,14 +3,11 @@ import { LAMPORTS_PER_SOL } from "@solana/web3.js";
 import { ProfileVault } from "@staratlas/profile-vault";
 import { Effect, Array as EffectArray, unsafeCoerce } from "effect";
 import { GameService } from "~/core/services/GameService";
-import { getAssociatedTokenAccountBalance } from "~/utils/getAssociatedTokenAccountBalance";
+import { AtlasNotEnoughError, SolNotEnoughError } from "~/errors";
+import { fetchTokenBalance } from "~/utils/fetchTokenBalance";
 import { getSolBalance } from "~/utils/getSolBalance";
 import { MIN_ATLAS_QTY, MIN_SOL_QTY, tokenMints } from "../constants/tokens";
 import { getSagePrograms } from "../core/programs";
-import {
-	AtlasNotEnoughError,
-	SolNotEnoughError,
-} from "../core/services/GameService/methods/initGame";
 import { getGameContext } from "../core/services/GameService/utils";
 import { fireWebhookEvent } from "../utils/fireWebhookEvent";
 
@@ -32,7 +29,7 @@ const checkAtlasBalance = () =>
 			true,
 		);
 
-		const atlasBalance = yield* getAssociatedTokenAccountBalance(funderVault);
+		const atlasBalance = yield* fetchTokenBalance(funderVault);
 
 		if (atlasBalance.ltn(MIN_ATLAS_QTY)) {
 			return yield* Effect.fail(new AtlasNotEnoughError());

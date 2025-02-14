@@ -4,17 +4,13 @@ import type {
 } from "@staratlas/data-source";
 import { type Cause, Effect, Array as EffectArray } from "effect";
 import type { GameService } from "~/core/services/GameService";
-import type { GameNotInitializedError } from "~/core/services/GameService/utils";
-import type {
-	CreateKeypairError,
-	CreateProviderError,
-	SolanaService,
-} from "~/core/services/SolanaService";
-import type { ReadFromRPCError } from "~/libs/@staratlas/data-source";
+import type { SolanaService } from "~/core/services/SolanaService";
 import type {
 	BuildAndSignTransactionError,
 	BuildOptimalTxError,
-} from "../../buildAndSignTransaction";
+	GameNotInitializedError,
+	ReadFromRPCError,
+} from "~/errors";
 import { buildTransactions } from "./buildTransactions";
 
 export const buildAndSignTransactionWithSol: BuildAndSignTransactionWithSol = ({
@@ -51,10 +47,8 @@ export type BuildAndSignTransactionWithSol = (_: {
 	TransactionReturn[],
 	| BuildAndSignTransactionError
 	| BuildOptimalTxError
-	| CreateKeypairError
 	| ReadFromRPCError
 	| GameNotInitializedError
-	| CreateProviderError
 	| Cause.TimeoutException,
 	SolanaService | GameService
 >;

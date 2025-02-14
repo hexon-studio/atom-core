@@ -29,3 +29,7 @@ export const unloadResourceDecoder = z.object({
 });
 
 export type UnloadResourceInput = z.infer<typeof unloadResourceDecoder>;
+
+export type LoadUnloadMode =
+	| LoadResourceInput["mode"]
+	| UnloadResourceInput["mode"];
