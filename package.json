@@ -11,11 +11,15 @@
 		".": {
 			"import": "./dist/main.js",
 			"require": "./dist/main.cjs"
+		},
+		"./errors": {
+			"import": "./dist/errors/index.js",
+			"require": "./dist/errors/index.cjs"
 		}
 	},
 	"scripts": {
 		"build": "tsup",
-		"check-exports": "attw --pack .",
+		"check-exports": "attw --pack . --profile node16",
 		"dev": "tsx src/cli.ts",
 		"typecheck": "tsc --noEmit",
 		"lint": "biome check",

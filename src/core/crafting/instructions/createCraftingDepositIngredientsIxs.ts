@@ -10,10 +10,10 @@ import { SolanaService } from "~/core/services/SolanaService";
 import { getStarbaseInfoByCoords } from "~/core/utils/getStarbaseInfo";
 import { findCargoTypePda } from "~/libs/@staratlas/cargo";
 import {
+	divideRecipeIngredients,
 	findCraftingInstancePda,
 	findCraftingProcessPda,
-} from "~/libs/@staratlas/crafting/pdas";
-import { divideRecipeIngredients } from "~/libs/@staratlas/crafting/utils";
+} from "~/libs/@staratlas/crafting";
 import { findProfileFactionPda } from "~/libs/@staratlas/profile-faction";
 
 export const createCraftingDepositIngredientsIxs = ({
@@ -66,7 +66,7 @@ export const createCraftingDepositIngredientsIxs = ({
 			);
 
 			const createIngredientAta =
-				yield* GameService.createAssociatedTokenAccountIdempotent(
+				yield* SolanaService.createAssociatedTokenAccountIdempotent(
 					inputIngredient.mint,
 					craftingProcess,
 					true,
@@ -85,7 +85,7 @@ export const createCraftingDepositIngredientsIxs = ({
 			}
 
 			const createStarbasePodMintAta =
-				yield* GameService.createAssociatedTokenAccountIdempotent(
+				yield* SolanaService.createAssociatedTokenAccountIdempotent(
 					inputIngredient.mint,
 					starbaseInfo.starbasePlayerCargoPodsAccountPubkey,
 					true,

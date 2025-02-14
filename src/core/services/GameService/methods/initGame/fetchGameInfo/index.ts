@@ -1,14 +1,7 @@
 import { PublicKey } from "@solana/web3.js";
-import { Data, Effect } from "effect";
+import { Effect } from "effect";
 import { z } from "zod";
-
-class FetchGameInfoError extends Data.TaggedError("FetchGameInfoError")<{
-	error: unknown;
-}> {}
-
-class GameInfoDecodeError extends Data.TaggedError("DecodeGameInfoError")<{
-	error: unknown;
-}> {}
+import { FetchGameInfoError, GameInfoDecodeError } from "~/errors";
 
 const publicKeyDecoder = z.string().transform((value) => new PublicKey(value));
 

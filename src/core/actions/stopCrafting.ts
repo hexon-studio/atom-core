@@ -1,7 +1,7 @@
 import type { PublicKey } from "@solana/web3.js";
 import type BN from "bn.js";
 import { Effect } from "effect";
-import { getRecipeAccount } from "~/libs/@staratlas/crafting/accounts";
+import { getRecipeAccount } from "~/libs/@staratlas/crafting";
 import { createCraftingBurnConsumablesIxs } from "../crafting/instructions/createCraftingBurnConsumablesIxs";
 import { createCraftingClaimOutputsIxs } from "../crafting/instructions/createCraftingClaimOutputsIxs";
 import { createCraftingCloseProcessIx } from "../crafting/instructions/createCraftingCloseProcessIx";

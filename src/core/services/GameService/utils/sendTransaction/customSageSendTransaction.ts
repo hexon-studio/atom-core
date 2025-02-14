@@ -1,59 +1,17 @@
-import type {
-	Connection,
-	TransactionError,
-	VersionedTransaction,
-} from "@solana/web3.js";
+import type { Connection, VersionedTransaction } from "@solana/web3.js";
 import {
 	type SendTransactionOptions,
 	type TransactionReturn,
 	isVersionedTransaction,
 	verifySignatures,
 } from "@staratlas/data-source";
-import { Data, Effect } from "effect";
-import { z } from "zod";
-
-export class SendRawTransactionError extends Data.TaggedError(
-	"SendRawTransactionError",
-)<{ error: unknown }> {
-	override get message() {
-		return this.error instanceof Error
-			? this.error.message
-			: String(this.error);
-	}
-}
-export class VerifySignaturesError extends Data.TaggedError(
-	"VerifySignaturesError",
-)<{ error: unknown }> {
-	override get message() {
-		return this.error instanceof Error
-			? this.error.message
-			: String(this.error);
-	}
-}
-
-export class ConfirmTransactionError extends Data.TaggedError(
-	"ConfirmTransactionError",
-)<{ error: unknown }> {
-	override get message() {
-		return this.error instanceof Error
-			? this.error.message
-			: String(this.error);
-	}
-}
-
-export class TransactionFailedError extends Data.TaggedError(
-	"TransactionFailedError",
-)<{ error: TransactionError; signature: string }> {
-	override get message() {
-		try {
-			return JSON.stringify(
-				z.record(z.string(), z.unknown()).parse(this.error),
-			);
-		} catch {
-			return String(this.error);
-		}
-	}
-}
+import { Effect } from "effect";
+import {
+	ConfirmTransactionError,
+	SendRawTransactionError,
+	TransactionFailedError,
+	VerifySignaturesError,
+} from "~/errors";
 
 export const customSageSendTransaction = (
 	transaction: TransactionReturn<VersionedTransaction>,

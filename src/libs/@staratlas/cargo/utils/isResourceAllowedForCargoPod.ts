@@ -1,7 +1,7 @@
 import type { PublicKey } from "@solana/web3.js";
 import { Match } from "effect";
 import { resourceNameToMint } from "~/constants/resources";
-import type { CargoPodKind } from "~/decoders";
+import type { CargoPodKind } from "~/utils/decoders";
 
 export const isResourceAllowedForCargoPod = (resourceMint: PublicKey) =>
 	Match.type<CargoPodKind>().pipe(

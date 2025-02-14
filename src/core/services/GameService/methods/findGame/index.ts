@@ -1,9 +1,6 @@
-import { Data, Effect, pipe } from "effect";
+import { Effect, pipe } from "effect";
+import { GameNotFoundError } from "~/errors";
 import { getSagePrograms } from "../../../../programs";
-
-export class GameNotFoundError extends Data.TaggedError("FindGameError")<{
-	readonly error: unknown;
-}> {}
 
 export const findGame = pipe(
 	getSagePrograms(),

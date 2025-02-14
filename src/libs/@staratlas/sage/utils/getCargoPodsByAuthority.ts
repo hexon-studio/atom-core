@@ -1,12 +1,9 @@
 import type { PublicKey } from "@solana/web3.js";
 import { getCargoPodsByAuthority as sageGetCargoPodsByAuthority } from "@staratlas/sage";
-import { Data, Effect } from "effect";
-import { getSagePrograms } from "../../../core/programs";
-import { SolanaService } from "../../../core/services/SolanaService";
-
-export class GetCargoPodsByAuthorityError extends Data.TaggedError(
-	"GetCargoPodsByAuthorityError",
-)<{ error: unknown }> {}
+import { Effect } from "effect";
+import { GetCargoPodsByAuthorityError } from "~/errors/cargo";
+import { getSagePrograms } from "../../../../core/programs";
+import { SolanaService } from "../../../../core/services/SolanaService";
 
 export const getCargoPodsByAuthority = (authority: PublicKey) =>
 	Effect.all([SolanaService.anchorProvider, getSagePrograms()]).pipe(
@@ -22,4 +19,7 @@ export const getCargoPodsByAuthority = (authority: PublicKey) =>
 			}),
 		),
 		Effect.head,
+		Effect.catchTag("NoSuchElementException", (error) =>
+			Effect.fail(new GetCargoPodsByAuthorityError({ error })),
+		),
 	);

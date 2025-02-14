@@ -3,7 +3,7 @@ import type { InstructionReturn } from "@staratlas/data-source";
 import BN from "bn.js";
 import { Effect } from "effect";
 import { getFleetAccountByNameOrAddress } from "~/libs/@staratlas/sage";
-import { FleetWarpCooldownError } from "../fleet/errors";
+import { FleetCooldownError } from "../../errors";
 import { createWarpToCoordinateIx } from "../fleet/instructions";
 import { createPreIxs } from "../fleet/instructions/createPreIxs";
 import { GameService } from "../services/GameService";
@@ -32,8 +32,8 @@ export const warpToSector = ({
 			yield* Effect.log("Warp is on cooldown");
 
 			return yield* Effect.fail(
-				new FleetWarpCooldownError({
-					warpCooldownExpiresAt: new Date(
+				new FleetCooldownError({
+					cooldownExpiresAt: new Date(
 						warpCooldownExpiresAt * 1000,
 					).toISOString(),
 				}),

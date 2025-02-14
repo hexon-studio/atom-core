@@ -3,14 +3,13 @@ import type {
 	TransactionReturn,
 } from "@staratlas/data-source";
 import { type Cause, Effect, Array as EffectArray } from "effect";
+import type { SolanaService } from "~/core/services/SolanaService";
 import type {
-	CreateKeypairError,
-	CreateProviderError,
-	SolanaService,
-} from "~/core/services/SolanaService";
-import type { ReadFromRPCError } from "~/libs/@staratlas/data-source";
-import type { BuildAndSignTransactionError, BuildOptimalTxError } from "..";
-import type { GameNotInitializedError } from "../..";
+	BuildAndSignTransactionError,
+	BuildOptimalTxError,
+	GameNotInitializedError,
+	ReadFromRPCError,
+} from "~/errors";
 import type { GameService } from "../../..";
 import { buildTransactions } from "./buildTransactions";
 
@@ -45,10 +44,8 @@ export type BuildAndSignTransactionWithAtlasPrime = (_: {
 	TransactionReturn[],
 	| BuildAndSignTransactionError
 	| BuildOptimalTxError
-	| CreateKeypairError
 	| ReadFromRPCError
 	| GameNotInitializedError
-	| CreateProviderError
 	| Cause.TimeoutException,
 	SolanaService | GameService
 >;

@@ -2,10 +2,9 @@ import type { PublicKey } from "@solana/web3.js";
 import type { CargoType } from "@staratlas/cargo";
 import type { CargoStats, Fleet } from "@staratlas/sage";
 import BN from "bn.js";
-import { Data, Effect, Match, Record } from "effect";
-import { GameService } from "~/core/services/GameService";
+import { Effect, Match, Record } from "effect";
 import { getGameContext } from "~/core/services/GameService/utils";
-import type { CargoPodKind } from "~/decoders";
+import { SolanaService } from "~/core/services/SolanaService";
 import {
 	findCargoTypePda,
 	getCargoPodAccount,
@@ -13,10 +12,7 @@ import {
 } from "~/libs/@staratlas/cargo";
 import { getCargoUnitsFromTokenAmount } from "~/libs/@staratlas/sage";
 import { getCargoTypeResourceMultiplier } from "~/libs/@staratlas/sage/utils/getCargoTypeResourceMultiplier";
-
-export class InvalidPodMaxCapacityError extends Data.TaggedError(
-	"InvalidPodMaxCapacityError",
-) {}
+import type { CargoPodKind } from "~/utils/decoders";
 
 export const getFleetCargoPodInfoByType = ({
 	type,
@@ -47,7 +43,7 @@ export const getFleetCargoPodInfoByType = ({
 		const context = yield* getGameContext();
 
 		const cargoPodTokenAccounts =
-			yield* GameService.getParsedTokenAccountsByOwner(cargoPod.key);
+			yield* SolanaService.getParsedTokenAccountsByOwner(cargoPod.key);
 
 		const resources = yield* Effect.reduce(
 			cargoPodTokenAccounts,

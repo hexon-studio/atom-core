@@ -5,16 +5,8 @@ import {
 	type AccountStatic,
 	readFromRPCOrError,
 } from "@staratlas/data-source";
-import { Data, Effect } from "effect";
-
-export class ReadFromRPCError extends Data.TaggedError("ReadFromRPCError")<{
-	readonly error: unknown;
-	readonly accountName: string;
-}> {
-	override get message() {
-		return `Error reading: ${this.accountName}, from RPC: ${this.error}`;
-	}
-}
+import { Effect } from "effect";
+import { ReadFromRPCError } from "~/errors";
 
 export const readFromSage = <A extends Account, IDL extends Idl>(
 	program: Program<IDL>,

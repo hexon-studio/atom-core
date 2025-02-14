@@ -17,13 +17,13 @@ import {
 	getStarbasePlayerAccount,
 } from "~/libs/@staratlas/sage";
 import { resourceNameToMint } from "../../../constants/resources";
-import { getSagePrograms } from "../../programs";
-import { GameService } from "../../services/GameService";
-import { getGameContext } from "../../services/GameService/utils";
 import {
 	FleetNotEnoughFuelError,
 	PlanetNotFoundInSectorError,
-} from "../errors";
+} from "../../../errors";
+import { getSagePrograms } from "../../programs";
+import { GameService } from "../../services/GameService";
+import { getGameContext } from "../../services/GameService/utils";
 import { getCurrentFleetSectorCoordinates } from "../utils/getCurrentFleetSectorCoordinates";
 import { createAsteroidMiningHandlerIx } from "./createAsteroidMiningHandlerIx";
 

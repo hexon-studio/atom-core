@@ -6,11 +6,11 @@ import { getSagePrograms } from "~/core/programs";
 import { getGameContext } from "~/core/services/GameService/utils";
 import { getStarbaseInfoByCoords } from "~/core/utils/getStarbaseInfo";
 import {
+	divideRecipeIngredients,
 	findCraftingInstancePda,
 	findCraftingProcessPda,
-} from "~/libs/@staratlas/crafting/pdas";
-import { divideRecipeIngredients } from "~/libs/@staratlas/crafting/utils";
-import { findAssociatedTokenPda } from "~/utils/getAssociatedTokenAddress";
+} from "~/libs/@staratlas/crafting";
+import { findAssociatedTokenPda } from "~/utils/findAssociatedTokenPda";
 
 export const createCraftingBurnConsumablesIxs = ({
 	craftingId,
@@ -45,11 +45,10 @@ export const createCraftingBurnConsumablesIxs = ({
 		const ixs = [];
 
 		for (const [ingredientIndex, inputIngredient] of inputs.entries()) {
-			const ingredientAta = yield* findAssociatedTokenPda(
-				inputIngredient.mint,
-				craftingProcess,
-				true,
-			);
+			const ingredientAta = yield* findAssociatedTokenPda({
+				mint: inputIngredient.mint,
+				owner: craftingProcess,
+			});
 
 			const ix = CraftingInstance.burnCraftingConsumables(
 				programs.sage,
