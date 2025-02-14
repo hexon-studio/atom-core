@@ -60,8 +60,8 @@ export const createCraftingBurnConsumablesIxs = ({
 				craftingProcess,
 				starbaseInfo.starbaseAccount.data.craftingFacility,
 				recipeAccount.key,
-				context.gameInfo.game.key,
-				context.gameInfo.game.data.gameState,
+				context.gameInfo.gameId,
+				context.gameInfo.gameStateId,
 				ingredientAta,
 				inputIngredient.mint,
 				{

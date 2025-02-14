@@ -82,8 +82,8 @@ export const createSubwarpToCoordinateIx = ({
 			fleetAccount.data.ownerProfile,
 			playerFactionAddress,
 			fleetAccount.key,
-			context.gameInfo.game.key,
-			context.gameInfo.game.data.gameState,
+			context.gameInfo.gameId,
+			context.gameInfo.gameStateId,
 			{
 				keyIndex: context.keyIndexes.sage,
 				toSector: [targetSectorX, targetSectorY],

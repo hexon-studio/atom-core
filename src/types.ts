@@ -23,6 +23,7 @@ export const requiredOptionsDecoder = z.object({
 	rpcUrl: z.string(),
 
 	// Optinal fields
+	commonApiUrl: z.string().optional(),
 	feeLimit: z.number().optional(),
 	feeUrl: z.string().optional(),
 	heliusRpcUrl: z.string().optional(),

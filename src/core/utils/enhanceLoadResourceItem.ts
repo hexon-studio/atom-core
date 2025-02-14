@@ -51,8 +51,8 @@ export const enhanceLoadResourceItem = ({
 
 		const [cargoTypeAddress] = yield* findCargoTypePda(
 			resourceMint,
-			context.gameInfo.cargoStatsDefinition.key,
-			context.gameInfo.cargoStatsDefinition.data.seqId,
+			context.gameInfo.cargoStatsDefinitionId,
+			context.gameInfo.cargoStatsDefinitionSeqId,
 		);
 
 		const cargoTypeAccount = yield* getCargoTypeAccount(cargoTypeAddress);

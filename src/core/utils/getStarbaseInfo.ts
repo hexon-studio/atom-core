@@ -18,12 +18,12 @@ export const getStarbaseInfoByCoords = ({
 		const context = yield* getGameContext();
 
 		const [sagePlayerProfilePubkey] = yield* findSagePlayerProfilePda(
-			context.gameInfo.game.key,
+			context.gameInfo.gameId,
 			context.playerProfile.key,
 		);
 
 		const [starbasePubkey] = yield* findStarbasePdaByCoordinates(
-			context.gameInfo.game.key,
+			context.gameInfo.gameId,
 			starbaseCoords,
 		);
 

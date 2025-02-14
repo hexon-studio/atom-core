@@ -21,7 +21,7 @@ export const findUserPointsPda = ({
 		Effect.flatMap(([context, programs]) =>
 			Effect.try(() => {
 				const categoryPublicKey =
-					context.gameInfo.game.data.points[`${category}Category`].category;
+					context.gameInfo.points[`${category}Category`].category;
 
 				return UserPoints.findAddress(
 					programs.points,

@@ -41,7 +41,7 @@ export const createUndockFromStarbaseIx = (fleetAccount: Fleet) =>
 		const starbaseAccount = yield* getStarbaseAccount(starbaseKey);
 
 		const [sagePlayerProfileAddress] = yield* findSagePlayerProfilePda(
-			context.gameInfo.game.key,
+			context.gameInfo.gameId,
 			fleetAccount.data.ownerProfile,
 		);
 
@@ -66,8 +66,8 @@ export const createUndockFromStarbaseIx = (fleetAccount: Fleet) =>
 				fleetAccount.key,
 				starbaseKey,
 				starbasePlayerKey,
-				context.gameInfo.game.key,
-				context.gameInfo.game.data.gameState,
+				context.gameInfo.gameId,
+				context.gameInfo.gameStateId,
 				context.keyIndexes.sage,
 			),
 		];

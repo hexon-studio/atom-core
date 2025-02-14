@@ -37,7 +37,7 @@ export const createLoadCrewIx = ({
 				fleetAccount.key,
 				starbasePubkey,
 				starbasePlayerPubkey,
-				context.gameInfo.game.key,
+				context.gameInfo.gameId,
 				{ keyIndex: context.keyIndexes.sage, count: crewAmount },
 			),
 		];
