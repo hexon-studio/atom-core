@@ -1,23 +1,20 @@
 import { Effect, Option, Ref } from "effect";
-import { constNull } from "effect/Function";
 import { programIds } from "~/constants/programs";
 import type { GameContext } from "~/core/services/GameService";
 import { GameAlreadyInitializedError } from "~/errors";
 import { getPlayerProfileAccout } from "~/libs/@staratlas/player-profile";
-import type { RequiredOptions } from "~/types";
-import { fetchFees } from "./fetchFees";
+import type { GlobalOptions } from "~/types";
 import { fetchGameInfoOrAccounts } from "./fetchGameInfoOrAccount";
 
 export const initGame = (
 	contextRef: Ref.Ref<Option.Option<GameContext>>,
-	options: RequiredOptions,
+	options: GlobalOptions,
 ) =>
 	Effect.gen(function* () {
 		const {
 			owner,
 			playerProfile: playerProfileAddress,
 			keypair,
-			feeUrl,
 			commonApiUrl,
 		} = options;
 
@@ -27,11 +24,10 @@ export const initGame = (
 			return yield* Effect.fail(new GameAlreadyInitializedError());
 		}
 
-		const [playerProfileAccount, gameInfo, fees] = yield* Effect.all(
+		const [playerProfileAccount, gameInfo] = yield* Effect.all(
 			[
 				getPlayerProfileAccout(playerProfileAddress),
 				fetchGameInfoOrAccounts(commonApiUrl),
-				feeUrl ? fetchFees({ feeUrl, owner }) : Effect.sync(constNull),
 			],
 			{ concurrency: "unbounded" },
 		);
@@ -64,7 +60,6 @@ export const initGame = (
 					points: pointsSignerKeyIndex,
 					profileVault: profileVaultSignerKeyIndex,
 				},
-				fees,
 			}),
 		);
 	});

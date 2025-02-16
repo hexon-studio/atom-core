@@ -20,7 +20,6 @@ import type { CargoPodKind } from "../../../../utils/decoders";
 import { type GameContext, GameService } from "../../../services/GameService";
 import { findGame } from "../../../services/GameService/methods/findGame";
 import { initGame } from "../../../services/GameService/methods/initGame";
-import type { Fees } from "../../../services/GameService/methods/initGame/fetchFees";
 import type { GameInfo } from "../../../services/GameService/methods/initGame/fetchGameInfo";
 import { SolanaService } from "../../../services/SolanaService";
 
@@ -33,7 +32,6 @@ const gameContextRef = Ref.unsafeMake(
 			owner: noopPublicKey,
 		} as RequiredOptions,
 		gameInfo: {} as GameInfo,
-		fees: {} as Fees,
 		playerProfile: {} as PlayerProfile,
 		keyIndexes: {
 			points: 0,

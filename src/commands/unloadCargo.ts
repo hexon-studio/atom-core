@@ -11,17 +11,17 @@ import {
 	Option,
 } from "effect";
 import { constNull, constUndefined } from "effect/Function";
+import type { UnloadResourceInput } from "~/utils/decoders";
 import { unloadCargo } from "../core/actions/unloadCargo";
 import { GameService } from "../core/services/GameService";
-import type { GlobalOptionsWithWebhook } from "../types";
+import type { GlobalOptions } from "../types";
 import { createMainLiveService } from "../utils/createMainLiveService";
-import type { UnloadResourceInput } from "../utils/decoders";
 import { runBaseCommand } from "./baseCommand";
 
 type Param = {
 	fleetNameOrAddress: string | PublicKey;
 	items: Array<UnloadResourceInput>;
-	globalOpts: GlobalOptionsWithWebhook;
+	globalOpts: GlobalOptions;
 };
 
 export const runUnloadCargo = async ({

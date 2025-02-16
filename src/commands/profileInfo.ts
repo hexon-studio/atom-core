@@ -9,10 +9,10 @@ import {
 } from "effect";
 import { GameService } from "../core/services/GameService";
 import { getGameContext } from "../core/services/GameService/utils";
-import type { GlobalOptionsWithWebhook } from "../types";
+import type { GlobalOptions } from "../types";
 import { createMainLiveService } from "../utils/createMainLiveService";
 
-export const runProfileInfo = async (globalOpts: GlobalOptionsWithWebhook) => {
+export const runProfileInfo = async (globalOpts: GlobalOptions) => {
 	const mainServiceLive = createMainLiveService(globalOpts);
 
 	const runtime = ManagedRuntime.make(mainServiceLive);

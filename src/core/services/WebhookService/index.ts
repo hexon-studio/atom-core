@@ -7,13 +7,9 @@ export type WebhookEvent<A> =
 	| {
 			type: "start";
 	  }
-	// | {
-	// 		type: "atlas-balance";
-	// 		payload: { balance: string };
-	//   }
 	| {
 			type: "success";
-			payload: A & { removeCredit: boolean };
+			payload: A;
 	  }
 	| {
 			type: "error";

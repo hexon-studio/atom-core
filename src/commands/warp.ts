@@ -10,14 +10,14 @@ import {
 } from "effect";
 import { warpToSector } from "../core/actions/warpToSector";
 import { GameService } from "../core/services/GameService";
-import type { GlobalOptionsWithWebhook } from "../types";
+import type { GlobalOptions } from "../types";
 import { createMainLiveService } from "../utils/createMainLiveService";
 import { runBaseCommand } from "./baseCommand";
 
 type Param = {
 	fleetNameOrAddress: string | PublicKey;
 	targetSector: [number, number];
-	globalOpts: GlobalOptionsWithWebhook;
+	globalOpts: GlobalOptions;
 };
 
 export const runWarp = async ({

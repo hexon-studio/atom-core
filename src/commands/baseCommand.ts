@@ -98,17 +98,9 @@ export const runBaseCommand = <A extends { signatures: string[] }, E, R>({
 
 		// console.dir({ txs }, { depth: null });
 
-		const context = yield* getGameContext();
-
 		yield* fireWebhookEvent({
 			type: "success",
-			payload: {
-				...result,
-				removeCredit:
-					!!context.fees &&
-					!context.fees.feeAddress &&
-					result.signatures.length > 0,
-			},
+			payload: result,
 		});
 
 		return result.signatures;

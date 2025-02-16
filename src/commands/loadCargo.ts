@@ -11,7 +11,7 @@ import {
 } from "effect";
 import { loadCargo } from "../core/actions/loadCargo";
 import { GameService } from "../core/services/GameService";
-import type { GlobalOptionsWithWebhook } from "../types";
+import type { GlobalOptions } from "../types";
 import { createMainLiveService } from "../utils/createMainLiveService";
 import type { LoadResourceInput } from "../utils/decoders";
 import { runBaseCommand } from "./baseCommand";
@@ -19,7 +19,7 @@ import { runBaseCommand } from "./baseCommand";
 type Param = {
 	fleetNameOrAddress: string | PublicKey;
 	items: Array<LoadResourceInput>;
-	globalOpts: GlobalOptionsWithWebhook;
+	globalOpts: GlobalOptions;
 };
 
 export const runLoadCargo = async ({

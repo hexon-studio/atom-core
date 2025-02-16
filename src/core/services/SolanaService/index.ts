@@ -1,7 +1,7 @@
 import { Connection, type Keypair } from "@solana/web3.js";
 import { AnchorProvider, Wallet } from "@staratlas/anchor";
 import { Effect, Layer, type Option } from "effect";
-import type { FeeMode, GlobalOptionsWithWebhook } from "../../../types";
+import type { FeeMode, GlobalOptions } from "../../../types";
 import type { CreateAssociatedTokenAccountIdempotent } from "./createAssociatedTokenAccountIdempotent";
 import { createAssociatedTokenAccountIdempotent } from "./createAssociatedTokenAccountIdempotent";
 import type { GetParsedTokenAccountsByOwner } from "./getParsedTokenAccountsByOwner";
@@ -37,7 +37,7 @@ export const createSolanaServiceLive = ({
 	heliusRpcUrl,
 	feeMode,
 	feeLimit,
-}: GlobalOptionsWithWebhook) => {
+}: GlobalOptions) => {
 	const anchorProvider = createAnchorProvider({ rpcUrl, keypair });
 
 	return Layer.succeed(

@@ -11,7 +11,7 @@ import {
 } from "effect";
 import { startCrafting } from "~/core/actions/startCrafting";
 import { GameService } from "../core/services/GameService";
-import type { GlobalOptionsWithWebhook } from "../types";
+import type { GlobalOptions } from "../types";
 import { createMainLiveService } from "../utils/createMainLiveService";
 import { runBaseCommand } from "./baseCommand";
 
@@ -20,7 +20,7 @@ type Param = {
 	quantity: number;
 	recipe: PublicKey;
 	starbaseCoords: [BN, BN];
-	globalOpts: GlobalOptionsWithWebhook;
+	globalOpts: GlobalOptions;
 };
 
 export const runStartCrafting = async ({

@@ -13,11 +13,11 @@ import {
 import { getSagePrograms } from "~/core/programs";
 import { GameService } from "~/core/services/GameService";
 import { SolanaService } from "~/core/services/SolanaService";
-import type { GlobalOptionsWithWebhook } from "../types";
+import type { GlobalOptions } from "../types";
 import { createMainLiveService } from "../utils/createMainLiveService";
 
 type Param = {
-	globalOpts: GlobalOptionsWithWebhook;
+	globalOpts: GlobalOptions;
 };
 
 export const runRecipeList = async ({ globalOpts }: Param) => {
