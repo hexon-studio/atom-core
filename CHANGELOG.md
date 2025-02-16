@@ -1,5 +1,13 @@
 # Changelog
 
+# [1.35.0](https://github.com/hexon-studio/atom-core/compare/v1.34.0...v1.35.0) (2025-02-16)
+
+
+### Features
+
+* remove fee api ([513f08c](https://github.com/hexon-studio/atom-core/commit/513f08c48bb48cae3e81a5b6d4a5ac505b8e3995))
+* update option desc ([318ef99](https://github.com/hexon-studio/atom-core/commit/318ef99e5a1d927bb6770271a7c8d802b1bfd2d4))
+
 # [1.34.0](https://github.com/hexon-studio/atom-core/compare/v1.33.0...v1.34.0) (2025-02-14)
 
 
