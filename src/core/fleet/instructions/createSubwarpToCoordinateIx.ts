@@ -1,15 +1,15 @@
 import { Fleet, calculateDistance } from "@staratlas/sage";
 import type BN from "bn.js";
 import { Effect, Option, Record } from "effect";
+import { resourceNameToMint } from "~/constants/resources";
+import { FleetNotEnoughFuelError } from "~/errors";
 import { getFleetCargoPodInfoByType } from "~/libs/@staratlas/cargo";
 import { findProfileFactionPda } from "~/libs/@staratlas/profile-faction";
-import { FleetNotEnoughFuelToSubwarpError } from "../../../errors";
 import { getSagePrograms } from "../../programs";
 import { GameService } from "../../services/GameService";
 import { getGameContext } from "../../services/GameService/utils";
 import { getCurrentFleetSectorCoordinates } from "../utils/getCurrentFleetSectorCoordinates";
 import { createMovementHandlerIx } from "./createMovementHandlerIx";
-import { resourceNameToMint } from "~/constants/resources";
 
 type Param = {
 	fleetAccount: Fleet;
@@ -54,7 +54,8 @@ export const createSubwarpToCoordinateIx = ({
 		);
 
 		if (Option.isNone(maybeFuelInTankData)) {
-			return yield* new FleetNotEnoughFuelToSubwarpError({
+			return yield* new FleetNotEnoughFuelError({
+				action: "subwarp",
 				requiredFuel: requiredFuel.toString(),
 				availableFuel: "0",
 			});
@@ -63,7 +64,8 @@ export const createSubwarpToCoordinateIx = ({
 		const fuelInTankData = maybeFuelInTankData.value;
 
 		if (fuelInTankData.amountInCargoUnits.ltn(requiredFuel)) {
-			return yield* new FleetNotEnoughFuelToSubwarpError({
+			return yield* new FleetNotEnoughFuelError({
+				action: "subwarp",
 				requiredFuel: requiredFuel.toString(),
 				availableFuel: fuelInTankData.amountInCargoUnits.toString(),
 			});

@@ -12,22 +12,11 @@ import {
 } from "@staratlas/sage";
 import { Effect } from "effect";
 import { getSagePrograms } from "~/core/programs";
+import type { ReadFromRPCError } from "~/errors";
+import { AccountError } from "~/errors/account";
 import { readFromSage } from "~/libs/@staratlas/data-source";
 import { isPublicKey } from "~/utils/public-key";
 import { findFleetPdaByName } from "./pdas";
-import {
-	GameAccountError,
-	GameStateAccountError,
-	FleetAccountError,
-	MineItemAccountError,
-	PlanetAccountError,
-	ResourceAccountError,
-	SectorAccountError,
-	StarbaseAccountError,
-	StarbasePlayerAccountError,
-	FleetAccountByNameError,
-} from "~/errors/accounts";
-import type { ReadFromRPCError } from "~/errors";
 
 export const getGameAccount = (gamePublicKey: PublicKey) =>
 	getSagePrograms().pipe(
@@ -35,7 +24,13 @@ export const getGameAccount = (gamePublicKey: PublicKey) =>
 			readFromSage(programs.sage, gamePublicKey, Game),
 		),
 		Effect.catchTag("ReadFromRPCError", (error: ReadFromRPCError) =>
-			Effect.fail(new GameAccountError({ error: error.error, gamePublicKey })),
+			Effect.fail(
+				new AccountError({
+					error: error.error,
+					keyOrName: gamePublicKey.toString(),
+					reason: "Failed to get game account",
+				}),
+			),
 		),
 	);
 
@@ -46,7 +41,11 @@ export const getGameStateAccount = (gameStatePublicKey: PublicKey) =>
 		),
 		Effect.catchTag("ReadFromRPCError", (error: ReadFromRPCError) =>
 			Effect.fail(
-				new GameStateAccountError({ error: error.error, gameStatePublicKey }),
+				new AccountError({
+					error: error.error,
+					keyOrName: gameStatePublicKey.toString(),
+					reason: "Failed to get game state account",
+				}),
 			),
 		),
 	);
@@ -60,9 +59,10 @@ export const getFleetAccountByNameOrAddress = (
 				Effect.map(([fleetAddress]) => fleetAddress),
 				Effect.mapError(
 					(error) =>
-						new FleetAccountByNameError({
+						new AccountError({
 							error,
-							fleetName: fleetNameOrAddress as string,
+							keyOrName: fleetNameOrAddress as string,
+							reason: "Failed to get fleet account by name",
 						}),
 				),
 			)
@@ -75,7 +75,13 @@ export const getFleetAccount = (fleetPubkey: PublicKey) =>
 				readFromSage(programs.sage, fleetPubkey, Fleet),
 			),
 			Effect.catchTag("ReadFromRPCError", (error: ReadFromRPCError) =>
-				Effect.fail(new FleetAccountError({ error: error.error, fleetPubkey })),
+				Effect.fail(
+					new AccountError({
+						error: error.error,
+						keyOrName: fleetPubkey.toString(),
+						reason: "Failed to get fleet account",
+					}),
+				),
 			),
 		)
 		.pipe(
@@ -91,7 +97,11 @@ export const getMineItemAccount = (mineItemPubkey: PublicKey) =>
 		),
 		Effect.catchTag("ReadFromRPCError", (error: ReadFromRPCError) =>
 			Effect.fail(
-				new MineItemAccountError({ error: error.error, mineItemPubkey }),
+				new AccountError({
+					error: error.error,
+					keyOrName: mineItemPubkey.toString(),
+					reason: "Failed to get mine item account",
+				}),
 			),
 		),
 	);
@@ -102,7 +112,13 @@ export const getPlanetAccount = (planetPubkey: PublicKey) =>
 			readFromSage(programs.sage, planetPubkey, Planet),
 		),
 		Effect.catchTag("ReadFromRPCError", (error: ReadFromRPCError) =>
-			Effect.fail(new PlanetAccountError({ error: error.error, planetPubkey })),
+			Effect.fail(
+				new AccountError({
+					error: error.error,
+					keyOrName: planetPubkey.toString(),
+					reason: "Failed to get planet account",
+				}),
+			),
 		),
 	);
 
@@ -113,7 +129,11 @@ export const getResourceAccount = (resourcePubkey: PublicKey) =>
 		),
 		Effect.catchTag("ReadFromRPCError", (error: ReadFromRPCError) =>
 			Effect.fail(
-				new ResourceAccountError({ error: error.error, resourcePubkey }),
+				new AccountError({
+					error: error.error,
+					keyOrName: resourcePubkey.toString(),
+					reason: "Failed to get resource account",
+				}),
 			),
 		),
 	);
@@ -124,7 +144,13 @@ export const getSectorAccount = (sectorPubkey: PublicKey) =>
 			readFromSage(programs.sage, sectorPubkey, Sector),
 		),
 		Effect.catchTag("ReadFromRPCError", (error: ReadFromRPCError) =>
-			Effect.fail(new SectorAccountError({ error: error.error, sectorPubkey })),
+			Effect.fail(
+				new AccountError({
+					error: error.error,
+					keyOrName: sectorPubkey.toString(),
+					reason: "Failed to get sector account",
+				}),
+			),
 		),
 	);
 
@@ -135,7 +161,11 @@ export const getStarbaseAccount = (starbasePubkey: PublicKey) =>
 		),
 		Effect.catchTag("ReadFromRPCError", (error: ReadFromRPCError) =>
 			Effect.fail(
-				new StarbaseAccountError({ error: error.error, starbasePubkey }),
+				new AccountError({
+					error: error.error,
+					keyOrName: starbasePubkey.toString(),
+					reason: "Failed to get starbase account",
+				}),
 			),
 		),
 	);
@@ -147,9 +177,10 @@ export const getStarbasePlayerAccount = (starbasePlayerPubkey: PublicKey) =>
 		),
 		Effect.catchTag("ReadFromRPCError", (error: ReadFromRPCError) =>
 			Effect.fail(
-				new StarbasePlayerAccountError({
+				new AccountError({
 					error: error.error,
-					starbasePlayerPubkey,
+					keyOrName: starbasePlayerPubkey.toString(),
+					reason: "Failed to get starbase player account",
 				}),
 			),
 		),

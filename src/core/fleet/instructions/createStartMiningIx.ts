@@ -21,7 +21,7 @@ import {
 } from "~/libs/@staratlas/sage";
 import { resourceNameToMint } from "../../../constants/resources";
 import {
-	FleetNotEnoughFuelToMineError,
+	FleetNotEnoughFuelError,
 	PlanetNotFoundInSectorError,
 } from "../../../errors";
 import { getSagePrograms } from "../../programs";
@@ -147,7 +147,8 @@ export const createStartMiningIx = ({
 		);
 
 		if (Option.isNone(maybeFuelInTankData)) {
-			return yield* new FleetNotEnoughFuelToMineError({
+			return yield* new FleetNotEnoughFuelError({
+				action: "start-mining",
 				requiredFuel: requiredFuelAmount.toString(),
 				availableFuel: "0",
 			});
@@ -156,7 +157,8 @@ export const createStartMiningIx = ({
 		const fuelInTankData = maybeFuelInTankData.value;
 
 		if (fuelInTankData.amountInCargoUnits.ltn(requiredFuelAmount)) {
-			return yield* new FleetNotEnoughFuelToMineError({
+			return yield* new FleetNotEnoughFuelError({
+				action: "start-mining",
 				requiredFuel: requiredFuelAmount.toString(),
 				availableFuel: fuelInTankData.amountInCargoUnits.toString(),
 			});

@@ -7,10 +7,7 @@ import {
 } from "~/libs/@staratlas/cargo";
 import { findProfileFactionPda } from "~/libs/@staratlas/profile-faction";
 import { resourceNameToMint } from "../../../constants/resources";
-import {
-	FleetNotEnoughFuelToWarpError,
-	SectorTooFarError,
-} from "../../../errors";
+import { FleetNotEnoughFuelError, SectorTooFarError } from "../../../errors";
 import { findAssociatedTokenPda } from "../../../utils/findAssociatedTokenPda";
 import { getSagePrograms } from "../../programs";
 import { GameService } from "../../services/GameService";
@@ -74,7 +71,8 @@ export const createWarpToCoordinateIx = ({
 		);
 
 		if (Option.isNone(maybeFuelInTankData)) {
-			return yield* new FleetNotEnoughFuelToWarpError({
+			return yield* new FleetNotEnoughFuelError({
+				action: "warp",
 				requiredFuel: requiredFuel.toString(),
 				availableFuel: "0",
 			});
@@ -83,7 +81,8 @@ export const createWarpToCoordinateIx = ({
 		const fuelInTankData = maybeFuelInTankData.value;
 
 		if (fuelInTankData.amountInCargoUnits.ltn(requiredFuel)) {
-			return yield* new FleetNotEnoughFuelToWarpError({
+			return yield* new FleetNotEnoughFuelError({
+				action: "warp",
 				requiredFuel: requiredFuel.toString(),
 				availableFuel: fuelInTankData.amountInCargoUnits.toString(),
 			});

@@ -38,10 +38,17 @@ export class InvalidFleetStateError extends Data.TaggedError(
 	}
 }
 
-// TODO: replace with ResourceNotEnoughError
 export class FleetNotEnoughFuelError extends Data.TaggedError(
 	"FuelNotEnoughError",
-) {}
+)<{
+	readonly action: string;
+	readonly requiredFuel: string;
+	readonly availableFuel: string;
+}> {
+	override get message() {
+		return `Fleet does not have enough fuel to ${this.action}. Available: ${this.availableFuel}, Required: ${this.requiredFuel}`;
+	}
+}
 
 export class FleetInvalidResourceForPodKindError extends Data.TaggedError(
 	"FleetInvalidResourceForPodKindError",
@@ -65,38 +72,5 @@ export class SectorTooFarError extends Data.TaggedError("SectorTooFarError")<{
 }> {
 	override get message() {
 		return `Target sector is too far. Distance: ${this.targetSectorDistance} AU, Max allowed distance: ${this.maxAllowedDistance} AU`;
-	}
-}
-
-export class FleetNotEnoughFuelToWarpError extends Data.TaggedError(
-	"FleetNotEnoughFuelToWarpError",
-)<{
-	readonly requiredFuel: string;
-	readonly availableFuel: string;
-}> {
-	override get message() {
-		return `Fleet does not have enough fuel to warp. Available: ${this.availableFuel}, Required: ${this.requiredFuel}`;
-	}
-}
-
-export class FleetNotEnoughFuelToSubwarpError extends Data.TaggedError(
-	"FleetNotEnoughFuelToSubwarpError",
-)<{
-	requiredFuel: string;
-	availableFuel: string;
-}> {
-	override get message() {
-		return `Fleet does not have enough fuel to subwarp. Available: ${this.availableFuel}, Required: ${this.requiredFuel}`;
-	}
-}
-
-export class FleetNotEnoughFuelToMineError extends Data.TaggedError(
-	"FleetNotEnoughFuelToMineError",
-)<{
-	requiredFuel: string;
-	availableFuel: string;
-}> {
-	override get message() {
-		return `Fleet does not have enough fuel to start mining. Available: ${this.availableFuel}, Required: ${this.requiredFuel}`;
 	}
 }

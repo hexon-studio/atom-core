@@ -2,9 +2,9 @@ import type { CargoStatsDefinition } from "@staratlas/cargo";
 import type { Game } from "@staratlas/sage";
 import { Effect } from "effect";
 import type {
+	AccountError,
 	GameNotFoundError,
 	ReadFromRPCError,
-	GameAccountError,
 } from "~/errors";
 import { getCargoStatsDefinitionAccount } from "~/libs/@staratlas/cargo";
 import { getGameAccount } from "~/libs/@staratlas/sage";
@@ -81,7 +81,7 @@ export const fetchGameInfoOrAccounts = (
 	commonApiUrl?: string,
 ): Effect.Effect<
 	GameInfo,
-	GameNotFoundError | ReadFromRPCError | GameAccountError,
+	GameNotFoundError | ReadFromRPCError | AccountError,
 	SolanaService
 > =>
 	Effect.fromNullable(commonApiUrl).pipe(
