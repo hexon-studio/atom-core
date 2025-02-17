@@ -63,33 +63,36 @@ const main = async () => {
 		.addOption(
 			new Option(
 				"-p, --playerProfile <publickKey>",
-				"The publicKey of the player",
+				"The publicKey of the player profile",
 			)
 				.argParser(parsePublicKey)
 				.env("ATOM_PLAYER_PROFILE")
 				.makeOptionMandatory(true),
 		)
 		.addOption(
-			new Option("-r, --rpcUrl <rpcUrl>", "The primary solona rpc url")
+			new Option("-r, --rpcUrl <rpcUrl>", "Solana RPC endpoint URL")
 				.env("ATOM_RPC_URL")
 				.makeOptionMandatory(true),
 		)
 		.addOption(
 			new Option(
 				"-k, --keypair <secretKey>",
-				"The secret key of the hot wallet as a base58 string",
+				"Hot wallet secret key in base58 format",
 			)
 				.argParser(parseSecretKey)
 				.env("ATOM_HOT_WALLET")
 				.makeOptionMandatory(true),
 		)
 		.addOption(
-			new Option("-w, --webhookUrl <webhookUrl>", "The webhook url")
+			new Option(
+				"-w, --webhookUrl <webhookUrl>",
+				"Webhook URL for notifications",
+			)
 				.env("ATOM_WEBHOOK_URL")
 				.makeOptionMandatory(false),
 		)
 		.addOption(
-			new Option("--feeLamports <feeLamports>", "The atom fee in lamports")
+			new Option("--feeLamports <feeLamports>", "Core fee in lamports")
 				.argParser((feeLamports) =>
 					z.coerce.number().optional().parse(feeLamports),
 				)
@@ -97,26 +100,26 @@ const main = async () => {
 				.makeOptionMandatory(false),
 		)
 		.addOption(
-			new Option("--feeAtlas <feeAtlas>", "The atom fee in lamports")
+			new Option("--feeAtlas <feeAtlas>", "Core fee in ATLAS tokens")
 				.argParser((feeAtlas) => z.coerce.number().optional().parse(feeAtlas))
 				.implies({ atlasPrime: true })
 				.makeOptionMandatory(false),
 		)
 		.option(
 			"--feeRecipient <feeRecipient>",
-			"The atom fee recipient",
+			"Public key of the fee recipient",
 			parsePublicKey,
 		)
 		.addOption(
 			new Option(
 				"--heliusRpcUrl <heliusRpc>",
-				"Helius rpc url (used to calculate priority fees)",
+				"Helius RPC URL for priority fee calculations",
 			)
 				.env("ATOM_HELIUS_RPC_URL")
 				.makeOptionMandatory(false),
 		)
 		.addOption(
-			new Option("--feeMode <feeMode>", "Helius rpc used to calculate fees")
+			new Option("--feeMode <feeMode>", "Priority fee level for Helius RPC")
 				.choices(["low", "medium", "high"])
 				.default("low")
 				.makeOptionMandatory(false),
@@ -124,13 +127,13 @@ const main = async () => {
 		.addOption(
 			new Option(
 				"--feeLimit <feeLimit>",
-				"The priority fee limit price in microlamports",
+				"Maximum priority fee per CU in microlamports",
 			)
 				.argParser((value) => {
 					const parsedValue = Number.parseInt(value, 10);
 
 					if (Number.isNaN(parsedValue)) {
-						throw new InvalidArgumentError("Not a number.");
+						throw new InvalidArgumentError("Fee limit must be a valid number");
 					}
 
 					return parsedValue;
@@ -138,19 +141,25 @@ const main = async () => {
 				.makeOptionMandatory(false),
 		)
 		.addOption(
-			new Option("--webhookSecret <webhookSecret>", "The webhook secret")
+			new Option(
+				"--webhookSecret <webhookSecret>",
+				"Secret for webhook authentication",
+			)
 				.env("ATOM_WEBHOOK_SECRET")
 				.makeOptionMandatory(false),
 		)
 		.addOption(
-			new Option("--loggingToken <token>", "The cloud logging service token")
+			new Option(
+				"--loggingToken <token>",
+				"Authentication token for cloud logging service",
+			)
 				.env("ATOM_LOGGING_TOKEN")
 				.makeOptionMandatory(false),
 		)
 		.addOption(
 			new Option(
 				"--commonApiUrl <commonApiUrl>",
-				"An cache api endpoint returning common game data, if not provided data will be fetched from the blockchain",
+				"Cache API endpoint for game data (falls back to blockchain if not provided)",
 			)
 				.env("ATOM_COMMON_API_URL")
 				.makeOptionMandatory(false),
@@ -158,36 +167,44 @@ const main = async () => {
 		.addOption(
 			new Option(
 				"--contextId <contextId>",
-				"If passed the webhook will be called with the contextId",
+				"Custom identifier passed to webhook calls for tracking",
 			).makeOptionMandatory(false),
 		)
 		.option("--atlas-prime", "Enable the use of Atlas Prime")
 		.option(
 			"--mipt, --max-ixs-per-transaction <mipt>",
-			"Apply a limit of instructions on a transactions",
+			"Maximum number of instructions per transaction",
 			"5",
 		);
 
-	program.command("recipe-list").action(async () => {
-		const globalOpts = parseOptions(program.opts<CliGlobalOptions>());
+	program
+		.command("recipe-list")
+		.description("List all available crafting recipes")
+		.action(async () => {
+			const globalOpts = parseOptions(program.opts<CliGlobalOptions>());
 
-		return runRecipeList({
-			globalOpts,
+			return runRecipeList({
+				globalOpts,
+			});
 		});
-	});
 
 	program
 		.command("start-crafting")
+		.description("Start crafting items at a starbase")
 		.option(
 			"-c, --crewAmount <crewAmount>",
-			"The amount of crew to start crafting",
+			"Number of crew members to assign to crafting",
 			(value) => z.coerce.number().parse(value),
 		)
 		.option("-q, --quantity <quantity>", "The quantity to craft", (value) =>
 			z.coerce.number().parse(value),
 		)
-		.option("--recipe <recipe>", "The address of the recipe", parsePublicKey)
-		.option("--sector <sector>", "The sector of the starbase")
+		.option(
+			"--recipe <recipe>",
+			"Public key of the recipe to craft",
+			parsePublicKey,
+		)
+		.option("--sector <sector>", "Starbase sector coordinates (format: x,y)")
 		.action(
 			async (options: {
 				crewAmount: number;
@@ -222,11 +239,18 @@ const main = async () => {
 
 	program
 		.command("stop-crafting")
-		.option("--cid, --craftingId <craftingId>", "The crafting id", (value) =>
-			z.coerce.number().parse(value),
+		.description("Stop a completed crafting process")
+		.option(
+			"--cid, --craftingId <craftingId>",
+			"ID of the crafting process to stop",
+			(value) => z.coerce.number().parse(value),
 		)
-		.option("--recipe <recipe>", "The address of the recipe", parsePublicKey)
-		.option("--sector <sector>", "The sector of the starbase")
+		.option(
+			"--recipe <recipe>",
+			"Public key of the recipe being crafted",
+			parsePublicKey,
+		)
+		.option("--sector <sector>", "Starbase sector coordinates (format: x,y)")
 		.action(
 			async ({
 				craftingId,
@@ -257,6 +281,7 @@ const main = async () => {
 
 	program
 		.command("fleet-info <fleetNameOrAddress>")
+		.description("Display detailed information about a fleet")
 		.action(async (fleetNameOrAddress: string) => {
 			const globalOpts = parseOptions(program.opts<CliGlobalOptions>());
 
@@ -268,27 +293,34 @@ const main = async () => {
 			});
 		});
 
-	program.command("profile-info").action(async () => {
-		const globalOpts = parseOptions(program.opts<CliGlobalOptions>());
+	program
+		.command("profile-info")
+		.description("Display detailed information about a player profile")
+		.action(async () => {
+			const globalOpts = parseOptions(program.opts<CliGlobalOptions>());
 
-		return runProfileInfo(globalOpts);
-	});
+			return runProfileInfo(globalOpts);
+		});
 
 	program
 		.command("load-cargo <fleetNameOrAddress>")
+		.description("Load resources into a fleet")
 		.option(
 			"--resources <requiredResources...>",
 			[
 				"",
-				"Comma separated list of resources to load <resource_address,mode,amount,cargo_pod>",
-				"- resource_address: The mint of the resource",
-				"- mode: fixed, max, min or min-and-fill",
-				"	- fixed: The amount of the resource to load is fixed",
-				"	- max: Add enough resource to reach the 'max' value",
-				"	- min: Add enough resource to reach the 'min' value",
-				"	- min-and-fill: Add enough resource to reach the 'min' value and fill the cargo pod (only if less than threshold)",
-				"- amount: number to be used as fixed amount or threshold",
-				`- cargo_pod: The type of cargo pod to use (${cargoPodKinds.join(", ")})`,
+				"Specify resources to load in the format: <resource_address,mode,amount,cargo_pod>",
+				"Parameters:",
+				"  resource_address: Public key of the resource",
+				"  mode: How to load the resource:",
+				"    - fixed: Load exact amount specified",
+				"    - max: Fill up as much as possible until max value is reached",
+				"    - min: Load at least the minimum required amount",
+				"    - min-and-fill: Load minimum and fill remaining if below threshold",
+				"  amount: Quantity to load or threshold value",
+				`  cargo_pod: Type of cargo pod to use (${cargoPodKinds.join(", ")})`,
+				"",
+				"Example: --resources TOKEN_ADDRESS,fixed,100,cargo_hold",
 			].join("\n"),
 		)
 		.action(
@@ -333,17 +365,21 @@ const main = async () => {
 
 	program
 		.command("unload-cargo <fleetNameOrAddress>")
+		.description("Unload cargo from a fleet")
 		.option(
 			"--resources <requiredResources...>",
 			[
 				"",
-				"Comma separated list of resources to load <resource_address,mode,amount,cargo_pod>",
-				"- resource_address: The mint of the resource",
-				"- mode: fixed, max",
-				"	- fixed: The amount of the resource to load is fixed",
-				"	- max: Add enough resource to reach the 'max' value",
-				"- amount: number to be used as fixed amount or threshold",
-				`- cargo_pod: The type of cargo pod to use (${cargoPodKinds.join(", ")})`,
+				"Specify resources to unload in the format: <resource_address,mode,amount,cargo_pod>",
+				"Parameters:",
+				"  resource_address: Public key of the resource",
+				"  mode: How to unload the resource:",
+				"    - fixed: Unload exact amount specified",
+				"    - max: Unload as much as possible until max value is reached",
+				"  amount: Quantity to unload",
+				`  cargo_pod: Type of cargo pod to use (${cargoPodKinds.join(", ")})`,
+				"",
+				"Example: --resources TOKEN_ADDRESS,max,0,cargo",
 			].join("\n"),
 		)
 		.action(
@@ -388,6 +424,7 @@ const main = async () => {
 
 	program
 		.command("start-scan <fleetNameOrAddress>")
+		.description("Start scanning the current sector with a fleet")
 		.action(async (fleetNameOrAddress: string) => {
 			const globalOpts = parseOptions(program.opts<CliGlobalOptions>());
 
@@ -401,6 +438,7 @@ const main = async () => {
 
 	program
 		.command("dock <fleetNameOrAddress>")
+		.description("Dock a fleet at the starbase")
 		.action(async (fleetNameOrAddress: string) => {
 			const globalOpts = parseOptions(program.opts<CliGlobalOptions>());
 
@@ -414,6 +452,7 @@ const main = async () => {
 
 	program
 		.command("undock <fleetNameOrAddress>")
+		.description("Undock a fleet from its current starbase")
 		.action(async (fleetNameOrAddress: string) => {
 			const globalOpts = parseOptions(program.opts<CliGlobalOptions>());
 
@@ -427,10 +466,11 @@ const main = async () => {
 
 	program
 		.command("start-mining")
-		.argument("<fleetNameOrAddress>", "The fleet to start mining")
+		.description("Start mining resources with a fleet")
+		.argument("<fleetNameOrAddress>", "Name or address of the fleet to use")
 		.argument(
 			"<resourceMint>",
-			"The mint of the resource to mine",
+			"Public key of the resource to mine",
 			parsePublicKey,
 		)
 		.action(async (fleetNameOrAddress: string, resourceMint: PublicKey) => {
@@ -447,7 +487,11 @@ const main = async () => {
 
 	program
 		.command("stop-mining")
-		.argument("<fleetNameOrAddress>", "The fleet to stop mining")
+		.description("Stop the current mining operation")
+		.argument(
+			"<fleetNameOrAddress>",
+			"Name or address of the fleet to stop mining with",
+		)
 		.action(async (fleetNameOrAddress: string) => {
 			const globalOpts = parseOptions(program.opts<CliGlobalOptions>());
 
@@ -461,10 +505,11 @@ const main = async () => {
 
 	program
 		.command("load-crew")
-		.argument("<fleetNameOrAddress>", "The fleet to load crew")
+		.description("Load crew members into a fleet")
+		.argument("<fleetNameOrAddress>", "Name or address of the fleet")
 		.argument(
 			"<crewAmount>",
-			"The amount of crew to load",
+			"Number of crew members to load",
 			z.coerce.number().parse,
 		)
 		.action(async (fleetNameOrAddress: string, crewAmount: number) => {
@@ -481,15 +526,16 @@ const main = async () => {
 
 	program
 		.command("unload-crew")
-		.argument("<fleetNameOrAddress>", "The fleet to unload crew")
+		.description("Unload crew members from a fleet")
+		.argument("<fleetNameOrAddress>", "Name or address of the fleet")
 		.argument(
 			"<crewAmount>",
-			"The amount of crew to unload",
+			"Number of crew members to unload",
 			z.coerce.number().parse,
 		)
 		.option(
 			"--allow-unload-required-crew",
-			"Allow the unload of the fleet required crew",
+			"Allow unloading crew members required for fleet operation (use with caution)",
 		)
 		.action(
 			async (
@@ -512,8 +558,9 @@ const main = async () => {
 
 	program
 		.command("warp")
-		.argument("<fleetNameOrAddress>", "The fleet to stop mining")
-		.argument("<targetSector>", "The coordinates of the target sector")
+		.description("Warp a fleet to a different sector")
+		.argument("<fleetNameOrAddress>", "Name or address of the fleet to warp")
+		.argument("<targetSector>", "Target sector coordinates (format: x,y)")
 		.action(async (fleetNameOrAddress: string, targetSectorArg: string) => {
 			const globalOpts = parseOptions(program.opts<CliGlobalOptions>());
 
@@ -539,8 +586,9 @@ const main = async () => {
 
 	program
 		.command("subwarp")
-		.argument("<fleetNameOrAddress>", "The fleet to stop mining")
-		.argument("<targetSector>", "Rhe coordinates of the target sector")
+		.description("Subwarp a fleet to a different sector")
+		.argument("<fleetNameOrAddress>", "Name or address of the fleet to move")
+		.argument("<targetSector>", "Target sector coordinates (format: x,y)")
 		.action(async (fleetNameOrAddress: string, targetSectorArg: string) => {
 			const globalOpts = parseOptions(program.opts<CliGlobalOptions>());
 

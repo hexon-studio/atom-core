@@ -7,29 +7,30 @@ import { createStopMiningIx } from "./createStopMiningIx";
 import { createUndockFromStarbaseIx } from "./createUndockFromStarbaseIx";
 
 type Param = {
-	target: "StarbaseLoadingBay" | "Idle";
+	targetState: "StarbaseLoadingBay" | "Idle";
 	fleetAccount: Fleet;
 };
 
-export const createPreIxs = ({ fleetAccount, target }: Param) =>
+export const createPreIxs = ({ fleetAccount, targetState }: Param) =>
 	Match.value({
-		target,
+		targetState,
 		state: fleetAccount.state,
 	}).pipe(
-		Match.when({ state: { Idle: Match.defined }, target: "Idle" }, () =>
+		Match.when({ state: { Idle: Match.defined }, targetState: "Idle" }, () =>
 			Effect.log("Fleet is already idle, skipping...").pipe(
 				Effect.flatMap(() => Effect.succeed([])),
 			),
 		),
 		Match.when(
-			{ state: { Idle: Match.defined }, target: "StarbaseLoadingBay" },
+			{ state: { Idle: Match.defined }, targetState: "StarbaseLoadingBay" },
 			() => createDockToStarbaseIx(fleetAccount),
 		),
-		Match.when({ state: { MoveWarp: Match.defined }, target: "Idle" }, () =>
-			createMovementHandlerIx(fleetAccount),
+		Match.when(
+			{ state: { MoveWarp: Match.defined }, targetState: "Idle" },
+			() => createMovementHandlerIx(fleetAccount),
 		),
 		Match.when(
-			{ state: { MoveWarp: Match.defined }, target: "StarbaseLoadingBay" },
+			{ state: { MoveWarp: Match.defined }, targetState: "StarbaseLoadingBay" },
 			() =>
 				Effect.gen(function* () {
 					const movementIxs = yield* createMovementHandlerIx(fleetAccount);
@@ -39,11 +40,15 @@ export const createPreIxs = ({ fleetAccount, target }: Param) =>
 					return [...movementIxs, ...dockedIxs];
 				}),
 		),
-		Match.when({ state: { MoveSubwarp: Match.defined }, target: "Idle" }, () =>
-			createMovementHandlerIx(fleetAccount),
+		Match.when(
+			{ state: { MoveSubwarp: Match.defined }, targetState: "Idle" },
+			() => createMovementHandlerIx(fleetAccount),
 		),
 		Match.when(
-			{ state: { MoveSubwarp: Match.defined }, target: "StarbaseLoadingBay" },
+			{
+				state: { MoveSubwarp: Match.defined },
+				targetState: "StarbaseLoadingBay",
+			},
 			() =>
 				Effect.gen(function* () {
 					const movementIxs = yield* createMovementHandlerIx(fleetAccount);
@@ -56,14 +61,14 @@ export const createPreIxs = ({ fleetAccount, target }: Param) =>
 		Match.when(
 			{
 				state: { StarbaseLoadingBay: { starbase: Match.defined } },
-				target: "Idle",
+				targetState: "Idle",
 			},
 			() => createUndockFromStarbaseIx(fleetAccount),
 		),
 		Match.when(
 			{
 				state: { StarbaseLoadingBay: { starbase: Match.defined } },
-				target: "StarbaseLoadingBay",
+				targetState: "StarbaseLoadingBay",
 			},
 			() =>
 				Effect.log("Fleet is already in StarbaseLoadingBay, skipping...").pipe(
@@ -71,7 +76,7 @@ export const createPreIxs = ({ fleetAccount, target }: Param) =>
 				),
 		),
 		Match.when(
-			{ state: { MineAsteroid: Match.defined }, target: "Idle" },
+			{ state: { MineAsteroid: Match.defined }, targetState: "Idle" },
 			({
 				state: {
 					MineAsteroid: { resource },
@@ -93,7 +98,7 @@ export const createPreIxs = ({ fleetAccount, target }: Param) =>
 		Match.when(
 			{
 				state: { MineAsteroid: Match.defined },
-				target: "StarbaseLoadingBay",
+				targetState: "StarbaseLoadingBay",
 			},
 			({
 				state: {
@@ -119,11 +124,11 @@ export const createPreIxs = ({ fleetAccount, target }: Param) =>
 					return [...stopMiningIxs, ...dockedIxs];
 				}),
 		),
-		// Match.when({ state: { Respawn: Match.defined }, target: "Idle" }, () =>
+		// Match.when({ state: { Respawn: Match.defined }, targetState: "Idle" }, () =>
 		// 	Effect.succeed([]),
 		// ),
 		// Match.when(
-		// 	{ state: { Respawn: Match.defined }, target: "StarbaseLoadingBay" },
+		// 	{ state: { Respawn: Match.defined }, targetState: "StarbaseLoadingBay" },
 		// 	() => Effect.succeed([]),
 		// ),
 		Match.orElse(() => Effect.succeed([])),

@@ -1,6 +1,6 @@
 import { Fleet, type ShipStats, calculateDistance } from "@staratlas/sage";
 import type BN from "bn.js";
-import { Effect } from "effect";
+import { Effect, Option, Record } from "effect";
 import {
 	findCargoTypePda,
 	getFleetCargoPodInfoByType,
@@ -44,7 +44,10 @@ export const createWarpToCoordinateIx = ({
 		const maxWarpDistance = fleetStats.movementStats.maxWarpDistance / 100;
 
 		if (targetSectorDistance > maxWarpDistance) {
-			return yield* new SectorTooFarError();
+			return yield* new SectorTooFarError({
+				maxAllowedDistance: maxWarpDistance,
+				targetSectorDistance: targetSectorDistance,
+			});
 		}
 
 		const requiredFuel =
@@ -57,13 +60,32 @@ export const createWarpToCoordinateIx = ({
 
 		yield* Effect.log("Fuel needed to warp", requiredFuel.toString());
 
-		const fuelTankInfo = yield* getFleetCargoPodInfoByType({
-			fleetAccount,
+		const fuelCargoPodInfo = yield* getFleetCargoPodInfoByType({
 			type: "fuel_tank",
+			fleetAccount,
 		});
 
-		if (fuelTankInfo.totalResourcesAmountInCargoUnits.lten(requiredFuel)) {
-			return yield* new FleetNotEnoughFuelError();
+		const maybeFuelInTankData = Record.get(
+			fuelCargoPodInfo.resources,
+			resourceNameToMint.Fuel.toString(),
+		);
+
+		if (Option.isNone(maybeFuelInTankData)) {
+			return yield* new FleetNotEnoughFuelError({
+				action: "warp",
+				requiredFuel: requiredFuel.toString(),
+				availableFuel: "0",
+			});
+		}
+
+		const fuelInTankData = maybeFuelInTankData.value;
+
+		if (fuelInTankData.amountInCargoUnits.ltn(requiredFuel)) {
+			return yield* new FleetNotEnoughFuelError({
+				action: "warp",
+				requiredFuel: requiredFuel.toString(),
+				availableFuel: fuelInTankData.amountInCargoUnits.toString(),
+			});
 		}
 
 		const programs = yield* getSagePrograms();

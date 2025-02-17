@@ -27,7 +27,7 @@ export const subwarpToSector = ({
 
 		const ixs: InstructionReturn[] = [];
 
-		const preIxs = yield* createPreIxs({ fleetAccount, target: "Idle" });
+		const preIxs = yield* createPreIxs({ fleetAccount, targetState: "Idle" });
 
 		if (preIxs.length) {
 			// NOTE: get a fresh fleet account

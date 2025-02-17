@@ -21,7 +21,7 @@ export const undockFromStarbase = ({
 
 		yield* Effect.log("Undocking from starbase...");
 
-		const ixs = yield* createPreIxs({ fleetAccount, target: "Idle" });
+		const ixs = yield* createPreIxs({ fleetAccount, targetState: "Idle" });
 
 		const drainVaultIx = yield* createDrainVaultIx();
 

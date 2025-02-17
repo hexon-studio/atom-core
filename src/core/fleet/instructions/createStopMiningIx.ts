@@ -136,7 +136,13 @@ export const createStopMiningIx = ({
 		);
 
 		if (Option.isNone(maybeFuelInTankData)) {
-			return yield* Effect.fail(new FleetNotEnoughFuelError());
+			return yield* Effect.fail(
+				new FleetNotEnoughFuelError({
+					action: "stop-mining",
+					requiredFuel: "0",
+					availableFuel: "0",
+				}),
+			);
 		}
 
 		const fuelInTankData = maybeFuelInTankData.value;

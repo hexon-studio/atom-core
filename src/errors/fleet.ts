@@ -14,7 +14,7 @@ export class FleetCrewNotNormalizedError extends Data.TaggedError(
 	requiredCrew: string;
 }> {
 	override get message() {
-		return `Fleet crew is not normalized: ${this.crewCount} < ${this.requiredCrew}`;
+		return `Fleet crew is not normalized. Crew in fleet: ${this.crewCount}, Required: ${this.requiredCrew}`;
 	}
 }
 
@@ -26,7 +26,7 @@ export class FleetNotEnoughSpaceError extends Data.TaggedError(
 	amountAdded: string;
 }> {
 	override get message() {
-		return `Fleet does not have enough space for ${this.cargoKind}: ${this.amountAvailable} < ${this.amountAdded}`;
+		return `Fleet does not have enough space for ${this.cargoKind}. Available: ${this.amountAvailable}, Required: ${this.amountAdded}`;
 	}
 }
 
@@ -34,20 +34,27 @@ export class InvalidFleetStateError extends Data.TaggedError(
 	"InvalidFleetStateError",
 )<{ state: keyof FleetStateData; reason?: string }> {
 	override get message() {
-		return `Invalid fleet state: ${this.state}, reason: ${this.reason}`;
+		return `Fleet cannot perform this action in its current state (${this.state}).${this.reason ? ` Reason: ${this.reason}` : ""}`;
 	}
 }
 
-// TODO: replace with ResourceNotEnoughError
 export class FleetNotEnoughFuelError extends Data.TaggedError(
 	"FuelNotEnoughError",
-) {}
+)<{
+	readonly action: string;
+	readonly requiredFuel: string;
+	readonly availableFuel: string;
+}> {
+	override get message() {
+		return `Fleet does not have enough fuel to ${this.action}. Available: ${this.availableFuel}, Required: ${this.requiredFuel}`;
+	}
+}
 
 export class FleetInvalidResourceForPodKindError extends Data.TaggedError(
 	"FleetInvalidResourceForPodKindError",
 )<{ cargoPodKind: CargoPodKind; resourceMint: PublicKey }> {
 	override get message() {
-		return `Invalid resource for cargo pod kind: ${this.cargoPodKind}, ${this.resourceMint.toString()}`;
+		return `Invalid resource for cargo pod kind. Cargo pod kind: ${this.cargoPodKind}, Resource mint: ${this.resourceMint.toString()}`;
 	}
 }
 
@@ -55,8 +62,15 @@ export class FleetCooldownError extends Data.TaggedError("FleetCooldownError")<{
 	cooldownExpiresAt: string;
 }> {
 	override get message() {
-		return `Fleet is on cooldown until ${this.cooldownExpiresAt}`;
+		return `Fleet is currently on cooldown and cannot perform this action until ${this.cooldownExpiresAt}.`;
 	}
 }
 
-export class SectorTooFarError extends Data.TaggedError("SectorTooFarError") {}
+export class SectorTooFarError extends Data.TaggedError("SectorTooFarError")<{
+	readonly maxAllowedDistance: number;
+	readonly targetSectorDistance: number;
+}> {
+	override get message() {
+		return `Target sector is too far. Distance: ${this.targetSectorDistance} AU, Max allowed distance: ${this.maxAllowedDistance} AU`;
+	}
+}

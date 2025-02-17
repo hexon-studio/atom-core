@@ -25,7 +25,7 @@ export const stopMining = ({
 
 		const ixs = yield* createPreIxs({
 			fleetAccount,
-			target: "Idle",
+			targetState: "Idle",
 		});
 
 		const drainVaultIx = yield* createDrainVaultIx();

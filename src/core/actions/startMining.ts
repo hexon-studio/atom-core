@@ -33,7 +33,7 @@ export const startMining = ({
 
 		const ixs: InstructionReturn[] = [];
 
-		const preIxs = yield* createPreIxs({ fleetAccount, target: "Idle" });
+		const preIxs = yield* createPreIxs({ fleetAccount, targetState: "Idle" });
 
 		ixs.push(...preIxs);
 

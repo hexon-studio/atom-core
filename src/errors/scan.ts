@@ -16,7 +16,7 @@ export class NotEnoughFoodForScanError extends Data.TaggedError(
 	"NotEnoughFoodForScanError",
 )<{ foodAmount: string; scanCost: string }> {
 	override get message() {
-		return `Not enough food to start scan: ${this.foodAmount} < ${this.scanCost}`;
+		return `Insufficient food to start scanning. Available: ${this.foodAmount}, Required: ${this.scanCost}`;
 	}
 }
 
