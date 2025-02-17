@@ -132,6 +132,10 @@ export const createStartMiningIx = ({
 
 		const fleetKey = fleetAccount.key;
 
+		const requiredFuelAmount = (
+			fleetAccount.data.stats.movementStats as MovementStats
+		).planetExitFuelAmount;
+
 		const fuelCargoPodInfo = yield* getFleetCargoPodInfoByType({
 			type: "fuel_tank",
 			fleetAccount,
@@ -144,16 +148,12 @@ export const createStartMiningIx = ({
 
 		if (Option.isNone(maybeFuelInTankData)) {
 			return yield* new FleetNotEnoughFuelToMineError({
-				requiredFuel: "0",
+				requiredFuel: requiredFuelAmount.toString(),
 				availableFuel: "0",
 			});
 		}
 
 		const fuelInTankData = maybeFuelInTankData.value;
-
-		const requiredFuelAmount = (
-			fleetAccount.data.stats.movementStats as MovementStats
-		).planetExitFuelAmount;
 
 		if (fuelInTankData.amountInCargoUnits.ltn(requiredFuelAmount)) {
 			return yield* new FleetNotEnoughFuelToMineError({
