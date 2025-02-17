@@ -1,5 +1,18 @@
 # Changelog
 
+# [2.1.0](https://github.com/hexon-studio/atom-core/compare/v2.0.0...v2.1.0) (2025-02-17)
+
+
+### Bug Fixes
+
+* improve fuel requirement check in start mining instruction ([8847944](https://github.com/hexon-studio/atom-core/commit/8847944988da397f840d4528c479db125c78484b))
+
+
+### Features
+
+* add GameAccountError to fetchGameInfoOrAccounts method ([d5de670](https://github.com/hexon-studio/atom-core/commit/d5de670f070f3b0f95f959753db22236c7b2860f))
+* improve error handling and CLI documentation ([2dcba13](https://github.com/hexon-studio/atom-core/commit/2dcba1377c615b9aafb91ab6396904d82e42da13))
+
 # [2.0.0](https://github.com/hexon-studio/atom-core/compare/v1.35.0...v2.0.0) (2025-02-17)
 
 
