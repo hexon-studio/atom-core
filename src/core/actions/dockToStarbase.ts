@@ -17,16 +17,14 @@ export const dockToStarbase = ({
 			`Docking fleet ${fleetAccount.key.toString()} to starbase...`,
 		);
 
-		if (!fleetAccount.state.Idle) {
-			yield* Effect.log("Fleet can't be docked to starbase");
-
-			return { signatures: [] };
-		}
-
 		const ixs = yield* createPreIxs({
 			fleetAccount,
 			targetState: "StarbaseLoadingBay",
 		});
+
+		if (ixs.length === 0) {
+			return { signatures: [] };
+		}
 
 		const drainVaultIx = yield* createDrainVaultIx();
 
