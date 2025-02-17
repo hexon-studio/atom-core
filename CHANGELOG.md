@@ -1,5 +1,17 @@
 # Changelog
 
+# [2.0.0](https://github.com/hexon-studio/atom-core/compare/v1.35.0...v2.0.0) (2025-02-17)
+
+
+### Features
+
+* rename atlas prime option ([a631fbb](https://github.com/hexon-studio/atom-core/commit/a631fbba1e7d3ddaa3b8426fe5acd329a0a47142))
+
+
+### BREAKING CHANGES
+
+* rename atlas prime option
+
 # [1.35.0](https://github.com/hexon-studio/atom-core/compare/v1.34.0...v1.35.0) (2025-02-16)
 
 
