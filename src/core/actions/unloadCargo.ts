@@ -57,7 +57,7 @@ export const unloadCargo = ({
 			Effect.bind("preIxs", () =>
 				createPreIxs({
 					fleetAccount: preFleetAccount,
-					target: "StarbaseLoadingBay",
+					targetState: "StarbaseLoadingBay",
 				}),
 			),
 			Effect.bind("drainVaultIx", () => createDrainVaultIx()),

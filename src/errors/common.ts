@@ -36,7 +36,9 @@ export class ReadFromRPCError extends Data.TaggedError("ReadFromRPCError")<{
 	readonly accountName: string;
 }> {
 	override get message() {
-		return `Error reading: ${this.accountName}, from RPC: ${this.error}`;
+		const errorMsg =
+			this.error instanceof Error ? this.error.message : String(this.error);
+		return `Unable to read ${this.accountName} data from the network. ${errorMsg}`;
 	}
 }
 
@@ -70,9 +72,23 @@ export class GameAlreadyInitializedError extends Data.TaggedError(
 
 export class AtlasNotEnoughError extends Data.TaggedError(
 	"AtlasNotEnoughError",
-) {}
+)<{
+	readonly amountAvailable: string;
+	readonly amountRequired: string;
+}> {
+	override get message() {
+		return `Not enough ATLAS tokens available in the vault. Available: ${this.amountAvailable}, Required: ${this.amountRequired}`;
+	}
+}
 
-export class SolNotEnoughError extends Data.TaggedError("SolNotEnoughError") {}
+export class SolNotEnoughError extends Data.TaggedError("SolNotEnoughError")<{
+	readonly amountAvailable: string;
+	readonly amountRequired: string;
+}> {
+	override get message() {
+		return `Not enough SOL available in the hot wallet. Available: ${this.amountAvailable}, Required: ${this.amountRequired}`;
+	}
+}
 
 export class ResourceNotEnoughError extends Data.TaggedError(
 	"ResourceNotEnoughError",
@@ -84,7 +100,10 @@ export class ResourceNotEnoughError extends Data.TaggedError(
 	amountAdded: string;
 }> {
 	override get message() {
-		return `Entity (${this.from} - ${this.entity.toString()}) does not have enough resources for ${resourceMintToName[this.resourceMint.toString() as ResourceMint]}: ${this.amountAvailable} < ${this.amountAdded}`;
+		const location = this.from === "starbase" ? "Starbase" : "Fleet";
+		const resourceName =
+			resourceMintToName[this.resourceMint.toString() as ResourceMint];
+		return `Insufficient ${resourceName} at ${location} (${this.entity.toString()}). Available: ${this.amountAvailable}, Required: ${this.amountAdded}.`;
 	}
 }
 
@@ -92,6 +111,6 @@ export class PlanetNotFoundInSectorError extends Data.TaggedError(
 	"PlanetNotFoundInSectorError",
 )<{ sector: [BN, BN] }> {
 	override get message() {
-		return `Planet not found in sector: ${this.sector[0]}, ${this.sector[1]}`;
+		return `No planet found in sector [${this.sector[0]}, ${this.sector[1]}].`;
 	}
 }

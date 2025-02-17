@@ -7,11 +7,11 @@ import { createStopMiningIx } from "./createStopMiningIx";
 import { createUndockFromStarbaseIx } from "./createUndockFromStarbaseIx";
 
 type Param = {
-	target: "StarbaseLoadingBay" | "Idle";
+	targetState: "StarbaseLoadingBay" | "Idle";
 	fleetAccount: Fleet;
 };
 
-export const createPreIxs = ({ fleetAccount, target }: Param) =>
+export const createPreIxs = ({ fleetAccount, targetState: target }: Param) =>
 	Match.value({
 		target,
 		state: fleetAccount.state,

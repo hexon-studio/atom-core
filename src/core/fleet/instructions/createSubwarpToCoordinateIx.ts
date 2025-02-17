@@ -1,14 +1,15 @@
 import { Fleet, calculateDistance } from "@staratlas/sage";
 import type BN from "bn.js";
-import { Effect } from "effect";
+import { Effect, Option, Record } from "effect";
 import { getFleetCargoPodInfoByType } from "~/libs/@staratlas/cargo";
 import { findProfileFactionPda } from "~/libs/@staratlas/profile-faction";
-import { FleetNotEnoughFuelError } from "../../../errors";
+import { FleetNotEnoughFuelToSubwarpError } from "../../../errors";
 import { getSagePrograms } from "../../programs";
 import { GameService } from "../../services/GameService";
 import { getGameContext } from "../../services/GameService/utils";
 import { getCurrentFleetSectorCoordinates } from "../utils/getCurrentFleetSectorCoordinates";
 import { createMovementHandlerIx } from "./createMovementHandlerIx";
+import { resourceNameToMint } from "~/constants/resources";
 
 type Param = {
 	fleetAccount: Fleet;
@@ -34,11 +35,6 @@ export const createSubwarpToCoordinateIx = ({
 
 		const targetSectorDistance = calculateDistance(currentSector, targetSector);
 
-		const fuelTankInfo = yield* getFleetCargoPodInfoByType({
-			fleetAccount,
-			type: "fuel_tank",
-		});
-
 		const requiredFuel =
 			Math.ceil(
 				Fleet.calculateSubwarpFuelBurnWithDistance(
@@ -47,8 +43,30 @@ export const createSubwarpToCoordinateIx = ({
 				),
 			) + 1;
 
-		if (fuelTankInfo.totalResourcesAmountInCargoUnits.lten(requiredFuel)) {
-			return yield* new FleetNotEnoughFuelError();
+		const fuelCargoPodInfo = yield* getFleetCargoPodInfoByType({
+			type: "fuel_tank",
+			fleetAccount,
+		});
+
+		const maybeFuelInTankData = Record.get(
+			fuelCargoPodInfo.resources,
+			resourceNameToMint.Fuel.toString(),
+		);
+
+		if (Option.isNone(maybeFuelInTankData)) {
+			return yield* new FleetNotEnoughFuelToSubwarpError({
+				requiredFuel: requiredFuel.toString(),
+				availableFuel: "0",
+			});
+		}
+
+		const fuelInTankData = maybeFuelInTankData.value;
+
+		if (fuelInTankData.amountInCargoUnits.ltn(requiredFuel)) {
+			return yield* new FleetNotEnoughFuelToSubwarpError({
+				requiredFuel: requiredFuel.toString(),
+				availableFuel: fuelInTankData.amountInCargoUnits.toString(),
+			});
 		}
 
 		const programs = yield* getSagePrograms();

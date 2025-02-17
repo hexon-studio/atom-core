@@ -21,7 +21,7 @@ import {
 } from "~/libs/@staratlas/sage";
 import { resourceNameToMint } from "../../../constants/resources";
 import {
-	FleetNotEnoughFuelError,
+	FleetNotEnoughFuelToMineError,
 	PlanetNotFoundInSectorError,
 } from "../../../errors";
 import { getSagePrograms } from "../../programs";
@@ -143,7 +143,10 @@ export const createStartMiningIx = ({
 		);
 
 		if (Option.isNone(maybeFuelInTankData)) {
-			return yield* new FleetNotEnoughFuelError();
+			return yield* new FleetNotEnoughFuelToMineError({
+				requiredFuel: "0",
+				availableFuel: "0",
+			});
 		}
 
 		const fuelInTankData = maybeFuelInTankData.value;
@@ -153,7 +156,10 @@ export const createStartMiningIx = ({
 		).planetExitFuelAmount;
 
 		if (fuelInTankData.amountInCargoUnits.ltn(requiredFuelAmount)) {
-			return yield* new FleetNotEnoughFuelError();
+			return yield* new FleetNotEnoughFuelToMineError({
+				requiredFuel: requiredFuelAmount.toString(),
+				availableFuel: fuelInTankData.amountInCargoUnits.toString(),
+			});
 		}
 
 		yield* Effect.log("Creating startMiningAsteroid IX");

@@ -32,7 +32,12 @@ const checkAtlasBalance = () =>
 		const atlasBalance = yield* fetchTokenBalance(funderVault);
 
 		if (atlasBalance.ltn(MIN_ATLAS_QTY)) {
-			return yield* Effect.fail(new AtlasNotEnoughError());
+			return yield* Effect.fail(
+				new AtlasNotEnoughError({
+					amountAvailable: atlasBalance.toString(),
+					amountRequired: MIN_ATLAS_QTY.toString(),
+				}),
+			);
 		}
 
 		return atlasBalance;
@@ -47,7 +52,12 @@ const checkSolBalance = () =>
 		const minLamportsRequired = MIN_SOL_QTY * LAMPORTS_PER_SOL;
 
 		if (solBalance < minLamportsRequired) {
-			return yield* Effect.fail(new SolNotEnoughError());
+			return yield* Effect.fail(
+				new SolNotEnoughError({
+					amountAvailable: (solBalance / LAMPORTS_PER_SOL).toString(),
+					amountRequired: (minLamportsRequired / LAMPORTS_PER_SOL).toString(),
+				}),
+			);
 		}
 
 		return solBalance;

@@ -56,7 +56,7 @@ export const unloadCrew = ({
 
 		const preIxs = yield* createPreIxs({
 			fleetAccount,
-			target: "StarbaseLoadingBay",
+			targetState: "StarbaseLoadingBay",
 		});
 
 		ixs.push(...preIxs);

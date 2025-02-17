@@ -25,7 +25,7 @@ export const dockToStarbase = ({
 
 		const ixs = yield* createPreIxs({
 			fleetAccount,
-			target: "StarbaseLoadingBay",
+			targetState: "StarbaseLoadingBay",
 		});
 
 		const drainVaultIx = yield* createDrainVaultIx();

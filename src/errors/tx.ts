@@ -6,7 +6,9 @@ export class BuildAndSignTransactionError extends Data.TaggedError(
 	"BuildAndSignTransactionError",
 )<{ error: unknown }> {
 	override get message() {
-		return String(this.error);
+		const errorMsg =
+			this.error instanceof Error ? this.error.message : String(this.error);
+		return `Unable to prepare transaction. ${errorMsg}`;
 	}
 }
 
@@ -16,9 +18,9 @@ export class BuildOptimalTxError extends Data.TaggedError(
 	error: unknown;
 }> {
 	override get message() {
-		return this.error instanceof Error
-			? this.error.message
-			: String(this.error);
+		const errorMsg =
+			this.error instanceof Error ? this.error.message : String(this.error);
+		return `Unable to prepare transaction. ${errorMsg}`;
 	}
 }
 
@@ -26,18 +28,19 @@ export class SendRawTransactionError extends Data.TaggedError(
 	"SendRawTransactionError",
 )<{ error: unknown }> {
 	override get message() {
-		return this.error instanceof Error
-			? this.error.message
-			: String(this.error);
+		const errorMsg =
+			this.error instanceof Error ? this.error.message : String(this.error);
+		return `Failed to send transaction to the network. ${errorMsg}`;
 	}
 }
+
 export class VerifySignaturesError extends Data.TaggedError(
 	"VerifySignaturesError",
 )<{ error: unknown }> {
 	override get message() {
-		return this.error instanceof Error
-			? this.error.message
-			: String(this.error);
+		const errorMsg =
+			this.error instanceof Error ? this.error.message : String(this.error);
+		return `Transaction signature verification failed. ${errorMsg}`;
 	}
 }
 
@@ -45,9 +48,9 @@ export class ConfirmTransactionError extends Data.TaggedError(
 	"ConfirmTransactionError",
 )<{ error: unknown }> {
 	override get message() {
-		return this.error instanceof Error
-			? this.error.message
-			: String(this.error);
+		const errorMsg =
+			this.error instanceof Error ? this.error.message : String(this.error);
+		return `Transaction failed to confirm. The network may be congested. ${errorMsg}`;
 	}
 }
 
@@ -60,7 +63,7 @@ export class TransactionFailedError extends Data.TaggedError(
 				z.record(z.string(), z.unknown()).parse(this.error),
 			);
 		} catch {
-			return String(this.error);
+			return `Transaction failed. ${this.error}`;
 		}
 	}
 }
