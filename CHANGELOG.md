@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.1.1](https://github.com/hexon-studio/atom-core/compare/v2.1.0...v2.1.1) (2025-02-17)
+
+
+### Bug Fixes
+
+* format ([c291251](https://github.com/hexon-studio/atom-core/commit/c291251116bd57c3e6486b862370de06113a5fb2))
+
 # [2.1.0](https://github.com/hexon-studio/atom-core/compare/v2.0.0...v2.1.0) (2025-02-17)
 
 
