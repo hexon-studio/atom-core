@@ -89,6 +89,25 @@ const main = async () => {
 				.makeOptionMandatory(false),
 		)
 		.addOption(
+			new Option("--feeLamports <feeLamports>", "The atom fee in lamports")
+				.argParser((feeLamports) =>
+					z.coerce.number().optional().parse(feeLamports),
+				)
+				.implies({ atlasPrime: false })
+				.makeOptionMandatory(false),
+		)
+		.addOption(
+			new Option("--feeAtlas <feeAtlas>", "The atom fee in lamports")
+				.argParser((feeAtlas) => z.coerce.number().optional().parse(feeAtlas))
+				.implies({ atlasPrime: true })
+				.makeOptionMandatory(false),
+		)
+		.option(
+			"--feeRecipient <feeRecipient>",
+			"The atom fee recipient",
+			parsePublicKey,
+		)
+		.addOption(
 			new Option(
 				"--heliusRpcUrl <heliusRpc>",
 				"Helius rpc url (used to calculate priority fees)",
@@ -142,7 +161,7 @@ const main = async () => {
 				"If passed the webhook will be called with the contextId",
 			).makeOptionMandatory(false),
 		)
-		.option("--no-atlas-prime", "Disable the use of Atlas Prime")
+		.option("--atlas-prime", "Enable the use of Atlas Prime")
 		.option(
 			"--mipt, --max-ixs-per-transaction <mipt>",
 			"Apply a limit of instructions on a transactions",
