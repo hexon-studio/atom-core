@@ -30,7 +30,7 @@ export type GlobalOptions = Omit<
 };
 
 export const requiredOptionsDecoder = z.object({
-	atlasPrime: z.boolean(),
+	atlasPrime: z.boolean().default(false),
 	keypair: z.instanceof(Keypair),
 	maxIxsPerTransaction: z.string().transform(Number),
 	owner: z.instanceof(PublicKey),

@@ -11,12 +11,7 @@ export const initGame = (
 	options: GlobalOptions,
 ) =>
 	Effect.gen(function* () {
-		const {
-			owner,
-			playerProfile: playerProfileAddress,
-			keypair,
-			commonApiUrl,
-		} = options;
+		const { owner, playerProfile, keypair, commonApiUrl } = options;
 
 		const context = yield* Ref.get(contextRef);
 
@@ -26,7 +21,7 @@ export const initGame = (
 
 		const [playerProfileAccount, gameInfo] = yield* Effect.all(
 			[
-				getPlayerProfileAccout(playerProfileAddress),
+				getPlayerProfileAccout(playerProfile),
 				fetchGameInfoOrAccounts(commonApiUrl),
 			],
 			{ concurrency: "unbounded" },
