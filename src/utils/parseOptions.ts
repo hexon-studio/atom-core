@@ -29,18 +29,18 @@ export const parseOptions = (globalOps: CliGlobalOptions): GlobalOptions => {
 		...rest,
 		fees: EffectBoolean.match(rest.atlasPrime, {
 			onFalse: () =>
-				feeAtlas && feeRecipient
-					? {
-							type: "atlas-prime",
-							atlas: feeAtlas,
-							recipient: feeRecipient,
-						}
-					: undefined,
-			onTrue: () =>
 				feeLamports && feeRecipient
 					? {
 							type: "sol",
 							lamports: feeLamports,
+							recipient: feeRecipient,
+						}
+					: undefined,
+			onTrue: () =>
+				feeAtlas && feeRecipient
+					? {
+							type: "atlas-prime",
+							atlas: feeAtlas,
 							recipient: feeRecipient,
 						}
 					: undefined,

@@ -13,15 +13,13 @@ export const undockFromStarbase = ({
 		const fleetAccount =
 			yield* getFleetAccountByNameOrAddress(fleetNameOrAddress);
 
-		if (!fleetAccount.state.StarbaseLoadingBay) {
-			yield* Effect.log("Fleet can't be undocked from starbase");
-
-			return { signatures: [] };
-		}
-
 		yield* Effect.log("Undocking from starbase...");
 
 		const ixs = yield* createPreIxs({ fleetAccount, targetState: "Idle" });
+
+		if (ixs.length === 0) {
+			return { signatures: [] };
+		}
 
 		const drainVaultIx = yield* createDrainVaultIx();
 
