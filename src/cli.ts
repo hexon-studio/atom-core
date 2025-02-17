@@ -54,7 +54,7 @@ const main = async () => {
 		.addOption(
 			new Option(
 				"-o, --owner <publickKey>",
-				"The publicKey of the player's wallet (required)",
+				"The publicKey of the player's wallet",
 			)
 				.argParser(parsePublicKey)
 				.env("ATOM_OWNER")
@@ -63,21 +63,21 @@ const main = async () => {
 		.addOption(
 			new Option(
 				"-p, --playerProfile <publickKey>",
-				"The publicKey of the player profile (required)",
+				"The publicKey of the player profile",
 			)
 				.argParser(parsePublicKey)
 				.env("ATOM_PLAYER_PROFILE")
 				.makeOptionMandatory(true),
 		)
 		.addOption(
-			new Option("-r, --rpcUrl <rpcUrl>", "Solana RPC endpoint URL (required)")
+			new Option("-r, --rpcUrl <rpcUrl>", "Solana RPC endpoint URL")
 				.env("ATOM_RPC_URL")
 				.makeOptionMandatory(true),
 		)
 		.addOption(
 			new Option(
 				"-k, --keypair <secretKey>",
-				"Hot wallet secret key in base58 format (required)",
+				"Hot wallet secret key in base58 format",
 			)
 				.argParser(parseSecretKey)
 				.env("ATOM_HOT_WALLET")
@@ -92,7 +92,7 @@ const main = async () => {
 				.makeOptionMandatory(false),
 		)
 		.addOption(
-			new Option("--feeLamports <feeLamports>", "Core fee in lamports (SOL)")
+			new Option("--feeLamports <feeLamports>", "Core fee in lamports")
 				.argParser((feeLamports) =>
 					z.coerce.number().optional().parse(feeLamports),
 				)
@@ -119,7 +119,7 @@ const main = async () => {
 				.makeOptionMandatory(false),
 		)
 		.addOption(
-			new Option("--feeMode <feeMode>", "Priority fee level for transactions")
+			new Option("--feeMode <feeMode>", "Priority fee level for Helius RPC")
 				.choices(["low", "medium", "high"])
 				.default("low")
 				.makeOptionMandatory(false),
