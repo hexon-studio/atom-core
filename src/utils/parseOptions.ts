@@ -19,6 +19,7 @@ export const parseOptions = (globalOps: CliGlobalOptions): GlobalOptions => {
 
 	if (rest.heliusRpcUrl) {
 		const isHeliusRpc = rest.heliusRpcUrl.includes("helius");
+
 		if (!isHeliusRpc) {
 			throw new InvalidOptionArgumentError("Invalid helius rpc supplied.");
 		}
@@ -27,19 +28,19 @@ export const parseOptions = (globalOps: CliGlobalOptions): GlobalOptions => {
 	return {
 		...rest,
 		fees: EffectBoolean.match(rest.atlasPrime, {
-			onTrue: () =>
-				feeAtlas && feeRecipient
-					? {
-							type: "atlas-prime",
-							atlas: feeAtlas,
-							recipient: feeRecipient,
-						}
-					: undefined,
 			onFalse: () =>
 				feeLamports && feeRecipient
 					? {
 							type: "sol",
 							lamports: feeLamports,
+							recipient: feeRecipient,
+						}
+					: undefined,
+			onTrue: () =>
+				feeAtlas && feeRecipient
+					? {
+							type: "atlas-prime",
+							atlas: feeAtlas,
 							recipient: feeRecipient,
 						}
 					: undefined,
