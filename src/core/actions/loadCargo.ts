@@ -42,6 +42,11 @@ import {
 import { getStarbaseInfoByCoords } from "../utils/getStarbaseInfo";
 import { createDrainVaultIx } from "../vault/instructions/createDrainVaultIx";
 
+/**
+ * Loads cargo resources onto a fleet from a starbase
+ * @param fleetNameOrAddress - The fleet identifier
+ * @param items - Array of resources to load with their amounts
+ */
 export const loadCargo = ({
 	items: itemsParam,
 	fleetNameOrAddress,
@@ -50,6 +55,7 @@ export const loadCargo = ({
 	items: Array<LoadResourceInput>;
 }) =>
 	Effect.gen(function* () {
+		// Initialize items with UUIDs
 		const items = itemsParam.map(
 			({ cargoPodKind, resourceMint, amount, mode }) => ({
 				id: createItemUuid({
@@ -63,6 +69,7 @@ export const loadCargo = ({
 			}),
 		);
 
+		// Get fleet and starbase information
 		const preFleetAccount =
 			yield* getFleetAccountByNameOrAddress(fleetNameOrAddress);
 
@@ -74,6 +81,7 @@ export const loadCargo = ({
 			options: { maxIxsPerTransaction },
 		} = yield* getGameContext();
 
+		// Execute pre-load operations
 		const preIxsSignatures = yield* Effect.Do.pipe(
 			Effect.bind("preIxs", () =>
 				createPreIxs({
@@ -82,7 +90,6 @@ export const loadCargo = ({
 				}),
 			),
 			Effect.bind("drainVaultIx", () => createDrainVaultIx()),
-			// Sending the transactions before doing the next step
 			Effect.flatMap(({ preIxs, drainVaultIx }) =>
 				GameService.buildAndSignTransaction({
 					ixs: preIxs,
@@ -102,10 +109,11 @@ export const loadCargo = ({
 
 		yield* Effect.sleep("10 seconds");
 
+		// Get updated fleet information
 		const freshFleetAccount = yield* getFleetAccount(preFleetAccount.key);
-
 		const ixs: InstructionReturn[] = [];
 
+		// Prepare cargo loading instructions
 		const itemsCargoPodsKinds = [
 			...new Set(items.map((item) => item.cargoPodKind)),
 		];
@@ -123,6 +131,7 @@ export const loadCargo = ({
 			starbaseCoords: fleetCoords,
 		});
 
+		// Process and enhance items for loading
 		let enhancedItems: EnhancedResourceItem[] = [];
 
 		for (const item of items) {
@@ -159,7 +168,6 @@ export const loadCargo = ({
 				yield* Effect.log(
 					`Not enough space to load ${item.resourceMint.toString()} in ${item.cargoPodKind}, reachedCapacity (${totalResourcesAmountInCargoUnits.toString()}) >= maxCapacity (${cargoPodInfo.maxCapacityInCargoUnits.toString()})`,
 				);
-
 				continue;
 			}
 
@@ -167,7 +175,6 @@ export const loadCargo = ({
 				yield* Effect.log(
 					`Skip load of ${item.resourceMint.toString()}, computed cargo units is ${enhancedItem.computedAmountInCargoUnits.toString()}`,
 				);
-
 				continue;
 			}
 
@@ -198,6 +205,7 @@ export const loadCargo = ({
 			enhancedItems.push(enhancedItem);
 		}
 
+		// Create and execute load instructions
 		const loadCargoIxs = yield* Effect.all(
 			EffectArray.map(enhancedItems, (item) => {
 				const resourceSpaceMultiplier = getCargoTypeResourceMultiplier(
@@ -225,12 +233,12 @@ export const loadCargo = ({
 
 		if (EffectArray.isEmptyArray(loadCargoIxs)) {
 			yield* Effect.log("Nothing to load. Skipping");
-
 			return { signatures: [] };
 		}
 
 		ixs.push(...loadCargoIxs);
 
+		// Execute load transaction
 		const drainVaultIx = yield* createDrainVaultIx();
 
 		const txs = yield* GameService.buildAndSignTransaction({
@@ -243,19 +251,20 @@ export const loadCargo = ({
 			txs.map((tx) => GameService.sendTransaction(tx).pipe(Effect.either)),
 		);
 
+		// Handle transaction results
 		const [errors, signatures] = EffectArray.partitionMap(maybeTxIds, identity);
 
 		if (EffectArray.isEmptyArray(signatures)) {
-			// NOTE: All transactions failed
+			// All transactions failed
 			return yield* Effect.fail(new LoadUnloadFailedError({ errors }));
 		}
 
 		if (EffectArray.isEmptyArray(errors)) {
-			// NOTE: All transactions succeeded
+			// All transactions succeeded
 			return { signatures: [...preIxsSignatures, ...signatures] };
 		}
 
-		// NOTE: Some transactions failed
+		// Some transactions failed - check differences
 		yield* Effect.sleep("10 seconds");
 
 		const itemsCargoPodKinds = [

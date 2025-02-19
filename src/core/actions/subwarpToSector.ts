@@ -12,6 +12,11 @@ import { GameService } from "../services/GameService";
 import { getGameContext } from "../services/GameService/utils";
 import { createDrainVaultIx } from "../vault/instructions/createDrainVaultIx";
 
+/**
+ * Executes a subwarp operation to move a fleet to a target sector
+ * @param fleetNameOrAddress - The fleet identifier
+ * @param targetSector - The destination coordinates [x, y]
+ */
 export const subwarpToSector = ({
 	fleetNameOrAddress,
 	targetSector: [targetSectorX, targetSectorY],
@@ -22,39 +27,59 @@ export const subwarpToSector = ({
 	Effect.gen(function* () {
 		yield* Effect.log("Start subwarp...");
 
-		let fleetAccount =
+		// Initialize fleet account and transaction arrays
+		const preFleetAccount =
 			yield* getFleetAccountByNameOrAddress(fleetNameOrAddress);
-
 		const ixs: InstructionReturn[] = [];
-
-		const preIxs = yield* createPreIxs({ fleetAccount, targetState: "Idle" });
-
-		if (preIxs.length) {
-			// NOTE: get a fresh fleet account
-			fleetAccount = yield* getFleetAccount(fleetAccount.key);
-		}
-
-		ixs.push(...preIxs);
-
-		const subwarpIxs = yield* createSubwarpToCoordinateIx({
-			fleetAccount,
-			targetSector: [new BN(targetSectorX), new BN(targetSectorY)],
-		});
-
-		if (!subwarpIxs.length) {
-			yield* Effect.log("Fleet already in target sector. Skipping");
-
-			return { signatures: [] };
-		}
-
-		ixs.push(...subwarpIxs);
-
-		const drainVaultIx = yield* createDrainVaultIx();
-
 		const {
 			options: { maxIxsPerTransaction },
 		} = yield* getGameContext();
 
+		// PHASE 1: Pre-subwarp operations
+		const preIxsSignatures = yield* Effect.Do.pipe(
+			Effect.bind("preIxs", () =>
+				createPreIxs({
+					fleetAccount: preFleetAccount,
+					targetState: "Idle",
+				}),
+			),
+			Effect.bind("drainVaultIx", () => createDrainVaultIx()),
+			// Sending the transactions before doing the next step
+			Effect.flatMap(({ preIxs, drainVaultIx }) =>
+				GameService.buildAndSignTransaction({
+					ixs: preIxs,
+					afterIxs: drainVaultIx,
+					size: maxIxsPerTransaction,
+				}),
+			),
+			Effect.flatMap((txs) =>
+				Effect.all(txs.map((tx) => GameService.sendTransaction(tx))),
+			),
+			Effect.tap((signatures) =>
+				Effect.log("Fleet exit subwarp.").pipe(
+					Effect.annotateLogs({ signatures }),
+				),
+			),
+		);
+
+		// PHASE 2: Prepare for subwarp
+		const freshFleetAccount = yield* getFleetAccount(preFleetAccount.key);
+		const subwarpIxs = yield* createSubwarpToCoordinateIx({
+			fleetAccount: freshFleetAccount,
+			targetSector: [new BN(targetSectorX), new BN(targetSectorY)],
+		});
+
+		// Early return if already at target
+		if (!subwarpIxs.length) {
+			yield* Effect.log("Fleet already in target sector. Skipping");
+			return { signatures: preIxsSignatures };
+		}
+
+		// PHASE 3: Execute subwarp
+		ixs.push(...subwarpIxs);
+		const drainVaultIx = yield* createDrainVaultIx();
+
+		// Build and send final transactions
 		const txs = yield* GameService.buildAndSignTransaction({
 			ixs,
 			afterIxs: drainVaultIx,
@@ -69,5 +94,6 @@ export const subwarpToSector = ({
 			`Subwarping to - X: ${targetSectorX} | Y: ${targetSectorY}`,
 		);
 
-		return { signatures };
+		// Return combined signatures from all phases
+		return { signatures: [...preIxsSignatures, ...signatures] };
 	});

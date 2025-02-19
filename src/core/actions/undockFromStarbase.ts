@@ -6,14 +6,19 @@ import { GameService } from "../services/GameService";
 import { getGameContext } from "../services/GameService/utils";
 import { createDrainVaultIx } from "../vault/instructions/createDrainVaultIx";
 
+/**
+ * Undocks a fleet from a starbase
+ * @param fleetNameOrAddress - The fleet identifier to undock
+ */
 export const undockFromStarbase = ({
 	fleetNameOrAddress,
 }: { fleetNameOrAddress: string | PublicKey }) =>
 	Effect.gen(function* () {
+		yield* Effect.log("Start undocking...");
+
+		// Get fleet information
 		const fleetAccount =
 			yield* getFleetAccountByNameOrAddress(fleetNameOrAddress);
-
-		yield* Effect.log("Undocking from starbase...");
 
 		const ixs = yield* createPreIxs({ fleetAccount, targetState: "Idle" });
 
@@ -37,7 +42,7 @@ export const undockFromStarbase = ({
 			txs.map((tx) => GameService.sendTransaction(tx)),
 		);
 
-		yield* Effect.log("Fleet undocked!");
+		yield* Effect.log("Fleet undocked successfully");
 
 		return { signatures };
 	});

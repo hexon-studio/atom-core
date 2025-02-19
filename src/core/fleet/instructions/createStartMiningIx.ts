@@ -16,6 +16,8 @@ import {
 	findSagePlayerProfilePda,
 	findStarbasePdaByCoordinates,
 	findStarbasePlayerPda,
+	getMineItemAccount,
+	getResourceAccount,
 	getStarbaseAccount,
 	getStarbasePlayerAccount,
 } from "~/libs/@staratlas/sage";
@@ -125,10 +127,30 @@ export const createStartMiningIx = ({
 			resourceMint,
 		);
 
+		yield* Effect.log("MineItem PDA").pipe(
+			Effect.annotateLogs({
+				gameId: fleetAccount.data.gameId.toString(),
+				resourceMint: resourceMint.toString(),
+				mineItemKey: mineItemKey.toString(),
+			}),
+		);
+
+		yield* getMineItemAccount(mineItemKey);
+
 		const [resourceKey] = yield* findResourcePda({
 			mint: mineItemKey,
 			planet: planetPubkey,
 		});
+
+		yield* Effect.log("Resource PDA").pipe(
+			Effect.annotateLogs({
+				mineItemKey: mineItemKey.toString(),
+				planet: planetPubkey.toString(),
+				resourceKey: resourceKey.toString(),
+			}),
+		);
+
+		yield* getResourceAccount(resourceKey);
 
 		const fleetKey = fleetAccount.key;
 
@@ -163,8 +185,6 @@ export const createStartMiningIx = ({
 				availableFuel: fuelInTankData.amountInCargoUnits.toString(),
 			});
 		}
-
-		yield* Effect.log("Creating startMiningAsteroid IX");
 
 		const miningIx = Fleet.startMiningAsteroid(
 			programs.sage,

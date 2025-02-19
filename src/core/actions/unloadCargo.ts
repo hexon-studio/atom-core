@@ -34,6 +34,11 @@ import { GameService } from "../services/GameService";
 import { getGameContext } from "../services/GameService/utils";
 import { createDrainVaultIx } from "../vault/instructions/createDrainVaultIx";
 
+/**
+ * Unloads cargo resources from a fleet to a starbase
+ * @param fleetNameOrAddress - The fleet identifier
+ * @param items - Array of resources to unload with their amounts
+ */
 export const unloadCargo = ({
 	fleetNameOrAddress,
 	items,
@@ -46,6 +51,7 @@ export const unloadCargo = ({
 			`Unloading cargo from fleet ${fleetNameOrAddress.toString()}`,
 		);
 
+		// Get fleet information
 		const preFleetAccount =
 			yield* getFleetAccountByNameOrAddress(fleetNameOrAddress);
 
@@ -53,6 +59,7 @@ export const unloadCargo = ({
 			options: { maxIxsPerTransaction },
 		} = yield* getGameContext();
 
+		// Execute pre-unload operations
 		const preIxsSignatures = yield* Effect.Do.pipe(
 			Effect.bind("preIxs", () =>
 				createPreIxs({
@@ -61,7 +68,6 @@ export const unloadCargo = ({
 				}),
 			),
 			Effect.bind("drainVaultIx", () => createDrainVaultIx()),
-			// Sending the transactions before doing the next step
 			Effect.flatMap(({ preIxs, drainVaultIx }) =>
 				GameService.buildAndSignTransaction({
 					ixs: preIxs,
@@ -81,10 +87,11 @@ export const unloadCargo = ({
 
 		yield* Effect.sleep("10 seconds");
 
+		// Get updated fleet information
 		const freshFleetAccount = yield* getFleetAccount(preFleetAccount.key);
-
 		const ixs: InstructionReturn[] = [];
 
+		// Prepare unload instructions
 		const itemsCargoPodsKinds = [
 			...new Set(items.map((item) => item.cargoPodKind)),
 		];
@@ -116,12 +123,12 @@ export const unloadCargo = ({
 
 		if (EffectArray.isEmptyArray(unloadCargoIxs)) {
 			yield* Effect.log("Nothing to unload. Skipping");
-
 			return { signatures: [] };
 		}
 
 		ixs.push(...unloadCargoIxs);
 
+		// Execute unload transaction
 		const drainVaultIx = yield* createDrainVaultIx();
 
 		const txs = yield* GameService.buildAndSignTransaction({
@@ -135,22 +142,23 @@ export const unloadCargo = ({
 			{ concurrency: 5 },
 		);
 
+		// Handle transaction results
 		const [errors, signatures] = EffectArray.partitionMap(
 			maybeSignatures,
 			identity,
 		);
 
-		// NOTE: All transactions failed
 		if (EffectArray.isEmptyArray(signatures)) {
+			// All transactions failed
 			return yield* Effect.fail(new LoadUnloadFailedError({ errors }));
 		}
 
-		// NOTE: All transactions succeeded
 		if (EffectArray.isEmptyArray(errors)) {
+			// All transactions succeeded
 			return { signatures: [...preIxsSignatures, ...signatures] };
 		}
 
-		// NOTE: Some transactions failed
+		// Some transactions failed - check differences
 		yield* Effect.sleep("10 seconds");
 
 		const postCargoPodsInfos = yield* getFleetCargoPodInfosForItems({
@@ -216,6 +224,7 @@ export const unloadCargo = ({
 
 			return !!res;
 		});
+
 		return yield* new LoadUnloadPartiallyFailedError({
 			errors,
 			signatures: [...preIxsSignatures, ...signatures],

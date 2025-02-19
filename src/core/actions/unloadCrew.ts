@@ -11,6 +11,12 @@ import { getGameContext } from "../services/GameService/utils";
 import { getStarbaseInfoByCoords } from "../utils/getStarbaseInfo";
 import { createDrainVaultIx } from "../vault/instructions/createDrainVaultIx";
 
+/**
+ * Unloads crew members from a fleet at a starbase
+ * @param allowUnloadRequiredCrew - Whether to allow unloading crew below minimum requirement
+ * @param crewAmount - Number of crew members to unload
+ * @param fleetNameOrAddress - The fleet identifier
+ */
 export const unloadCrew = ({
 	allowUnloadRequiredCrew = false,
 	crewAmount,
@@ -21,6 +27,9 @@ export const unloadCrew = ({
 	fleetNameOrAddress: string | PublicKey;
 }) =>
 	Effect.gen(function* () {
+		yield* Effect.log("Start unloading crew...");
+
+		// Get fleet and starbase information
 		const fleetAccount =
 			yield* getFleetAccountByNameOrAddress(fleetNameOrAddress);
 
@@ -52,6 +61,7 @@ export const unloadCrew = ({
 			return { signatures: [] };
 		}
 
+		// Prepare unload instructions
 		const ixs: InstructionReturn[] = [];
 
 		const preIxs = yield* createPreIxs({
@@ -73,6 +83,7 @@ export const unloadCrew = ({
 
 		ixs.push(...unloadCrewIxs);
 
+		// Execute unload transaction
 		const drainVaultIx = yield* createDrainVaultIx();
 
 		const {
@@ -80,8 +91,8 @@ export const unloadCrew = ({
 		} = yield* getGameContext();
 
 		const txs = yield* GameService.buildAndSignTransaction({
-			afterIxs: drainVaultIx,
 			ixs,
+			afterIxs: drainVaultIx,
 			size: maxIxsPerTransaction,
 		});
 
@@ -89,7 +100,7 @@ export const unloadCrew = ({
 			txs.map((tx) => GameService.sendTransaction(tx)),
 		);
 
-		yield* Effect.log("Crew started unloading");
+		yield* Effect.log("Crew unloaded successfully");
 
 		return { signatures };
 	});

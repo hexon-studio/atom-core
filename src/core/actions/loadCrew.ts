@@ -15,6 +15,11 @@ import { getGameContext } from "../services/GameService/utils";
 import { getStarbaseInfoByCoords } from "../utils/getStarbaseInfo";
 import { createDrainVaultIx } from "../vault/instructions/createDrainVaultIx";
 
+/**
+ * Loads crew members onto a fleet from a starbase
+ * @param fleetNameOrAddress - The fleet identifier
+ * @param crewAmount - Number of crew members to load
+ */
 export const loadCrew = ({
 	fleetNameOrAddress,
 	crewAmount,
@@ -23,6 +28,9 @@ export const loadCrew = ({
 	crewAmount: number;
 }) =>
 	Effect.gen(function* () {
+		yield* Effect.log("Start loading crew...");
+
+		// Get fleet and starbase information
 		const fleetAccount =
 			yield* getFleetAccountByNameOrAddress(fleetNameOrAddress);
 
@@ -57,7 +65,6 @@ export const loadCrew = ({
 
 		// check if there is enough passenger space in the fleet
 		const fleetMiscStats = fleetAccount.data.stats.miscStats as MiscStats;
-
 		const currentCrew = fleetMiscStats.crewCount;
 
 		const totalCrewCapacity =
@@ -69,11 +76,11 @@ export const loadCrew = ({
 		);
 
 		if (finalCrewAmount <= 0) {
-			yield* Effect.log("Not enough passenger space in fleet. Skipping.");
-
+			yield* Effect.log("Fleet is at maximum crew capacity. Skipping.");
 			return { signatures: [] };
 		}
 
+		// Prepare load instructions
 		const ixs: InstructionReturn[] = [];
 
 		const preIxs = yield* createPreIxs({
@@ -95,6 +102,7 @@ export const loadCrew = ({
 
 		ixs.push(...loadCrewIxs);
 
+		// Execute load transaction
 		const drainVaultIx = yield* createDrainVaultIx();
 
 		const {
@@ -111,7 +119,7 @@ export const loadCrew = ({
 			txs.map((tx) => GameService.sendTransaction(tx)),
 		);
 
-		yield* Effect.log("Crew started loading");
+		yield* Effect.log("Crew loaded successfully");
 
 		return { signatures };
 	});

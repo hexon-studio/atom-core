@@ -10,6 +10,11 @@ import { GameService } from "../services/GameService";
 import { getGameContext } from "../services/GameService/utils";
 import { createDrainVaultIx } from "../vault/instructions/createDrainVaultIx";
 
+/**
+ * Executes a warp operation to move a fleet to a target sector
+ * @param fleetNameOrAddress - The fleet identifier
+ * @param targetSector - The destination coordinates [x, y]
+ */
 export const warpToSector = ({
 	fleetNameOrAddress,
 	targetSector: [targetSectorX, targetSectorY],
@@ -20,17 +25,16 @@ export const warpToSector = ({
 	Effect.gen(function* () {
 		yield* Effect.log("Start warp...");
 
+		// Check fleet cooldown status
 		const fleetAccount =
 			yield* getFleetAccountByNameOrAddress(fleetNameOrAddress);
 
 		const warpCooldownExpiresAt =
 			fleetAccount.data.warpCooldownExpiresAt.toNumber();
-
 		const timestampInSeconds = Math.floor(Date.now() / 1000);
 
 		if (warpCooldownExpiresAt > timestampInSeconds) {
 			yield* Effect.log("Warp is on cooldown");
-
 			return yield* Effect.fail(
 				new FleetCooldownError({
 					cooldownExpiresAt: new Date(
@@ -40,10 +44,9 @@ export const warpToSector = ({
 			);
 		}
 
+		// Prepare warp instructions
 		const ixs: InstructionReturn[] = [];
-
 		const preIxs = yield* createPreIxs({ fleetAccount, targetState: "Idle" });
-
 		ixs.push(...preIxs);
 
 		const warpIxs = yield* createWarpToCoordinateIx({
@@ -51,14 +54,14 @@ export const warpToSector = ({
 			targetSector: [new BN(targetSectorX), new BN(targetSectorY)],
 		});
 
+		// Skip if already at target
 		if (!warpIxs.length) {
 			yield* Effect.log("Fleet already in target sector. Skipping");
-
 			return { signatures: [] };
 		}
 
+		// Execute warp transaction
 		ixs.push(...warpIxs);
-
 		const drainVaultIx = yield* createDrainVaultIx();
 
 		const {
