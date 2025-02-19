@@ -1,11 +1,11 @@
 import type { Fleet } from "@staratlas/sage";
 import { Effect, Match, pipe } from "effect";
+import { FleetIsMovingError } from "~/errors";
 import { getMineItemAccount, getResourceAccount } from "~/libs/@staratlas/sage";
 import { createDockToStarbaseIx } from "./createDockToStarbaseIx";
 import { createMovementHandlerIx } from "./createMovementHandlerIx";
 import { createStopMiningIx } from "./createStopMiningIx";
 import { createUndockFromStarbaseIx } from "./createUndockFromStarbaseIx";
-import { FleetIsMovingError } from "~/errors";
 
 type Param = {
 	targetState: "StarbaseLoadingBay" | "Idle";
