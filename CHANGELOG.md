@@ -1,5 +1,12 @@
 # Changelog
 
+# [2.2.0](https://github.com/hexon-studio/atom-core/compare/v2.1.1...v2.2.0) (2025-02-20)
+
+
+### Features
+
+* add pre-instruction checks for fleet movement state ([ac14f21](https://github.com/hexon-studio/atom-core/commit/ac14f2172bf3b9b83a5257b10ff55de408e01945))
+
 ## [2.1.1](https://github.com/hexon-studio/atom-core/compare/v2.1.0...v2.1.1) (2025-02-17)
 
 
