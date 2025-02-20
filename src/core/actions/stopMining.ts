@@ -6,17 +6,12 @@ import { GameService } from "../services/GameService";
 import { getGameContext } from "../services/GameService/utils";
 import { createDrainVaultIx } from "../vault/instructions/createDrainVaultIx";
 
-/**
- * Stops an ongoing mining operation for a fleet
- * @param fleetNameOrAddress - The fleet identifier to stop mining
- */
 export const stopMining = ({
 	fleetNameOrAddress,
 }: {
 	fleetNameOrAddress: string | PublicKey;
 }) =>
 	Effect.gen(function* () {
-		// Get fleet information
 		const fleetAccount =
 			yield* getFleetAccountByNameOrAddress(fleetNameOrAddress);
 
@@ -28,7 +23,6 @@ export const stopMining = ({
 		const resourceMint = fleetAccount.state.MineAsteroid.resource;
 		yield* Effect.log(`Stop mining ${resourceMint.toString()}...`);
 
-		// Prepare stop instructions
 		const ixs = yield* createPreIxs({
 			fleetAccount,
 			targetState: "Idle",

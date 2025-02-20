@@ -11,12 +11,6 @@ import { getGameContext } from "../services/GameService/utils";
 import { getStarbaseInfoByCoords } from "../utils/getStarbaseInfo";
 import { createDrainVaultIx } from "../vault/instructions/createDrainVaultIx";
 
-/**
- * Unloads crew members from a fleet at a starbase
- * @param allowUnloadRequiredCrew - Whether to allow unloading crew below minimum requirement
- * @param crewAmount - Number of crew members to unload
- * @param fleetNameOrAddress - The fleet identifier
- */
 export const unloadCrew = ({
 	allowUnloadRequiredCrew = false,
 	crewAmount,
@@ -29,7 +23,6 @@ export const unloadCrew = ({
 	Effect.gen(function* () {
 		yield* Effect.log("Start unloading crew...");
 
-		// Get fleet and starbase information
 		const fleetAccount =
 			yield* getFleetAccountByNameOrAddress(fleetNameOrAddress);
 
@@ -45,7 +38,6 @@ export const unloadCrew = ({
 			starbaseCoords: fleetCoords,
 		});
 
-		// check if there are enough crew members in the fleet
 		const fleetMiscStats = fleetAccount.data.stats.miscStats as MiscStats;
 		const currentCrew = fleetMiscStats.crewCount;
 
@@ -61,7 +53,6 @@ export const unloadCrew = ({
 			return { signatures: [] };
 		}
 
-		// Prepare unload instructions
 		const ixs: InstructionReturn[] = [];
 
 		const preIxs = yield* createPreIxs({
@@ -83,7 +74,6 @@ export const unloadCrew = ({
 
 		ixs.push(...unloadCrewIxs);
 
-		// Execute unload transaction
 		const drainVaultIx = yield* createDrainVaultIx();
 
 		const {

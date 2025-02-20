@@ -8,11 +8,6 @@ import { GameService } from "../services/GameService";
 import { getGameContext } from "../services/GameService/utils";
 import { createDrainVaultIx } from "../vault/instructions/createDrainVaultIx";
 
-/**
- * Initiates a mining operation with a fleet
- * @param fleetNameOrAddress - The fleet identifier to perform mining
- * @param resourceMint - The resource to mine
- */
 export const startMining = ({
 	fleetNameOrAddress,
 	resourceMint,
@@ -23,7 +18,6 @@ export const startMining = ({
 	Effect.gen(function* () {
 		yield* Effect.log(`Start mining ${resourceMint.toString()}...`);
 
-		// Get fleet information
 		const fleetAccount =
 			yield* getFleetAccountByNameOrAddress(fleetNameOrAddress);
 
@@ -37,7 +31,6 @@ export const startMining = ({
 			return { signatures: [] };
 		}
 
-		// Prepare mining instructions
 		const ixs: InstructionReturn[] = [];
 
 		const preIxs = yield* createPreIxs({
@@ -54,7 +47,6 @@ export const startMining = ({
 
 		ixs.push(...startMiningIxs);
 
-		// Execute mining transaction
 		const drainVaultIx = yield* createDrainVaultIx();
 
 		const {

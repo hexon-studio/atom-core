@@ -16,7 +16,6 @@ import {
 	findSagePlayerProfilePda,
 	findStarbasePdaByCoordinates,
 	findStarbasePlayerPda,
-	getMineItemAccount,
 	getResourceAccount,
 	getStarbaseAccount,
 	getStarbasePlayerAccount,
@@ -126,16 +125,6 @@ export const createStartMiningIx = ({
 			fleetAccount.data.gameId,
 			resourceMint,
 		);
-
-		yield* Effect.log("MineItem PDA").pipe(
-			Effect.annotateLogs({
-				gameId: fleetAccount.data.gameId.toString(),
-				resourceMint: resourceMint.toString(),
-				mineItemKey: mineItemKey.toString(),
-			}),
-		);
-
-		yield* getMineItemAccount(mineItemKey);
 
 		const [resourceKey] = yield* findResourcePda({
 			mint: mineItemKey,

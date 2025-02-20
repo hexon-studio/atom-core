@@ -15,11 +15,6 @@ import { getGameContext } from "../services/GameService/utils";
 import { getStarbaseInfoByCoords } from "../utils/getStarbaseInfo";
 import { createDrainVaultIx } from "../vault/instructions/createDrainVaultIx";
 
-/**
- * Loads crew members onto a fleet from a starbase
- * @param fleetNameOrAddress - The fleet identifier
- * @param crewAmount - Number of crew members to load
- */
 export const loadCrew = ({
 	fleetNameOrAddress,
 	crewAmount,
@@ -30,7 +25,6 @@ export const loadCrew = ({
 	Effect.gen(function* () {
 		yield* Effect.log("Start loading crew...");
 
-		// Get fleet and starbase information
 		const fleetAccount =
 			yield* getFleetAccountByNameOrAddress(fleetNameOrAddress);
 
@@ -44,7 +38,6 @@ export const loadCrew = ({
 			starbaseCoords: fleetCoords,
 		});
 
-		// check if there are enough crew members in the starbase
 		const starbasePlayerAccount = yield* getStarbasePlayerAccount(
 			starbaseInfo.starbasePlayerPubkey,
 		);
@@ -63,7 +56,6 @@ export const loadCrew = ({
 			return { signatures: [] };
 		}
 
-		// check if there is enough passenger space in the fleet
 		const fleetMiscStats = fleetAccount.data.stats.miscStats as MiscStats;
 		const currentCrew = fleetMiscStats.crewCount;
 
@@ -80,7 +72,6 @@ export const loadCrew = ({
 			return { signatures: [] };
 		}
 
-		// Prepare load instructions
 		const ixs: InstructionReturn[] = [];
 
 		const preIxs = yield* createPreIxs({
@@ -102,7 +93,6 @@ export const loadCrew = ({
 
 		ixs.push(...loadCrewIxs);
 
-		// Execute load transaction
 		const drainVaultIx = yield* createDrainVaultIx();
 
 		const {

@@ -42,11 +42,6 @@ import {
 import { getStarbaseInfoByCoords } from "../utils/getStarbaseInfo";
 import { createDrainVaultIx } from "../vault/instructions/createDrainVaultIx";
 
-/**
- * Loads cargo resources onto a fleet from a starbase
- * @param fleetNameOrAddress - The fleet identifier
- * @param items - Array of resources to load with their amounts
- */
 export const loadCargo = ({
 	items: itemsParam,
 	fleetNameOrAddress,
@@ -55,7 +50,6 @@ export const loadCargo = ({
 	items: Array<LoadResourceInput>;
 }) =>
 	Effect.gen(function* () {
-		// Initialize items with UUIDs
 		const items = itemsParam.map(
 			({ cargoPodKind, resourceMint, amount, mode }) => ({
 				id: createItemUuid({
@@ -69,7 +63,6 @@ export const loadCargo = ({
 			}),
 		);
 
-		// Get fleet and starbase information
 		const preFleetAccount =
 			yield* getFleetAccountByNameOrAddress(fleetNameOrAddress);
 
@@ -81,7 +74,6 @@ export const loadCargo = ({
 			options: { maxIxsPerTransaction },
 		} = yield* getGameContext();
 
-		// Execute pre-load operations
 		const preIxsSignatures = yield* Effect.Do.pipe(
 			Effect.bind("preIxs", () =>
 				createPreIxs({
@@ -109,11 +101,9 @@ export const loadCargo = ({
 
 		yield* Effect.sleep("10 seconds");
 
-		// Get updated fleet information
 		const freshFleetAccount = yield* getFleetAccount(preFleetAccount.key);
 		const ixs: InstructionReturn[] = [];
 
-		// Prepare cargo loading instructions
 		const itemsCargoPodsKinds = [
 			...new Set(items.map((item) => item.cargoPodKind)),
 		];
@@ -131,7 +121,6 @@ export const loadCargo = ({
 			starbaseCoords: fleetCoords,
 		});
 
-		// Process and enhance items for loading
 		let enhancedItems: EnhancedResourceItem[] = [];
 
 		for (const item of items) {
@@ -205,7 +194,6 @@ export const loadCargo = ({
 			enhancedItems.push(enhancedItem);
 		}
 
-		// Create and execute load instructions
 		const loadCargoIxs = yield* Effect.all(
 			EffectArray.map(enhancedItems, (item) => {
 				const resourceSpaceMultiplier = getCargoTypeResourceMultiplier(
@@ -238,7 +226,6 @@ export const loadCargo = ({
 
 		ixs.push(...loadCargoIxs);
 
-		// Execute load transaction
 		const drainVaultIx = yield* createDrainVaultIx();
 
 		const txs = yield* GameService.buildAndSignTransaction({
@@ -251,7 +238,6 @@ export const loadCargo = ({
 			txs.map((tx) => GameService.sendTransaction(tx).pipe(Effect.either)),
 		);
 
-		// Handle transaction results
 		const [errors, signatures] = EffectArray.partitionMap(maybeTxIds, identity);
 
 		if (EffectArray.isEmptyArray(signatures)) {

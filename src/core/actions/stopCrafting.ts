@@ -9,12 +9,6 @@ import { GameService } from "../services/GameService";
 import { getGameContext } from "../services/GameService/utils";
 import { createDrainVaultIx } from "../vault/instructions/createDrainVaultIx";
 
-/**
- * Stops an ongoing crafting process and claims the output
- * @param recipe - The recipe public key being crafted
- * @param starbaseCoords - The coordinates of the starbase [x, y]
- * @param craftingId - The unique identifier of the crafting process
- */
 export const stopCrafting = ({
 	craftingId,
 	recipe,

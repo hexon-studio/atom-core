@@ -14,10 +14,6 @@ import { createPreIxs } from "../fleet/instructions/createPreIxs";
 import { createScanIx } from "../fleet/instructions/createScanIx";
 import { GameService } from "../services/GameService";
 
-/**
- * Initiates a scanning operation with a fleet
- * @param fleetNameOrAddress - The fleet identifier to perform the scan
- */
 export const startScan = ({
 	fleetNameOrAddress,
 }: {
@@ -26,7 +22,6 @@ export const startScan = ({
 	Effect.gen(function* () {
 		yield* Effect.log("Start scanning...");
 
-		// Get fleet account and check cooldown
 		const fleetAccount =
 			yield* getFleetAccountByNameOrAddress(fleetNameOrAddress);
 
@@ -45,7 +40,6 @@ export const startScan = ({
 			);
 		}
 
-		// Check food requirements
 		const scanCost = (fleetAccount.data.stats.miscStats as { scanCost: number })
 			.scanCost;
 		const sduPerScan = (
@@ -76,7 +70,6 @@ export const startScan = ({
 			}
 		}
 
-		// Check cargo space
 		const hasEnoughCargoSpace = yield* getFleetCargoPodInfoByType({
 			type: "cargo_hold",
 			fleetAccount,
@@ -94,7 +87,6 @@ export const startScan = ({
 			return yield* new NotEnoughCargoSpaceForScanError();
 		}
 
-		// Prepare and execute scan instructions
 		const ixs: InstructionReturn[] = [];
 		const preIxs = yield* createPreIxs({ fleetAccount, targetState: "Idle" });
 		ixs.push(...preIxs);

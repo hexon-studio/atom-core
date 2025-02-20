@@ -12,13 +12,6 @@ import { GameService } from "../services/GameService";
 import { getGameContext } from "../services/GameService/utils";
 import { createDrainVaultIx } from "../vault/instructions/createDrainVaultIx";
 
-/**
- * Initiates a crafting process at a starbase
- * @param recipe - The recipe public key to craft
- * @param starbaseCoords - The coordinates of the starbase [x, y]
- * @param crewAmount - Number of crew members to assign
- * @param quantity - Amount of items to craft
- */
 export const startCrafting = ({
 	recipe,
 	starbaseCoords,
@@ -31,19 +24,16 @@ export const startCrafting = ({
 	quantity: number;
 }) =>
 	Effect.gen(function* () {
-		// Initialize crafting process
 		const craftingId = generateCraftingProcessId();
 		yield* Effect.log("Start crafting...").pipe(
 			Effect.annotateLogs({ craftingId: craftingId.toString() }),
 		);
 
-		// Load recipe data
 		const recipeAccount = yield* getRecipeAccount(recipe);
 		yield* Effect.log("Crafting recipe loaded").pipe(
 			Effect.annotateLogs({ recipeAccount }),
 		);
 
-		// Generate crafting instructions
 		const [createIx, depositIxs, startIxs] = yield* Effect.all([
 			createCraftingProcessIx({
 				recipeAccount,
@@ -65,7 +55,6 @@ export const startCrafting = ({
 			}),
 		]);
 
-		// Prepare and execute transactions
 		const drainVaultIx = yield* createDrainVaultIx();
 		const {
 			options: { maxIxsPerTransaction },

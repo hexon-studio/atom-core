@@ -34,11 +34,6 @@ import { GameService } from "../services/GameService";
 import { getGameContext } from "../services/GameService/utils";
 import { createDrainVaultIx } from "../vault/instructions/createDrainVaultIx";
 
-/**
- * Unloads cargo resources from a fleet to a starbase
- * @param fleetNameOrAddress - The fleet identifier
- * @param items - Array of resources to unload with their amounts
- */
 export const unloadCargo = ({
 	fleetNameOrAddress,
 	items,
@@ -51,7 +46,6 @@ export const unloadCargo = ({
 			`Unloading cargo from fleet ${fleetNameOrAddress.toString()}`,
 		);
 
-		// Get fleet information
 		const preFleetAccount =
 			yield* getFleetAccountByNameOrAddress(fleetNameOrAddress);
 
@@ -59,7 +53,6 @@ export const unloadCargo = ({
 			options: { maxIxsPerTransaction },
 		} = yield* getGameContext();
 
-		// Execute pre-unload operations
 		const preIxsSignatures = yield* Effect.Do.pipe(
 			Effect.bind("preIxs", () =>
 				createPreIxs({
@@ -87,11 +80,9 @@ export const unloadCargo = ({
 
 		yield* Effect.sleep("10 seconds");
 
-		// Get updated fleet information
 		const freshFleetAccount = yield* getFleetAccount(preFleetAccount.key);
 		const ixs: InstructionReturn[] = [];
 
-		// Prepare unload instructions
 		const itemsCargoPodsKinds = [
 			...new Set(items.map((item) => item.cargoPodKind)),
 		];
@@ -128,7 +119,6 @@ export const unloadCargo = ({
 
 		ixs.push(...unloadCargoIxs);
 
-		// Execute unload transaction
 		const drainVaultIx = yield* createDrainVaultIx();
 
 		const txs = yield* GameService.buildAndSignTransaction({
@@ -142,7 +132,6 @@ export const unloadCargo = ({
 			{ concurrency: 5 },
 		);
 
-		// Handle transaction results
 		const [errors, signatures] = EffectArray.partitionMap(
 			maybeSignatures,
 			identity,

@@ -6,17 +6,12 @@ import { GameService } from "../services/GameService";
 import { getGameContext } from "../services/GameService/utils";
 import { createDrainVaultIx } from "../vault/instructions/createDrainVaultIx";
 
-/**
- * Undocks a fleet from a starbase
- * @param fleetNameOrAddress - The fleet identifier to undock
- */
 export const undockFromStarbase = ({
 	fleetNameOrAddress,
 }: { fleetNameOrAddress: string | PublicKey }) =>
 	Effect.gen(function* () {
 		yield* Effect.log("Start undocking...");
 
-		// Get fleet information
 		const fleetAccount =
 			yield* getFleetAccountByNameOrAddress(fleetNameOrAddress);
 

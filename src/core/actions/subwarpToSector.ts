@@ -12,11 +12,6 @@ import { GameService } from "../services/GameService";
 import { getGameContext } from "../services/GameService/utils";
 import { createDrainVaultIx } from "../vault/instructions/createDrainVaultIx";
 
-/**
- * Executes a subwarp operation to move a fleet to a target sector
- * @param fleetNameOrAddress - The fleet identifier
- * @param targetSector - The destination coordinates [x, y]
- */
 export const subwarpToSector = ({
 	fleetNameOrAddress,
 	targetSector: [targetSectorX, targetSectorY],
@@ -27,7 +22,6 @@ export const subwarpToSector = ({
 	Effect.gen(function* () {
 		yield* Effect.log("Start subwarp...");
 
-		// Initialize fleet account and transaction arrays
 		const preFleetAccount =
 			yield* getFleetAccountByNameOrAddress(fleetNameOrAddress);
 		const ixs: InstructionReturn[] = [];
@@ -35,7 +29,6 @@ export const subwarpToSector = ({
 			options: { maxIxsPerTransaction },
 		} = yield* getGameContext();
 
-		// PHASE 1: Pre-subwarp operations
 		const preIxsSignatures = yield* Effect.Do.pipe(
 			Effect.bind("preIxs", () =>
 				createPreIxs({
@@ -62,24 +55,20 @@ export const subwarpToSector = ({
 			),
 		);
 
-		// PHASE 2: Prepare for subwarp
 		const freshFleetAccount = yield* getFleetAccount(preFleetAccount.key);
 		const subwarpIxs = yield* createSubwarpToCoordinateIx({
 			fleetAccount: freshFleetAccount,
 			targetSector: [new BN(targetSectorX), new BN(targetSectorY)],
 		});
 
-		// Early return if already at target
 		if (!subwarpIxs.length) {
 			yield* Effect.log("Fleet already in target sector. Skipping");
 			return { signatures: preIxsSignatures };
 		}
 
-		// PHASE 3: Execute subwarp
 		ixs.push(...subwarpIxs);
 		const drainVaultIx = yield* createDrainVaultIx();
 
-		// Build and send final transactions
 		const txs = yield* GameService.buildAndSignTransaction({
 			ixs,
 			afterIxs: drainVaultIx,
@@ -94,6 +83,5 @@ export const subwarpToSector = ({
 			`Subwarping to - X: ${targetSectorX} | Y: ${targetSectorY}`,
 		);
 
-		// Return combined signatures from all phases
 		return { signatures: [...preIxsSignatures, ...signatures] };
 	});
