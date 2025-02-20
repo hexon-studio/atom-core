@@ -20,7 +20,7 @@ export const createCraftingProcessIx = ({
 	numCrew: number;
 	quantity: number;
 	recipeAccount: Recipe;
-	starbaseCoords: [BN, BN];
+	starbaseCoords: [number, number];
 }) =>
 	Effect.gen(function* () {
 		const context = yield* getGameContext();

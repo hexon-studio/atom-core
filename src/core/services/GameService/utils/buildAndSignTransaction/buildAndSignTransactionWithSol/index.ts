@@ -39,7 +39,7 @@ export const buildAndSignTransactionWithSol: BuildAndSignTransactionWithSol = ({
 			),
 	});
 
-export type BuildAndSignTransactionWithSol = (_: {
+type BuildAndSignTransactionWithSol = (_: {
 	ixs: Array<InstructionReturn>;
 	afterIxs?: Array<InstructionReturn>;
 	size: number;

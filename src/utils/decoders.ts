@@ -3,7 +3,7 @@ import { z } from "zod";
 
 export const cargoPodKinds = ["ammo_bank", "fuel_tank", "cargo_hold"] as const;
 
-export const cargoPodKindDecoder = z.enum(cargoPodKinds);
+const cargoPodKindDecoder = z.enum(cargoPodKinds);
 
 export type CargoPodKind = z.infer<typeof cargoPodKindDecoder>;
 
@@ -29,7 +29,3 @@ export const unloadResourceDecoder = z.object({
 });
 
 export type UnloadResourceInput = z.infer<typeof unloadResourceDecoder>;
-
-export type LoadUnloadMode =
-	| LoadResourceInput["mode"]
-	| UnloadResourceInput["mode"];

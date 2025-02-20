@@ -3,7 +3,7 @@ import { programIds } from "~/constants/programs";
 import type { GameContext } from "~/core/services/GameService";
 import { GameAlreadyInitializedError } from "~/errors";
 import { getPlayerProfileAccout } from "~/libs/@staratlas/player-profile";
-import type { GlobalOptions } from "~/types";
+import type { GlobalOptions } from "~/utils/globalOptions";
 import { fetchGameInfoOrAccounts } from "./fetchGameInfoOrAccount";
 
 export const initGame = (

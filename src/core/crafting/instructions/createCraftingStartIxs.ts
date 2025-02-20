@@ -23,7 +23,7 @@ export const createCraftingStartIxs = ({
 }: {
 	craftingId: BN;
 	recipeAccount: Recipe;
-	starbaseCoords: [BN, BN];
+	starbaseCoords: [number, number];
 }) =>
 	Effect.gen(function* () {
 		const context = yield* getGameContext();

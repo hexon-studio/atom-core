@@ -1,17 +1,9 @@
 import type { PublicKey } from "@solana/web3.js";
-import {
-	Cause,
-	Effect,
-	Exit,
-	LogLevel,
-	Logger,
-	ManagedRuntime,
-	Option,
-} from "effect";
+import { Effect } from "effect";
+import { createMainLiveService } from "~/utils/createMainLiveService";
+import type { GlobalOptions } from "~/utils/globalOptions";
 import { subwarpToSector } from "../core/actions/subwarpToSector";
 import { GameService } from "../core/services/GameService";
-import type { GlobalOptions } from "../types";
-import { createMainLiveService } from "../utils/createMainLiveService";
 import { runBaseCommand } from "./baseCommand";
 
 type Param = {
@@ -20,16 +12,12 @@ type Param = {
 	globalOpts: GlobalOptions;
 };
 
-export const runSubwarp = async ({
+export const makeSubwarpCommand = ({
 	fleetNameOrAddress,
 	targetSector,
 	globalOpts,
-}: Param) => {
-	const mainServiceLive = createMainLiveService(globalOpts);
-
-	const runtime = ManagedRuntime.make(mainServiceLive);
-
-	const program = GameService.pipe(
+}: Param) =>
+	GameService.pipe(
 		Effect.tap((service) => service.initGame(service.gameContext, globalOpts)),
 		Effect.tap(() => Effect.log("Game initialized.")),
 		Effect.flatMap(() =>
@@ -55,29 +43,5 @@ export const runSubwarp = async ({
 					Effect.annotateLogs({ error }),
 				),
 		}),
-		Logger.withMinimumLogLevel(LogLevel.Debug),
+		Effect.provide(createMainLiveService(globalOpts)),
 	);
-
-	const exit = await runtime.runPromiseExit(program);
-
-	await runtime.dispose();
-
-	exit.pipe(
-		Exit.match({
-			onSuccess: () => {
-				process.exit(0);
-			},
-			onFailure: (cause) => {
-				console.log(`Transaction error: ${Cause.pretty(cause)}`);
-
-				const error = Cause.failureOption(cause).pipe(Option.getOrUndefined);
-
-				if (error) {
-					console.log(error);
-				}
-
-				process.exit(1);
-			},
-		}),
-	);
-};

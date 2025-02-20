@@ -1,21 +1,12 @@
 import type { PublicKey } from "@solana/web3.js";
 import { BN } from "bn.js";
-import {
-	Cause,
-	Effect,
-	Exit,
-	LogLevel,
-	Logger,
-	ManagedRuntime,
-	Match,
-	Option,
-} from "effect";
+import { Effect, Match } from "effect";
 import { constNull, constUndefined } from "effect/Function";
+import { createMainLiveService } from "~/utils/createMainLiveService";
 import type { UnloadResourceInput } from "~/utils/decoders";
+import type { GlobalOptions } from "~/utils/globalOptions";
 import { unloadCargo } from "../core/actions/unloadCargo";
 import { GameService } from "../core/services/GameService";
-import type { GlobalOptions } from "../types";
-import { createMainLiveService } from "../utils/createMainLiveService";
 import { runBaseCommand } from "./baseCommand";
 
 type Param = {
@@ -24,16 +15,12 @@ type Param = {
 	globalOpts: GlobalOptions;
 };
 
-export const runUnloadCargo = async ({
+export const makeUnloadCargoCommand = ({
 	fleetNameOrAddress,
 	items,
 	globalOpts,
-}: Param) => {
-	const mainServiceLive = createMainLiveService(globalOpts);
-
-	const runtime = ManagedRuntime.make(mainServiceLive);
-
-	const program = GameService.pipe(
+}: Param) =>
+	GameService.pipe(
 		Effect.tap((service) => service.initGame(service.gameContext, globalOpts)),
 		Effect.tap(() => Effect.log("Game initialized.")),
 		Effect.flatMap(() =>
@@ -52,7 +39,7 @@ export const runUnloadCargo = async ({
 							({ context }) =>
 								JSON.parse(
 									JSON.stringify(context, (_, value) =>
-										value instanceof BN ? value.toString() : value,
+										value instanceof BN ? value.toJSON() : value,
 									),
 								) as Record<string, unknown>,
 						),
@@ -80,29 +67,5 @@ export const runUnloadCargo = async ({
 					Effect.annotateLogs({ error }),
 				),
 		}),
-		Logger.withMinimumLogLevel(LogLevel.Debug),
+		Effect.provide(createMainLiveService(globalOpts)),
 	);
-
-	const exit = await runtime.runPromiseExit(program);
-
-	await runtime.dispose();
-
-	exit.pipe(
-		Exit.match({
-			onSuccess: () => {
-				process.exit(0);
-			},
-			onFailure: (cause) => {
-				console.log(`Transaction error: ${Cause.pretty(cause)}`);
-
-				const error = Cause.failureOption(cause).pipe(Option.getOrUndefined);
-
-				if (error) {
-					console.log(error);
-				}
-
-				process.exit(1);
-			},
-		}),
-	);
-};

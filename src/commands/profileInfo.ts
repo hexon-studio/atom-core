@@ -1,53 +1,28 @@
-import {
-	Cause,
-	Effect,
-	Exit,
-	LogLevel,
-	Logger,
-	ManagedRuntime,
-	Option,
-} from "effect";
+import type { PublicKey } from "@solana/web3.js";
+import { Effect, type Option } from "effect";
+import { getPlayerProfileAccout } from "~/libs/@staratlas/player-profile";
+import { createMainLiveService } from "~/utils/createMainLiveService";
+import type { GlobalOptions } from "~/utils/globalOptions";
 import { GameService } from "../core/services/GameService";
 import { getGameContext } from "../core/services/GameService/utils";
-import type { GlobalOptions } from "../types";
-import { createMainLiveService } from "../utils/createMainLiveService";
 
-export const runProfileInfo = async (globalOpts: GlobalOptions) => {
-	const mainServiceLive = createMainLiveService(globalOpts);
-
-	const runtime = ManagedRuntime.make(mainServiceLive);
-
-	const program = GameService.pipe(
+export const makeProfileInfoCommand = ({
+	playerProfile,
+	globalOpts,
+}: { playerProfile: Option.Option<PublicKey>; globalOpts: GlobalOptions }) =>
+	GameService.pipe(
 		Effect.tap((service) => service.initGame(service.gameContext, globalOpts)),
 		Effect.tap(() => Effect.log("Game initialized.")),
-		Effect.flatMap(getGameContext),
-		Effect.map((context) => context.playerProfile),
+		Effect.flatMap(() =>
+			playerProfile.pipe(
+				Effect.flatMap(getPlayerProfileAccout),
+				Effect.orElse(() =>
+					getGameContext().pipe(Effect.map((context) => context.playerProfile)),
+				),
+			),
+		),
 		Effect.tap((profile) =>
 			Effect.log("Profile fetched.").pipe(Effect.annotateLogs({ profile })),
 		),
-		Logger.withMinimumLogLevel(LogLevel.Debug),
+		Effect.provide(createMainLiveService(globalOpts)),
 	);
-
-	const exit = await runtime.runPromiseExit(program);
-
-	await runtime.dispose();
-
-	exit.pipe(
-		Exit.match({
-			onSuccess: () => {
-				process.exit(0);
-			},
-			onFailure: (cause) => {
-				console.log(`Transaction error: ${Cause.pretty(cause)}`);
-
-				const error = Cause.failureOption(cause).pipe(Option.getOrUndefined);
-
-				if (error) {
-					console.log(error);
-				}
-
-				process.exit(1);
-			},
-		}),
-	);
-};

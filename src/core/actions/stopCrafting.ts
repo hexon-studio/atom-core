@@ -15,7 +15,7 @@ export const stopCrafting = ({
 	starbaseCoords,
 }: {
 	craftingId: BN;
-	starbaseCoords: [BN, BN];
+	starbaseCoords: [number, number];
 	recipe: PublicKey;
 }) =>
 	Effect.gen(function* () {

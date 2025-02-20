@@ -1,6 +1,6 @@
 import { PublicKey } from "@solana/web3.js";
 
-export const resourceMints = [
+const resourceMints = [
 	"SiLiCA4xKGkyymB5XteUVmUeLqE4JGQTyWBpKFESLgh",
 	"Nitro6idW5JCb2ysUPGUAvVqv3HmUR7NVH7NdybGJ4L",
 	"tiorehR1rLfeATZ96YoByUkvNFsBfUUSQWgSH2mizXL",
@@ -43,7 +43,7 @@ export const resourceMints = [
 
 export type ResourceMint = (typeof resourceMints)[number];
 
-export const resourceNames = [
+const resourceNames = [
 	"Silica",
 	"Nitrogen",
 	"TitaniumOre",

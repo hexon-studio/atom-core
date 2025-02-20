@@ -1,6 +1,6 @@
 import type { CargoStatsDefinition } from "@staratlas/cargo";
 import type { Game } from "@staratlas/sage";
-import { Effect } from "effect";
+import { Effect, type Option } from "effect";
 import type {
 	AccountError,
 	GameNotFoundError,
@@ -78,13 +78,13 @@ const mapGameAccoutToGameInfo = ({
 };
 
 export const fetchGameInfoOrAccounts = (
-	commonApiUrl?: string,
+	commonApiUrl: Option.Option<string>,
 ): Effect.Effect<
 	GameInfo,
 	GameNotFoundError | ReadFromRPCError | AccountError,
 	SolanaService
 > =>
-	Effect.fromNullable(commonApiUrl).pipe(
+	commonApiUrl.pipe(
 		Effect.flatMap(fetchGameInfo),
 		Effect.orElse(() =>
 			Effect.Do.pipe(

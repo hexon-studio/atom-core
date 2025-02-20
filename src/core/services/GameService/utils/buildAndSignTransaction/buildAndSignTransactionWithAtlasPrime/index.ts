@@ -36,7 +36,7 @@ export const buildAndSignTransactionWithAtlasPrime: BuildAndSignTransactionWithA
 				),
 		});
 
-export type BuildAndSignTransactionWithAtlasPrime = (_: {
+type BuildAndSignTransactionWithAtlasPrime = (_: {
 	ixs: Array<InstructionReturn>;
 	afterIxs?: Array<InstructionReturn>;
 	size: number;

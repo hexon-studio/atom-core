@@ -2,7 +2,6 @@ import type { Keypair } from "@solana/web3.js";
 import { type AsyncSigner, keypairToAsyncSigner } from "@staratlas/data-source";
 import type { PlayerProfile } from "@staratlas/player-profile";
 import { Effect, Layer, Option, Ref } from "effect";
-import type { GlobalOptions } from "~/types";
 import { SolanaService } from "../SolanaService";
 import { type FindGame, findGame } from "./methods/findGame";
 import { type FindPlanets, findAllPlanets } from "./methods/findPlanets";
@@ -13,6 +12,7 @@ import {
 	createBuildAndSignTransaction,
 } from "./utils/buildAndSignTransaction";
 
+import type { GlobalOptions } from "~/utils/globalOptions";
 import { type SendTransaction, sendTransaction } from "./utils/sendTransaction";
 
 export interface GameContext {

@@ -8,7 +8,6 @@ import { Effect, Exit, Layer, ManagedRuntime, Option, Ref } from "effect";
 import { constant, unsafeCoerce } from "effect/Function";
 import mock from "mock-fs";
 import { findAllPlanets } from "~/core/services/GameService/methods/findPlanets";
-import type { RequiredOptions } from "~/types";
 import { createDepositCargoToFleetIx } from ".";
 import { resourceNameToMint } from "../../../../constants/resources";
 import { noopPublicKey } from "../../../../constants/tokens";
@@ -30,7 +29,22 @@ const gameContextRef = Ref.unsafeMake(
 		options: {
 			atlasPrime: false,
 			owner: noopPublicKey,
-		} as RequiredOptions,
+			feeMode: "low",
+			keypair: Keypair.generate(),
+			maxIxsPerTransaction: 1,
+			playerProfile: noopPublicKey,
+			rpcUrl: "https://api.mainnet-beta.solana.com",
+			commonApiUrl: Option.none(),
+			feeLimit: Option.none(),
+			heliusRpcUrl: Option.none(),
+			loggingToken: Option.none(),
+			webhookUrl: Option.none(),
+			webhookSecret: Option.none(),
+			contextId: Option.none(),
+			feeRecipient: Option.none(),
+			feeLamports: Option.none(),
+			feeAtlas: Option.none(),
+		},
 		gameInfo: {} as GameInfo,
 		playerProfile: {} as PlayerProfile,
 		keyIndexes: {

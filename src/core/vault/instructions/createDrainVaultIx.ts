@@ -3,7 +3,8 @@ import { SystemProgram } from "@solana/web3.js";
 import type { InstructionReturn } from "@staratlas/data-source";
 import { ProfileVault } from "@staratlas/profile-vault";
 import { BN } from "bn.js";
-import { Effect, Array as EffectArray, Match } from "effect";
+import { Effect, Array as EffectArray, Match, Option } from "effect";
+import { parseOptionsFees } from "~/utils/parseOptionsFees";
 import { ATLAS_DECIMALS, tokenMints } from "../../../constants/tokens";
 import { getSagePrograms } from "../../programs";
 import { GameService } from "../../services/GameService";
@@ -17,15 +18,15 @@ export const createDrainVaultIx = () =>
 
 		const context = yield* getGameContext();
 
-		const feesOptions = context.options.fees;
+		const feesOptions = parseOptionsFees(context.options);
 
-		if (!feesOptions) {
+		if (Option.isNone(feesOptions)) {
 			return [];
 		}
 
 		const signer = yield* GameService.signer;
 
-		return Match.value(feesOptions).pipe(
+		return Match.value(feesOptions.value).pipe(
 			Match.when({ type: "atlas-prime" }, ({ atlas, recipient }) => {
 				const fee = Math.min(atlas, maxFee);
 

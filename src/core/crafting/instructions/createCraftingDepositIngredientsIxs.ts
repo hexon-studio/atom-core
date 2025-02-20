@@ -25,7 +25,7 @@ export const createCraftingDepositIngredientsIxs = ({
 	craftingId: BN;
 	quantity: number;
 	recipeAccount: Recipe;
-	starbaseCoords: [BN, BN];
+	starbaseCoords: [number, number];
 }) =>
 	Effect.gen(function* () {
 		const context = yield* getGameContext();

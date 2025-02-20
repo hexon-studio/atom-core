@@ -1,31 +1,18 @@
 import { Recipe, RecipeStatus } from "@staratlas/crafting";
 import { readAllFromRPC } from "@staratlas/data-source";
-import {
-	Cause,
-	Effect,
-	Array as EffectArray,
-	Exit,
-	LogLevel,
-	Logger,
-	ManagedRuntime,
-	Option,
-} from "effect";
+import { Effect, Array as EffectArray, Option } from "effect";
 import { getSagePrograms } from "~/core/programs";
 import { GameService } from "~/core/services/GameService";
 import { SolanaService } from "~/core/services/SolanaService";
-import type { GlobalOptions } from "../types";
-import { createMainLiveService } from "../utils/createMainLiveService";
+import { createMainLiveService } from "~/utils/createMainLiveService";
+import type { GlobalOptions } from "~/utils/globalOptions";
 
 type Param = {
 	globalOpts: GlobalOptions;
 };
 
-export const runRecipeList = async ({ globalOpts }: Param) => {
-	const mainServiceLive = createMainLiveService(globalOpts);
-
-	const runtime = ManagedRuntime.make(mainServiceLive);
-
-	const program = GameService.pipe(
+export const makeRecipeListCommand = ({ globalOpts }: Param) =>
+	GameService.pipe(
 		Effect.tap((service) => service.initGame(service.gameContext, globalOpts)),
 		Effect.tap(() => Effect.log("Game initialized.")),
 		Effect.flatMap(() =>
@@ -50,29 +37,5 @@ export const runRecipeList = async ({ globalOpts }: Param) => {
 				}),
 			),
 		),
-		Logger.withMinimumLogLevel(LogLevel.Debug),
+		Effect.provide(createMainLiveService(globalOpts)),
 	);
-
-	const exit = await runtime.runPromiseExit(program);
-
-	await runtime.dispose();
-
-	exit.pipe(
-		Exit.match({
-			onSuccess: () => {
-				process.exit(0);
-			},
-			onFailure: (cause) => {
-				console.log(`Transaction error: ${Cause.pretty(cause)}`);
-
-				const error = Cause.failureOption(cause).pipe(Option.getOrUndefined);
-
-				if (error) {
-					console.log(error);
-				}
-
-				process.exit(1);
-			},
-		}),
-	);
-};

@@ -1,5 +1,5 @@
 import type { PublicKey } from "@solana/web3.js";
-import type { FeeMode } from "~/types";
+import type { FeeMode } from "~/constants/fees";
 
 const feeModeToHeliusFeeMode = {
 	low: "Low",

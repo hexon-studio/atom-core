@@ -1,5 +1,4 @@
 import { PublicKey, type PublicKeyInitData } from "@solana/web3.js";
-import { InvalidArgumentError } from "commander";
 
 export const isPublicKey = (key: PublicKeyInitData): key is PublicKey => {
 	try {
@@ -9,12 +8,4 @@ export const isPublicKey = (key: PublicKeyInitData): key is PublicKey => {
 	} catch {
 		return false;
 	}
-};
-
-export const parsePublicKey = (key: PublicKeyInitData): PublicKey => {
-	if (!isPublicKey(key)) {
-		throw new InvalidArgumentError("Invalid public key");
-	}
-
-	return new PublicKey(key);
 };

@@ -1,7 +1,8 @@
 import { Connection, type Keypair } from "@solana/web3.js";
 import { AnchorProvider, Wallet } from "@staratlas/anchor";
-import { Effect, Layer, type Option } from "effect";
-import type { FeeMode, GlobalOptions } from "../../../types";
+import { Effect, Layer, Option } from "effect";
+import type { FeeMode } from "~/constants/fees";
+import type { GlobalOptions } from "~/utils/globalOptions";
 import type { CreateAssociatedTokenAccountIdempotent } from "./createAssociatedTokenAccountIdempotent";
 import { createAssociatedTokenAccountIdempotent } from "./createAssociatedTokenAccountIdempotent";
 import type { GetParsedTokenAccountsByOwner } from "./getParsedTokenAccountsByOwner";
@@ -45,8 +46,12 @@ export const createSolanaServiceLive = ({
 		SolanaService.of({
 			signer: keypair,
 			anchorProvider,
-			helius: Effect.fromNullable(heliusRpcUrl).pipe(
-				Effect.map((rpc) => ({ rpc, feeMode, feeLimit })),
+			helius: heliusRpcUrl.pipe(
+				Effect.map((rpc) => ({
+					rpc,
+					feeMode,
+					feeLimit: Option.getOrUndefined(feeLimit),
+				})),
 				Effect.option,
 			),
 			getParsedTokenAccountsByOwner: createGetParsedTokenAccountsByOwner(

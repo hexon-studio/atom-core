@@ -2,7 +2,6 @@ import type { PublicKey } from "@solana/web3.js";
 import {
 	Fleet,
 	Game,
-	GameState,
 	MineItem,
 	Planet,
 	Resource,
@@ -29,22 +28,6 @@ export const getGameAccount = (gamePublicKey: PublicKey) =>
 					error: error.error,
 					keyOrName: gamePublicKey.toString(),
 					reason: "Failed to get game account",
-				}),
-			),
-		),
-	);
-
-export const getGameStateAccount = (gameStatePublicKey: PublicKey) =>
-	getSagePrograms().pipe(
-		Effect.flatMap((programs) =>
-			readFromSage(programs.sage, gameStatePublicKey, GameState),
-		),
-		Effect.catchTag("ReadFromRPCError", (error: ReadFromRPCError) =>
-			Effect.fail(
-				new AccountError({
-					error: error.error,
-					keyOrName: gameStatePublicKey.toString(),
-					reason: "Failed to get game state account",
 				}),
 			),
 		),

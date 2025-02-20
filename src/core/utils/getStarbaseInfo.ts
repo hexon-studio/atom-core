@@ -1,4 +1,4 @@
-import type BN from "bn.js";
+import BN from "bn.js";
 import { Effect } from "effect";
 import {
 	findSagePlayerProfilePda,
@@ -12,9 +12,10 @@ import { getGameContext } from "../services/GameService/utils";
 export const getStarbaseInfoByCoords = ({
 	starbaseCoords,
 }: {
-	starbaseCoords: [BN, BN];
+	starbaseCoords: [BN, BN] | [number, number];
 }) =>
 	Effect.gen(function* () {
+		const [starbaseCoordsX, starbaseCoordsY] = starbaseCoords;
 		const context = yield* getGameContext();
 
 		const [sagePlayerProfilePubkey] = yield* findSagePlayerProfilePda(
@@ -24,7 +25,7 @@ export const getStarbaseInfoByCoords = ({
 
 		const [starbasePubkey] = yield* findStarbasePdaByCoordinates(
 			context.gameInfo.gameId,
-			starbaseCoords,
+			[new BN(starbaseCoordsX), new BN(starbaseCoordsY)],
 		);
 
 		const starbaseAccount = yield* getStarbaseAccount(starbasePubkey);

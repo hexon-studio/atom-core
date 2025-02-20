@@ -1,5 +1,4 @@
 import type { PublicKey } from "@solana/web3.js";
-import type BN from "bn.js";
 import { Effect } from "effect";
 import {
 	generateCraftingProcessId,
@@ -18,7 +17,7 @@ export const startCrafting = ({
 	crewAmount,
 	quantity,
 }: {
-	starbaseCoords: [BN, BN];
+	starbaseCoords: [number, number];
 	recipe: PublicKey;
 	crewAmount: number;
 	quantity: number;

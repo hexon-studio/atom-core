@@ -16,17 +16,12 @@ import { unloadCrew } from "~/core/actions/unloadCrew";
 import { warpToSector } from "~/core/actions/warpToSector";
 import { GameService } from "~/core/services/GameService";
 import { getFleetAccountByNameOrAddress } from "~/libs/@staratlas/sage";
-import type { RequiredOptions } from "~/types";
 import { createMainLiveService } from "~/utils/createMainLiveService";
+import type { GlobalOptions } from "~/utils/globalOptions";
 import { createPdasApi } from "./createPdasApi";
 
-export const createAtomApi = (
-	options: Omit<RequiredOptions, "logDisabled">,
-) => {
-	const appLayer = createMainLiveService({
-		...options,
-		logDisabled: true,
-	});
+export const createAtomApi = (options: GlobalOptions) => {
+	const appLayer = createMainLiveService(options);
 
 	const runtime = ManagedRuntime.make(appLayer);
 
