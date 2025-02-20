@@ -31,7 +31,6 @@ export const startScan = ({
 
 		if (isScanCooldown) {
 			yield* Effect.log("Scan is on cooldown");
-
 			return yield* Effect.fail(
 				new FleetCooldownError({
 					cooldownExpiresAt: new Date(
@@ -64,7 +63,6 @@ export const startScan = ({
 
 			if (!hasEnoughFood) {
 				yield* Effect.log("Not enough food for scan");
-
 				return yield* new NotEnoughFoodForScanError({
 					foodAmount: foodAmount.toString(),
 					scanCost: String(scanCost),
@@ -86,14 +84,11 @@ export const startScan = ({
 
 		if (!hasEnoughCargoSpace) {
 			yield* Effect.log("Not enough cargo space for scan");
-
 			return yield* new NotEnoughCargoSpaceForScanError();
 		}
 
 		const ixs: InstructionReturn[] = [];
-
 		const preIxs = yield* createPreIxs({ fleetAccount, targetState: "Idle" });
-
 		ixs.push(...preIxs);
 
 		const startScanIxs = yield* createScanIx({

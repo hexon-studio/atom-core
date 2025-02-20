@@ -74,3 +74,12 @@ export class SectorTooFarError extends Data.TaggedError("SectorTooFarError")<{
 		return `Target sector is too far. Distance: ${this.targetSectorDistance} AU, Max allowed distance: ${this.maxAllowedDistance} AU`;
 	}
 }
+
+export class FleetIsMovingError extends Data.TaggedError("FleetIsMovingError")<{
+	readonly arrivalTime: string;
+	readonly movementType: "Subwarp" | "Warp";
+}> {
+	override get message() {
+		return `Fleet is in ${this.movementType.toLowerCase()} movement and will arrive at ${this.arrivalTime}`;
+	}
+}

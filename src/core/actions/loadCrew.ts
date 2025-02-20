@@ -23,6 +23,8 @@ export const loadCrew = ({
 	crewAmount: number;
 }) =>
 	Effect.gen(function* () {
+		yield* Effect.log("Start loading crew...");
+
 		const fleetAccount =
 			yield* getFleetAccountByNameOrAddress(fleetNameOrAddress);
 
@@ -36,7 +38,6 @@ export const loadCrew = ({
 			starbaseCoords: fleetCoords,
 		});
 
-		// check if there are enough crew members in the starbase
 		const starbasePlayerAccount = yield* getStarbasePlayerAccount(
 			starbaseInfo.starbasePlayerPubkey,
 		);
@@ -55,9 +56,7 @@ export const loadCrew = ({
 			return { signatures: [] };
 		}
 
-		// check if there is enough passenger space in the fleet
 		const fleetMiscStats = fleetAccount.data.stats.miscStats as MiscStats;
-
 		const currentCrew = fleetMiscStats.crewCount;
 
 		const totalCrewCapacity =
@@ -69,8 +68,7 @@ export const loadCrew = ({
 		);
 
 		if (finalCrewAmount <= 0) {
-			yield* Effect.log("Not enough passenger space in fleet. Skipping.");
-
+			yield* Effect.log("Fleet is at maximum crew capacity. Skipping.");
 			return { signatures: [] };
 		}
 
@@ -111,7 +109,7 @@ export const loadCrew = ({
 			txs.map((tx) => GameService.sendTransaction(tx)),
 		);
 
-		yield* Effect.log("Crew started loading");
+		yield* Effect.log("Crew loaded successfully");
 
 		return { signatures };
 	});

@@ -10,10 +10,10 @@ export const undockFromStarbase = ({
 	fleetNameOrAddress,
 }: { fleetNameOrAddress: string | PublicKey }) =>
 	Effect.gen(function* () {
+		yield* Effect.log("Start undocking...");
+
 		const fleetAccount =
 			yield* getFleetAccountByNameOrAddress(fleetNameOrAddress);
-
-		yield* Effect.log("Undocking from starbase...");
 
 		const ixs = yield* createPreIxs({ fleetAccount, targetState: "Idle" });
 
@@ -37,7 +37,7 @@ export const undockFromStarbase = ({
 			txs.map((tx) => GameService.sendTransaction(tx)),
 		);
 
-		yield* Effect.log("Fleet undocked!");
+		yield* Effect.log("Fleet undocked successfully");
 
 		return { signatures };
 	});

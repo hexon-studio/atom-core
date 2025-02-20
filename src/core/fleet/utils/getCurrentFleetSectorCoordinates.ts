@@ -12,8 +12,7 @@ export const getCurrentFleetSectorCoordinates = (
 		),
 		Match.when(
 			{ MoveSubwarp: Match.defined },
-			({ MoveSubwarp: { currentSector } }) =>
-				Effect.succeed(currentSector as [BN, BN]),
+			({ MoveSubwarp: { toSector } }) => Effect.succeed(toSector as [BN, BN]),
 		),
 		Match.when(
 			{ StarbaseLoadingBay: { starbase: Match.defined } },
