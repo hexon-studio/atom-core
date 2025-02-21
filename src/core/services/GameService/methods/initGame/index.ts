@@ -57,6 +57,6 @@ export const initGame = (
 				},
 			}),
 		);
-	});
+	}).pipe();
 
 export type InitGame = typeof initGame;

@@ -22,6 +22,7 @@ import {
 	createOptionsFromParsed,
 } from "~/utils/globalOptions";
 import { createPdasApi } from "./createPdasApi";
+import { toVanillaError } from "./toVanillaError";
 
 export const createAtomApi = (
 	options: Omit<
@@ -49,28 +50,23 @@ export const createAtomApi = (
 				Effect.flatMap((service) =>
 					service.initGame(service.gameContext, globalOptions),
 				),
+				toVanillaError,
 				runtime.runPromise,
 			),
 		dispose: () => runtime.dispose(),
 		getFleet: (...args: Parameters<typeof getFleetAccountByNameOrAddress>) =>
-			getFleetAccountByNameOrAddress(...args).pipe(runtime.runPromise),
-		dock: (...args: Parameters<typeof dockToStarbase>) =>
-			dockToStarbase(...args).pipe(runtime.runPromise),
-		undock: (...args: Parameters<typeof undockFromStarbase>) =>
-			undockFromStarbase(...args).pipe(
-				// Effect.either,
-				// Effect.map(
-				// 	Either.match({
-				// 		onRight: (signatures) => [signatures, undefined] as const,
-				// 		onLeft: (error) => [undefined, error] as const,
-				// 	}),
-				// ),
+			getFleetAccountByNameOrAddress(...args).pipe(
+				toVanillaError,
 				runtime.runPromise,
 			),
+		dock: (...args: Parameters<typeof dockToStarbase>) =>
+			dockToStarbase(...args).pipe(toVanillaError, runtime.runPromise),
+		undock: (...args: Parameters<typeof undockFromStarbase>) =>
+			undockFromStarbase(...args).pipe(toVanillaError, runtime.runPromise),
 		startCrafting: (...args: Parameters<typeof startCrafting>) =>
-			startCrafting(...args).pipe(runtime.runPromise),
+			startCrafting(...args).pipe(toVanillaError, runtime.runPromise),
 		stopCrafting: (...args: Parameters<typeof stopCrafting>) =>
-			stopCrafting(...args).pipe(runtime.runPromise),
+			stopCrafting(...args).pipe(toVanillaError, runtime.runPromise),
 		startMining: ({
 			fleetNameOrAddress,
 			resource,
@@ -86,23 +82,23 @@ export const createAtomApi = (
 			return startMining({
 				fleetNameOrAddress,
 				resourceMint,
-			}).pipe(runtime.runPromise);
+			}).pipe(toVanillaError, runtime.runPromise);
 		},
 		stopMining: (...args: Parameters<typeof stopMining>) =>
-			stopMining(...args).pipe(runtime.runPromise),
+			stopMining(...args).pipe(toVanillaError, runtime.runPromise),
 		loadCargo: (...args: Parameters<typeof loadCargo>) =>
-			loadCargo(...args).pipe(runtime.runPromise),
+			loadCargo(...args).pipe(toVanillaError, runtime.runPromise),
 		loadCrew: (...args: Parameters<typeof loadCrew>) =>
-			loadCrew(...args).pipe(runtime.runPromise),
+			loadCrew(...args).pipe(toVanillaError, runtime.runPromise),
 		unloadCrew: (...args: Parameters<typeof unloadCrew>) =>
-			unloadCrew(...args).pipe(runtime.runPromise),
+			unloadCrew(...args).pipe(toVanillaError, runtime.runPromise),
 		unloadCargo: (...args: Parameters<typeof unloadCargo>) =>
-			unloadCargo(...args).pipe(runtime.runPromise),
+			unloadCargo(...args).pipe(toVanillaError, runtime.runPromise),
 		subwarp: (...args: Parameters<typeof subwarpToSector>) =>
-			subwarpToSector(...args).pipe(runtime.runPromise),
+			subwarpToSector(...args).pipe(toVanillaError, runtime.runPromise),
 		warp: (...args: Parameters<typeof warpToSector>) =>
-			warpToSector(...args).pipe(runtime.runPromise),
+			warpToSector(...args).pipe(toVanillaError, runtime.runPromise),
 		startScan: (...args: Parameters<typeof startScan>) =>
-			startScan(...args).pipe(runtime.runPromise),
+			startScan(...args).pipe(toVanillaError, runtime.runPromise),
 	};
 };

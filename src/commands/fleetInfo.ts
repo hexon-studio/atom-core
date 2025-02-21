@@ -16,7 +16,6 @@ export const makeFleetInfoCommand = ({
 }: Param) =>
 	GameService.pipe(
 		Effect.tap((service) => service.initGame(service.gameContext, globalOpts)),
-		Effect.tap(() => Effect.log("Game initialized.")),
 		Effect.flatMap(() => getFleetAccountByNameOrAddress(fleetNameOrAddress)),
 		Effect.tap((fleet) =>
 			Effect.logInfo("Fleet found").pipe(Effect.annotateLogs({ fleet })),

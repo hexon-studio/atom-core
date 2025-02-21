@@ -22,7 +22,6 @@ export const makeUnloadCargoCommand = ({
 }: Param) =>
 	GameService.pipe(
 		Effect.tap((service) => service.initGame(service.gameContext, globalOpts)),
-		Effect.tap(() => Effect.log("Game initialized.")),
 		Effect.flatMap(() =>
 			runBaseCommand({
 				self: () =>

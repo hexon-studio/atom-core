@@ -12,7 +12,6 @@ export const makeProfileInfoCommand = ({
 }: { playerProfile: Option.Option<PublicKey>; globalOpts: GlobalOptions }) =>
 	GameService.pipe(
 		Effect.tap((service) => service.initGame(service.gameContext, globalOpts)),
-		Effect.tap(() => Effect.log("Game initialized.")),
 		Effect.flatMap(() =>
 			playerProfile.pipe(
 				Effect.flatMap(getPlayerProfileAccout),
