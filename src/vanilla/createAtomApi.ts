@@ -17,11 +17,26 @@ import { warpToSector } from "~/core/actions/warpToSector";
 import { GameService } from "~/core/services/GameService";
 import { getFleetAccountByNameOrAddress } from "~/libs/@staratlas/sage";
 import { createMainLiveService } from "~/utils/createMainLiveService";
-import type { GlobalOptions } from "~/utils/globalOptions";
+import {
+	type ParsedGlobalOptions,
+	createOptionsFromParsed,
+} from "~/utils/globalOptions";
 import { createPdasApi } from "./createPdasApi";
 
-export const createAtomApi = (options: GlobalOptions) => {
-	const appLayer = createMainLiveService(options);
+export const createAtomApi = (
+	options: Omit<
+		ParsedGlobalOptions,
+		| "feeRecipient"
+		| "feeAtlas"
+		| "feeLamports"
+		| "webhookUrl"
+		| "webhookSecret"
+		| "contextId"
+	>,
+) => {
+	const globalOptions = createOptionsFromParsed(options);
+
+	const appLayer = createMainLiveService(globalOptions);
 
 	const runtime = ManagedRuntime.make(appLayer);
 
@@ -32,7 +47,7 @@ export const createAtomApi = (options: GlobalOptions) => {
 		init: () =>
 			GameService.pipe(
 				Effect.flatMap((service) =>
-					service.initGame(service.gameContext, options),
+					service.initGame(service.gameContext, globalOptions),
 				),
 				runtime.runPromise,
 			),

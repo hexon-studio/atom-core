@@ -7,7 +7,10 @@ export const parseOptionsFees = ({
 	feeLamports,
 	feeRecipient,
 	feeAtlas,
-}: GlobalOptions) => {
+}: Pick<
+	GlobalOptions,
+	"atlasPrime" | "feeLamports" | "feeRecipient" | "feeAtlas"
+>) => {
 	const fees: Option.Option<
 		| {
 				type: "sol";

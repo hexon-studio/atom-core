@@ -1,6 +1,6 @@
-import { Context, Effect, Layer, Redacted } from "effect";
+import { Context, Effect, Layer } from "effect";
 import { FireWebhookEventError } from "~/errors";
-import type { WebhookOptions } from "../../../types";
+import type { WebhookOptions } from "~/utils/parseOptionsWebhook";
 import { getGameContext } from "../GameService/utils";
 
 export type WebhookEvent<A> =
@@ -34,7 +34,7 @@ const fireWebhookEvent =
 								method: "POST",
 								headers: {
 									"Content-Type": "application/json",
-									Authorization: Redacted.value(webhookSecret),
+									Authorization: webhookSecret,
 								},
 								body: JSON.stringify({
 									...event,

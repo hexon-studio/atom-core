@@ -285,10 +285,10 @@ const atomUnloadCrew = Command.make(
 				}),
 			),
 		),
-).pipe(Command.withDescription("Load crew members into a fleet"));
+).pipe(Command.withDescription("Unload crew members from a fleet"));
 
 const atomStartScan = Command.make(
-	"unload-crew",
+	"start-scan",
 	{ fleetNameOrAddress },
 	({ fleetNameOrAddress }) =>
 		atom.pipe(
@@ -299,7 +299,9 @@ const atomStartScan = Command.make(
 				}),
 			),
 		),
-).pipe(Command.withDescription("Load crew members into a fleet"));
+).pipe(
+	Command.withDescription("Start scanning the current sector with a fleet"),
+);
 
 const playerProfile = Args.text({ name: "player-profile" }).pipe(
 	Args.map((value) => new PublicKey(value)),

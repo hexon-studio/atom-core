@@ -1,7 +1,7 @@
 import { type Command, Options } from "@effect/cli";
 import { Keypair, PublicKey } from "@solana/web3.js";
 import base58 from "bs58";
-import { Config, Redacted } from "effect";
+import { Config, Option, Redacted } from "effect";
 import { feeModes } from "~/constants/fees";
 
 const atlasPrime = Options.boolean("atlasPrime").pipe(
@@ -133,3 +133,90 @@ export const globalOptions = {
 };
 
 export type GlobalOptions = Command.Command.ParseConfig<typeof globalOptions>;
+
+// export const parseOptions = (options: GlobalOptions) => {
+// 	const {
+// 		atlasPrime,
+// 		feeAtlas,
+// 		feeLamports,
+// 		feeRecipient,
+// 		webhookSecret,
+// 		webhookUrl,
+// 		contextId,
+// 		commonApiUrl,
+// 		feeLimit,
+// 		heliusRpcUrl,
+// 		loggingToken,
+// 		...rest
+// 	} = options;
+
+// 	const fees = parseOptionsFees({
+// 		atlasPrime,
+// 		feeAtlas,
+// 		feeLamports,
+// 		feeRecipient,
+// 	}).pipe(Option.getOrUndefined);
+
+// 	const webhookArgs = parseOptionsWebhook({
+// 		webhookSecret,
+// 		webhookUrl,
+// 		contextId,
+// 	}).pipe(Option.getOrUndefined);
+
+// 	return {
+// 		...rest,
+// 		atlasPrime,
+// 		feeLimit: Option.getOrUndefined(feeLimit),
+// 		heliusRpcUrl: Option.getOrUndefined(heliusRpcUrl),
+// 		loggingToken: loggingToken.pipe(
+// 			Option.map(Redacted.value),
+// 			Option.getOrUndefined,
+// 		),
+// 		commonApiUrl: Option.getOrUndefined(commonApiUrl),
+// 		fees,
+// 		webhookArgs,
+// 	};
+// };
+
+type UnwrapOption<T> = T extends Option.Option<infer U> ? U : T;
+type UnwrapRedacted<T> = T extends Redacted.Redacted<infer U> ? U : T;
+
+type KeysWithOption = {
+	[K in keyof GlobalOptions]: GlobalOptions[K] extends Option.Option<unknown>
+		? K
+		: never;
+}[keyof GlobalOptions];
+
+export type ParsedGlobalOptions = Omit<GlobalOptions, KeysWithOption> & {
+	[K in KeysWithOption]?: UnwrapRedacted<UnwrapOption<GlobalOptions[K]>>;
+};
+
+export const createOptionsFromParsed = ({
+	commonApiUrl,
+	feeLimit,
+	heliusRpcUrl,
+	loggingToken,
+	contextId,
+	feeAtlas,
+	feeLamports,
+	feeRecipient,
+	webhookSecret,
+	webhookUrl,
+	...rest
+}: ParsedGlobalOptions): GlobalOptions => ({
+	...rest,
+	commonApiUrl: Option.fromNullable(commonApiUrl),
+	feeLimit: Option.fromNullable(feeLimit),
+	contextId: Option.fromNullable(contextId),
+	feeAtlas: Option.fromNullable(feeAtlas),
+	feeLamports: Option.fromNullable(feeLamports),
+	feeRecipient: Option.fromNullable(feeRecipient),
+	heliusRpcUrl: Option.fromNullable(heliusRpcUrl),
+	loggingToken: Option.fromNullable(loggingToken).pipe(
+		Option.map(Redacted.make),
+	),
+	webhookSecret: Option.fromNullable(webhookSecret).pipe(
+		Option.map(Redacted.make),
+	),
+	webhookUrl: Option.fromNullable(webhookUrl),
+});
