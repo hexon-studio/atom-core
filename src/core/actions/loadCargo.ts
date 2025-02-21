@@ -82,7 +82,6 @@ export const loadCargo = ({
 				}),
 			),
 			Effect.bind("drainVaultIx", () => createDrainVaultIx()),
-			// Sending the transactions before doing the next step
 			Effect.flatMap(({ preIxs, drainVaultIx }) =>
 				GameService.buildAndSignTransaction({
 					ixs: preIxs,
@@ -101,7 +100,6 @@ export const loadCargo = ({
 		yield* Effect.sleep("10 seconds");
 
 		const freshFleetAccount = yield* getFleetAccount(preFleetAccount.key);
-
 		const ixs: InstructionReturn[] = [];
 
 		const itemsCargoPodsKinds = [
@@ -157,7 +155,6 @@ export const loadCargo = ({
 				yield* Effect.log(
 					`Not enough space to load ${item.resourceMint.toString()} in ${item.cargoPodKind}, reachedCapacity (${totalResourcesAmountInCargoUnits.toString()}) >= maxCapacity (${cargoPodInfo.maxCapacityInCargoUnits.toString()})`,
 				);
-
 				continue;
 			}
 
@@ -165,7 +162,6 @@ export const loadCargo = ({
 				yield* Effect.log(
 					`Skip load of ${item.resourceMint.toString()}, computed cargo units is ${enhancedItem.computedAmountInCargoUnits.toString()}`,
 				);
-
 				continue;
 			}
 
@@ -223,7 +219,6 @@ export const loadCargo = ({
 
 		if (EffectArray.isEmptyArray(loadCargoIxs)) {
 			yield* Effect.log("Nothing to load. Skipping");
-
 			return { signatures: [] };
 		}
 
@@ -244,16 +239,16 @@ export const loadCargo = ({
 		const [errors, signatures] = EffectArray.partitionMap(maybeTxIds, identity);
 
 		if (EffectArray.isEmptyArray(signatures)) {
-			// NOTE: All transactions failed
+			// All transactions failed
 			return yield* Effect.fail(new LoadUnloadFailedError({ errors }));
 		}
 
 		if (EffectArray.isEmptyArray(errors)) {
-			// NOTE: All transactions succeeded
+			// All transactions succeeded
 			return { signatures: [...preIxsSignatures, ...signatures] };
 		}
 
-		// NOTE: Some transactions failed
+		// Some transactions failed - check differences
 		yield* Effect.sleep("10 seconds");
 
 		const itemsCargoPodKinds = [

@@ -24,13 +24,11 @@ export const startCrafting = ({
 }) =>
 	Effect.gen(function* () {
 		const craftingId = generateCraftingProcessId();
-
 		yield* Effect.log("Start crafting...").pipe(
 			Effect.annotateLogs({ craftingId: craftingId.toString() }),
 		);
 
 		const recipeAccount = yield* getRecipeAccount(recipe);
-
 		yield* Effect.log("Crafting recipe loaded").pipe(
 			Effect.annotateLogs({ recipeAccount }),
 		);
@@ -57,7 +55,6 @@ export const startCrafting = ({
 		]);
 
 		const drainVaultIx = yield* createDrainVaultIx();
-
 		const {
 			options: { maxIxsPerTransaction },
 		} = yield* getGameContext();

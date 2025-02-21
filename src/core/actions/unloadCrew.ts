@@ -21,6 +21,8 @@ export const unloadCrew = ({
 	fleetNameOrAddress: string | PublicKey;
 }) =>
 	Effect.gen(function* () {
+		yield* Effect.log("Start unloading crew...");
+
 		const fleetAccount =
 			yield* getFleetAccountByNameOrAddress(fleetNameOrAddress);
 
@@ -36,7 +38,6 @@ export const unloadCrew = ({
 			starbaseCoords: fleetCoords,
 		});
 
-		// check if there are enough crew members in the fleet
 		const fleetMiscStats = fleetAccount.data.stats.miscStats as MiscStats;
 		const currentCrew = fleetMiscStats.crewCount;
 
@@ -80,14 +81,14 @@ export const unloadCrew = ({
 		} = yield* getGameContext();
 
 		const txs = yield* GameService.buildAndSignTransaction({
-			afterIxs: drainVaultIx,
 			ixs,
+			afterIxs: drainVaultIx,
 			size: maxIxsPerTransaction,
 		});
 
 		const signatures = yield* GameService.sendAllTransactions(txs);
 
-		yield* Effect.log("Crew started unloading");
+		yield* Effect.log("Crew unloaded successfully");
 
 		return { signatures };
 	});

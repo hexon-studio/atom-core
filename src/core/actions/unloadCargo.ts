@@ -61,7 +61,6 @@ export const unloadCargo = ({
 				}),
 			),
 			Effect.bind("drainVaultIx", () => createDrainVaultIx()),
-			// Sending the transactions before doing the next step
 			Effect.flatMap(({ preIxs, drainVaultIx }) =>
 				GameService.buildAndSignTransaction({
 					ixs: preIxs,
@@ -80,7 +79,6 @@ export const unloadCargo = ({
 		yield* Effect.sleep("10 seconds");
 
 		const freshFleetAccount = yield* getFleetAccount(preFleetAccount.key);
-
 		const ixs: InstructionReturn[] = [];
 
 		const itemsCargoPodsKinds = [
@@ -114,7 +112,6 @@ export const unloadCargo = ({
 
 		if (EffectArray.isEmptyArray(unloadCargoIxs)) {
 			yield* Effect.log("Nothing to unload. Skipping");
-
 			return { signatures: [] };
 		}
 
@@ -138,17 +135,17 @@ export const unloadCargo = ({
 			identity,
 		);
 
-		// NOTE: All transactions failed
 		if (EffectArray.isEmptyArray(signatures)) {
+			// All transactions failed
 			return yield* Effect.fail(new LoadUnloadFailedError({ errors }));
 		}
 
-		// NOTE: All transactions succeeded
 		if (EffectArray.isEmptyArray(errors)) {
+			// All transactions succeeded
 			return { signatures: [...preIxsSignatures, ...signatures] };
 		}
 
-		// NOTE: Some transactions failed
+		// Some transactions failed - check differences
 		yield* Effect.sleep("10 seconds");
 
 		const postCargoPodsInfos = yield* getFleetCargoPodInfosForItems({
@@ -214,6 +211,7 @@ export const unloadCargo = ({
 
 			return !!res;
 		});
+
 		return yield* new LoadUnloadPartiallyFailedError({
 			errors,
 			signatures: [...preIxsSignatures, ...signatures],

@@ -1,5 +1,6 @@
 import type { Fleet } from "@staratlas/sage";
 import { Effect, Match, pipe } from "effect";
+import { FleetIsMovingError } from "~/errors";
 import { getMineItemAccount, getResourceAccount } from "~/libs/@staratlas/sage";
 import { createDockToStarbaseIx } from "./createDockToStarbaseIx";
 import { createMovementHandlerIx } from "./createMovementHandlerIx";
@@ -27,12 +28,46 @@ export const createPreIxs = ({ fleetAccount, targetState }: Param) =>
 		),
 		Match.when(
 			{ state: { MoveWarp: Match.defined }, targetState: "Idle" },
-			() => createMovementHandlerIx(fleetAccount),
+			({
+				state: {
+					MoveWarp: { warpFinish },
+				},
+			}) =>
+				Effect.gen(function* () {
+					const warpFinishMillis = warpFinish.toNumber() * 1000;
+
+					if (warpFinishMillis >= Date.now()) {
+						return yield* Effect.fail(
+							new FleetIsMovingError({
+								arrivalTime: new Date(warpFinishMillis).toISOString(),
+								movementType: "Warp",
+							}),
+						);
+					}
+
+					const movementIxs = yield* createMovementHandlerIx(fleetAccount);
+					return movementIxs;
+				}),
 		),
 		Match.when(
 			{ state: { MoveWarp: Match.defined }, targetState: "StarbaseLoadingBay" },
-			() =>
+			({
+				state: {
+					MoveWarp: { warpFinish },
+				},
+			}) =>
 				Effect.gen(function* () {
+					const warpFinishMillis = warpFinish.toNumber() * 1000;
+
+					if (warpFinishMillis >= Date.now()) {
+						return yield* Effect.fail(
+							new FleetIsMovingError({
+								arrivalTime: new Date(warpFinishMillis).toISOString(),
+								movementType: "Warp",
+							}),
+						);
+					}
+
 					const movementIxs = yield* createMovementHandlerIx(fleetAccount);
 
 					const dockedIxs = yield* createDockToStarbaseIx(fleetAccount);
@@ -42,15 +77,46 @@ export const createPreIxs = ({ fleetAccount, targetState }: Param) =>
 		),
 		Match.when(
 			{ state: { MoveSubwarp: Match.defined }, targetState: "Idle" },
-			() => createMovementHandlerIx(fleetAccount),
+			// TODO: add stop subwarp ix
+			({
+				state: {
+					MoveSubwarp: { arrivalTime },
+				},
+			}) =>
+				Effect.gen(function* () {
+					const arrivalTimeMillis = arrivalTime.toNumber() * 1000;
+
+					if (arrivalTimeMillis >= Date.now()) {
+						return yield* new FleetIsMovingError({
+							arrivalTime: new Date(arrivalTimeMillis).toISOString(),
+							movementType: "Subwarp",
+						});
+					}
+
+					const movementIxs = yield* createMovementHandlerIx(fleetAccount);
+					return movementIxs;
+				}),
 		),
 		Match.when(
 			{
 				state: { MoveSubwarp: Match.defined },
 				targetState: "StarbaseLoadingBay",
 			},
-			() =>
+			({
+				state: {
+					MoveSubwarp: { arrivalTime },
+				},
+			}) =>
 				Effect.gen(function* () {
+					const arrivalTimeMillis = arrivalTime.toNumber() * 1000;
+
+					if (arrivalTimeMillis >= Date.now()) {
+						return yield* new FleetIsMovingError({
+							arrivalTime: new Date(arrivalTimeMillis).toISOString(),
+							movementType: "Subwarp",
+						});
+					}
+
 					const movementIxs = yield* createMovementHandlerIx(fleetAccount);
 
 					const dockedIxs = yield* createDockToStarbaseIx(fleetAccount);

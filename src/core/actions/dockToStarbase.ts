@@ -10,6 +10,8 @@ export const dockToStarbase = ({
 	fleetNameOrAddress,
 }: { fleetNameOrAddress: string | PublicKey }) =>
 	Effect.gen(function* () {
+		yield* Effect.log("Start docking...");
+
 		const fleetAccount =
 			yield* getFleetAccountByNameOrAddress(fleetNameOrAddress);
 
@@ -40,7 +42,7 @@ export const dockToStarbase = ({
 
 		const signatures = yield* GameService.sendAllTransactions(txs);
 
-		yield* Effect.log("Fleet docked!");
+		yield* Effect.log("Fleet docked successfully");
 
 		return { signatures };
 	});

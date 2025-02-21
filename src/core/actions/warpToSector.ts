@@ -25,12 +25,10 @@ export const warpToSector = ({
 
 		const warpCooldownExpiresAt =
 			fleetAccount.data.warpCooldownExpiresAt.toNumber();
-
 		const timestampInSeconds = Math.floor(Date.now() / 1000);
 
 		if (warpCooldownExpiresAt > timestampInSeconds) {
 			yield* Effect.log("Warp is on cooldown");
-
 			return yield* Effect.fail(
 				new FleetCooldownError({
 					cooldownExpiresAt: new Date(
@@ -41,9 +39,7 @@ export const warpToSector = ({
 		}
 
 		const ixs: InstructionReturn[] = [];
-
 		const preIxs = yield* createPreIxs({ fleetAccount, targetState: "Idle" });
-
 		ixs.push(...preIxs);
 
 		const warpIxs = yield* createWarpToCoordinateIx({
@@ -53,12 +49,10 @@ export const warpToSector = ({
 
 		if (!warpIxs.length) {
 			yield* Effect.log("Fleet already in target sector. Skipping");
-
 			return { signatures: [] };
 		}
 
 		ixs.push(...warpIxs);
-
 		const drainVaultIx = yield* createDrainVaultIx();
 
 		const {
