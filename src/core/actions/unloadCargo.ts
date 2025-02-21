@@ -190,7 +190,7 @@ export const unloadCargo = ({
 			Effect.annotateLogs({
 				context: JSON.parse(
 					JSON.stringify(differences, (_, value) =>
-						value instanceof BN ? value.toString() : value,
+						value instanceof BN ? value.toJSON() : value,
 					),
 				),
 			}),

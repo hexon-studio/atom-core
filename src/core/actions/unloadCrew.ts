@@ -26,10 +26,6 @@ export const unloadCrew = ({
 		const fleetAccount =
 			yield* getFleetAccountByNameOrAddress(fleetNameOrAddress);
 
-		yield* Effect.log(
-			`Unloading crew from fleet ${fleetAccount.key.toString()}`,
-		);
-
 		const fleetCoords = yield* getCurrentFleetSectorCoordinates(
 			fleetAccount.state,
 		);

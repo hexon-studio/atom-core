@@ -1,5 +1,4 @@
 import type { PublicKey } from "@solana/web3.js";
-import type { InstructionReturn } from "@staratlas/data-source";
 import BN from "bn.js";
 import { Effect } from "effect";
 import {
@@ -24,7 +23,7 @@ export const subwarpToSector = ({
 
 		const preFleetAccount =
 			yield* getFleetAccountByNameOrAddress(fleetNameOrAddress);
-		const ixs: InstructionReturn[] = [];
+
 		const {
 			options: { maxIxsPerTransaction },
 		} = yield* getGameContext();
@@ -56,6 +55,7 @@ export const subwarpToSector = ({
 		);
 
 		const freshFleetAccount = yield* getFleetAccount(preFleetAccount.key);
+
 		const subwarpIxs = yield* createSubwarpToCoordinateIx({
 			fleetAccount: freshFleetAccount,
 			targetSector: [new BN(targetSectorX), new BN(targetSectorY)],
@@ -66,11 +66,10 @@ export const subwarpToSector = ({
 			return { signatures: preIxsSignatures };
 		}
 
-		ixs.push(...subwarpIxs);
 		const drainVaultIx = yield* createDrainVaultIx();
 
 		const txs = yield* GameService.buildAndSignTransaction({
-			ixs,
+			ixs: subwarpIxs,
 			afterIxs: drainVaultIx,
 			size: maxIxsPerTransaction,
 		});

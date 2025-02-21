@@ -4,7 +4,7 @@ import type BN from "bn.js";
 import { Effect } from "effect";
 import { getSagePrograms } from "~/core/programs";
 import { getGameContext } from "~/core/services/GameService/utils";
-import { getStarbaseInfoByCoords } from "~/core/utils/getStarbaseInfo";
+import type { StarbaseInfo } from "~/core/utils/getStarbaseInfo";
 import {
 	divideRecipeIngredients,
 	findCraftingInstancePda,
@@ -15,19 +15,15 @@ import { findAssociatedTokenPda } from "~/utils/findAssociatedTokenPda";
 export const createCraftingBurnConsumablesIxs = ({
 	craftingId,
 	recipeAccount,
-	starbaseCoords,
+	starbaseInfo,
 }: {
 	craftingId: BN;
 	recipeAccount: Recipe;
-	starbaseCoords: [number, number];
+	starbaseInfo: StarbaseInfo;
 }) =>
 	Effect.gen(function* () {
 		const context = yield* getGameContext();
 		const programs = yield* getSagePrograms();
-
-		const starbaseInfo = yield* getStarbaseInfoByCoords({
-			starbaseCoords,
-		});
 
 		const [craftingProcess] = yield* findCraftingProcessPda({
 			craftingFacility: starbaseInfo.starbaseAccount.data.craftingFacility,

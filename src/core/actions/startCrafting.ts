@@ -24,8 +24,9 @@ export const startCrafting = ({
 }) =>
 	Effect.gen(function* () {
 		const craftingId = generateCraftingProcessId();
+
 		yield* Effect.log("Start crafting...").pipe(
-			Effect.annotateLogs({ craftingId: craftingId.toString() }),
+			Effect.annotateLogs({ craftingId: craftingId.toJSON() }),
 		);
 
 		const recipeAccount = yield* getRecipeAccount(recipe);

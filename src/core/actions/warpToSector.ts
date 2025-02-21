@@ -1,5 +1,4 @@
 import type { PublicKey } from "@solana/web3.js";
-import type { InstructionReturn } from "@staratlas/data-source";
 import BN from "bn.js";
 import { Effect } from "effect";
 import { getFleetAccountByNameOrAddress } from "~/libs/@staratlas/sage";
@@ -29,18 +28,13 @@ export const warpToSector = ({
 
 		if (warpCooldownExpiresAt > timestampInSeconds) {
 			yield* Effect.log("Warp is on cooldown");
-			return yield* Effect.fail(
-				new FleetCooldownError({
-					cooldownExpiresAt: new Date(
-						warpCooldownExpiresAt * 1000,
-					).toISOString(),
-				}),
-			);
+
+			return yield* new FleetCooldownError({
+				cooldownExpiresAt: new Date(warpCooldownExpiresAt * 1000).toISOString(),
+			});
 		}
 
-		const ixs: InstructionReturn[] = [];
 		const preIxs = yield* createPreIxs({ fleetAccount, targetState: "Idle" });
-		ixs.push(...preIxs);
 
 		const warpIxs = yield* createWarpToCoordinateIx({
 			fleetAccount,
@@ -52,7 +46,6 @@ export const warpToSector = ({
 			return { signatures: [] };
 		}
 
-		ixs.push(...warpIxs);
 		const drainVaultIx = yield* createDrainVaultIx();
 
 		const {
@@ -60,7 +53,7 @@ export const warpToSector = ({
 		} = yield* getGameContext();
 
 		const txs = yield* GameService.buildAndSignTransaction({
-			ixs,
+			ixs: [...preIxs, ...warpIxs],
 			afterIxs: drainVaultIx,
 			size: maxIxsPerTransaction,
 		});

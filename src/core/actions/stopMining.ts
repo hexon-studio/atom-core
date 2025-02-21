@@ -17,10 +17,12 @@ export const stopMining = ({
 
 		if (!fleetAccount.state.MineAsteroid) {
 			yield* Effect.log("Fleet is not mining on asteroid");
+
 			return { signatures: [] };
 		}
 
 		const resourceMint = fleetAccount.state.MineAsteroid.resource;
+
 		yield* Effect.log(`Stop mining ${resourceMint.toString()}...`);
 
 		const ixs = yield* createPreIxs({

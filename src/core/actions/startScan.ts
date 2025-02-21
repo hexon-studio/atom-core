@@ -1,5 +1,4 @@
 import type { PublicKey } from "@solana/web3.js";
-import type { InstructionReturn } from "@staratlas/data-source";
 import { BN } from "bn.js";
 import { Effect, Option, Record } from "effect";
 import { resourceNameToMint } from "~/constants/resources";
@@ -87,18 +86,14 @@ export const startScan = ({
 			return yield* new NotEnoughCargoSpaceForScanError();
 		}
 
-		const ixs: InstructionReturn[] = [];
 		const preIxs = yield* createPreIxs({ fleetAccount, targetState: "Idle" });
-		ixs.push(...preIxs);
 
 		const startScanIxs = yield* createScanIx({
 			fleetAccount,
 		});
 
-		ixs.push(...startScanIxs);
-
 		const txs = yield* GameService.buildAndSignTransaction({
-			ixs,
+			ixs: [...preIxs, ...startScanIxs],
 			size: 1, // NOTE: scan should be done in a single transaction
 		});
 

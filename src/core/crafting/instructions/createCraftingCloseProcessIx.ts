@@ -6,7 +6,7 @@ import { tokenMints } from "~/constants/tokens";
 import { getSagePrograms } from "~/core/programs";
 import { GameService } from "~/core/services/GameService";
 import { getGameContext } from "~/core/services/GameService/utils";
-import { getStarbaseInfoByCoords } from "~/core/utils/getStarbaseInfo";
+import type { StarbaseInfo } from "~/core/utils/getStarbaseInfo";
 import {
 	findCraftingInstancePda,
 	findCraftingProcessPda,
@@ -18,11 +18,11 @@ import { findAssociatedTokenPda } from "~/utils/findAssociatedTokenPda";
 export const createCraftingCloseProcessIx = ({
 	craftingId,
 	recipeAccount,
-	starbaseCoords,
+	starbaseInfo,
 }: {
 	craftingId: BN;
 	recipeAccount: Recipe;
-	starbaseCoords: [number, number];
+	starbaseInfo: StarbaseInfo;
 }) =>
 	Effect.gen(function* () {
 		const context = yield* getGameContext();
@@ -33,10 +33,6 @@ export const createCraftingCloseProcessIx = ({
 		const [profileFaction] = yield* findProfileFactionPda(
 			context.options.playerProfile,
 		);
-
-		const starbaseInfo = yield* getStarbaseInfoByCoords({
-			starbaseCoords,
-		});
 
 		const [craftingProcess] = yield* findCraftingProcessPda({
 			craftingFacility: starbaseInfo.starbaseAccount.data.craftingFacility,

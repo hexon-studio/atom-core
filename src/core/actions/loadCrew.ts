@@ -28,8 +28,6 @@ export const loadCrew = ({
 		const fleetAccount =
 			yield* getFleetAccountByNameOrAddress(fleetNameOrAddress);
 
-		yield* Effect.log(`Loading crew to fleet ${fleetAccount.key.toString()}`);
-
 		const fleetCoords = yield* getCurrentFleetSectorCoordinates(
 			fleetAccount.state,
 		);

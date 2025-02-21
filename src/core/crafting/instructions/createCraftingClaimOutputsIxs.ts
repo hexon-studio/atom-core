@@ -6,7 +6,7 @@ import { Effect, Option } from "effect";
 import { getSagePrograms } from "~/core/programs";
 import { getGameContext } from "~/core/services/GameService/utils";
 import { SolanaService } from "~/core/services/SolanaService";
-import { getStarbaseInfoByCoords } from "~/core/utils/getStarbaseInfo";
+import type { StarbaseInfo } from "~/core/utils/getStarbaseInfo";
 import { CraftingOutputItemNotFoundError } from "~/errors";
 import { findCargoTypePda } from "~/libs/@staratlas/cargo";
 import {
@@ -20,11 +20,11 @@ import { findAssociatedTokenPda } from "~/utils/findAssociatedTokenPda";
 export const createCraftingClaimOutputsIxs = ({
 	craftingId,
 	recipeAccount,
-	starbaseCoords,
+	starbaseInfo,
 }: {
 	craftingId: BN;
 	recipeAccount: Recipe;
-	starbaseCoords: [number, number];
+	starbaseInfo: StarbaseInfo;
 }) =>
 	Effect.gen(function* () {
 		const context = yield* getGameContext();
@@ -38,10 +38,6 @@ export const createCraftingClaimOutputsIxs = ({
 		if (!outputItem) {
 			return yield* new CraftingOutputItemNotFoundError();
 		}
-
-		const starbaseInfo = yield* getStarbaseInfoByCoords({
-			starbaseCoords,
-		});
 
 		const [craftingProcess] = yield* findCraftingProcessPda({
 			craftingFacility: starbaseInfo.starbaseAccount.data.craftingFacility,

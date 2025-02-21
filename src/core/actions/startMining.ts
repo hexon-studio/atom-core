@@ -1,5 +1,4 @@
 import type { PublicKey } from "@solana/web3.js";
-import type { InstructionReturn } from "@staratlas/data-source";
 import { Effect } from "effect";
 import { getFleetAccountByNameOrAddress } from "~/libs/@staratlas/sage";
 import { createPreIxs } from "../fleet/instructions/createPreIxs";
@@ -31,21 +30,15 @@ export const startMining = ({
 			return { signatures: [] };
 		}
 
-		const ixs: InstructionReturn[] = [];
-
 		const preIxs = yield* createPreIxs({
 			fleetAccount,
 			targetState: "Idle",
 		});
 
-		ixs.push(...preIxs);
-
 		const startMiningIxs = yield* createStartMiningIx({
 			fleetAccount,
 			resourceMint,
 		});
-
-		ixs.push(...startMiningIxs);
 
 		const drainVaultIx = yield* createDrainVaultIx();
 
@@ -54,7 +47,7 @@ export const startMining = ({
 		} = yield* getGameContext();
 
 		const txs = yield* GameService.buildAndSignTransaction({
-			ixs,
+			ixs: [...preIxs, ...startMiningIxs],
 			afterIxs: drainVaultIx,
 			size: maxIxsPerTransaction,
 		});

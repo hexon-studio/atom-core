@@ -139,6 +139,7 @@ export const createStartMiningIx = ({
 			}),
 		);
 
+		// Check if the resource exists
 		yield* getResourceAccount(resourceKey);
 
 		const fleetKey = fleetAccount.key;

@@ -3,7 +3,12 @@
 import { Args, Command, Options } from "@effect/cli";
 import { NodeContext, NodeRuntime } from "@effect/platform-node";
 import { PublicKey } from "@solana/web3.js";
-import { Effect, String as EffectString, pipe } from "effect";
+import {
+	Effect,
+	Array as EffectArray,
+	String as EffectString,
+	pipe,
+} from "effect";
 import { z } from "zod";
 import { version as packageJsonVersion } from "../package.json";
 import {
@@ -113,22 +118,22 @@ const atomStopMining = Command.make(
 		),
 ).pipe(Command.withDescription("Stop the current mining operation"));
 
-const loadItems = Args.text({ name: "resources" }).pipe(
-	Args.map((item) =>
+const loadItems = Options.text("resources").pipe(
+	Options.atLeast(1),
+	Options.map((items) =>
 		pipe(
-			item,
-			EffectString.split(","),
-			([resourceMint, mode, amount, cargoPodKind]) =>
+			EffectArray.map(items, EffectString.split(",")),
+			EffectArray.map(([resourceMint, mode, amount, cargoPodKind]) =>
 				loadResourceDecoder.parse({
 					amount: Number(amount),
 					cargoPodKind,
 					mode,
-					resourceMint: new PublicKey(resourceMint),
+					resourceMint,
 				}),
+			),
 		),
 	),
-	Args.atLeast(1),
-	Args.withDescription(
+	Options.withDescription(
 		[
 			"Specify resources to load in the format: <resource_address,mode,amount,cargo_pod>",
 			"Parameters:",
@@ -161,24 +166,23 @@ const atomLoadCargo = Command.make(
 		),
 ).pipe(Command.withDescription("Load resources into a fleet"));
 
-const unloadItems = Args.text({ name: "resources" }).pipe(
-	Args.map((item) =>
+const unloadItems = Options.text("resources").pipe(
+	Options.atLeast(1),
+	Options.map((items) =>
 		pipe(
-			item,
-			EffectString.split(","),
-			([resourceMint, mode, amount, cargoPodKind]) =>
+			EffectArray.map(items, EffectString.split(",")),
+			EffectArray.map(([resourceMint, mode, amount, cargoPodKind]) =>
 				unloadResourceDecoder.parse({
 					amount: Number(amount),
 					cargoPodKind,
 					mode,
 					resourceMint: new PublicKey(resourceMint),
 				}),
+			),
 		),
 	),
-	Args.atLeast(1),
-	Args.withDescription(
+	Options.withDescription(
 		[
-			"",
 			"Specify resources to unload in the format: <resource_address,mode,amount,cargo_pod>",
 			"Parameters:",
 			"  resource_address: Public key of the resource",

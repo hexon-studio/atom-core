@@ -7,6 +7,7 @@ import { createCraftingClaimOutputsIxs } from "../crafting/instructions/createCr
 import { createCraftingCloseProcessIx } from "../crafting/instructions/createCraftingCloseProcessIx";
 import { GameService } from "../services/GameService";
 import { getGameContext } from "../services/GameService/utils";
+import { getStarbaseInfoByCoords } from "../utils/getStarbaseInfo";
 import { createDrainVaultIx } from "../vault/instructions/createDrainVaultIx";
 
 export const stopCrafting = ({
@@ -26,9 +27,12 @@ export const stopCrafting = ({
 		const recipeAccount = yield* getRecipeAccount(recipe);
 
 		// if (recipeAccount.data.status !== RecipeStatus.Active) {
-
 		// 	yield* Effect.fail(new Error("Recipe is not active"));
 		// }
+
+		const starbaseInfo = yield* getStarbaseInfoByCoords({
+			starbaseCoords,
+		});
 
 		yield* Effect.log("Crafting recipe loaded").pipe(
 			Effect.annotateLogs({ recipeAccount }),
@@ -36,19 +40,19 @@ export const stopCrafting = ({
 
 		const [burnIxs, claimIxs, stopIx] = yield* Effect.all([
 			createCraftingBurnConsumablesIxs({
-				recipeAccount,
-				starbaseCoords,
 				craftingId,
+				recipeAccount,
+				starbaseInfo,
 			}),
 			createCraftingClaimOutputsIxs({
 				craftingId,
 				recipeAccount,
-				starbaseCoords,
+				starbaseInfo,
 			}),
 			createCraftingCloseProcessIx({
 				craftingId,
 				recipeAccount,
-				starbaseCoords,
+				starbaseInfo,
 			}),
 		]);
 
