@@ -80,6 +80,7 @@ const MockedGameService = Layer.effect(
 			signer: SolanaService.signer.pipe(Effect.map(keypairToAsyncSigner)),
 			buildAndSignTransaction: constant(Effect.succeed(unsafeCoerce([]))),
 			sendTransaction: constant(Effect.succeed("")),
+			sendAllTransactions: constant(Effect.succeed([""])),
 		}),
 	),
 );

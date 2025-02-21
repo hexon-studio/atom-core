@@ -85,9 +85,7 @@ export const unloadCrew = ({
 			size: maxIxsPerTransaction,
 		});
 
-		const signatures = yield* Effect.all(
-			txs.map((tx) => GameService.sendTransaction(tx)),
-		);
+		const signatures = yield* GameService.sendAllTransactions(txs);
 
 		yield* Effect.log("Crew started unloading");
 

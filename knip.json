@@ -1,6 +1,6 @@
 {
 	"$schema": "https://unpkg.com/knip@5/schema.json",
-	"project": ["src/**/*.ts"],
-	"entry": ["src/main.ts!", "src/cli.ts!", "src/errors/index.ts"],
+	"project": ["src/**/*.ts!"],
+	"entry": ["src/main.ts!", "src/cli.ts!", "src/errors/index.ts!"],
 	"ignoreDependencies": ["@logtail/pino"]
 }

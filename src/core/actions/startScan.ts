@@ -107,9 +107,7 @@ export const startScan = ({
 			size: 1, // NOTE: scan should be done in a single transaction
 		});
 
-		const signatures = yield* Effect.all(
-			txs.map((tx) => GameService.sendTransaction(tx)),
-		);
+		const signatures = yield* GameService.sendAllTransactions(txs);
 
 		yield* Effect.log("Scan started!");
 

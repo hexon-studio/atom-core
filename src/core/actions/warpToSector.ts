@@ -71,9 +71,7 @@ export const warpToSector = ({
 			size: maxIxsPerTransaction,
 		});
 
-		const signatures = yield* Effect.all(
-			txs.map((tx) => GameService.sendTransaction(tx)),
-		);
+		const signatures = yield* GameService.sendAllTransactions(txs);
 
 		yield* Effect.log(`Warping to - X: ${targetSectorX} | Y: ${targetSectorY}`);
 

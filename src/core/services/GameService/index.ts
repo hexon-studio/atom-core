@@ -14,6 +14,10 @@ import {
 
 import type { GlobalOptions } from "~/utils/globalOptions";
 import { type SendTransaction, sendTransaction } from "./utils/sendTransaction";
+import {
+	type SendTransactions,
+	sendAllTransactions,
+} from "./utils/sendTransactions";
 
 export interface GameContext {
 	options: GlobalOptions;
@@ -38,6 +42,7 @@ export class GameService extends Effect.Tag("app/GameService")<
 
 		buildAndSignTransaction: BuildAndSignTransaction;
 		sendTransaction: SendTransaction;
+		sendAllTransactions: SendTransactions;
 	}
 >() {}
 
@@ -58,6 +63,7 @@ export const createGameServiceLive = (withAtlasPrime: boolean) =>
 				buildAndSignTransaction: createBuildAndSignTransaction(withAtlasPrime),
 
 				sendTransaction,
+				sendAllTransactions,
 			}),
 		),
 	);

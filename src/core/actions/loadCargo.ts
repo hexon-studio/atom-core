@@ -90,9 +90,7 @@ export const loadCargo = ({
 					size: maxIxsPerTransaction,
 				}),
 			),
-			Effect.flatMap((txs) =>
-				Effect.all(txs.map((tx) => GameService.sendTransaction(tx))),
-			),
+			Effect.flatMap((txs) => GameService.sendAllTransactions(txs)),
 			Effect.tap((signatures) =>
 				Effect.log("Fleet docked to starbase.").pipe(
 					Effect.annotateLogs({ signatures }),
