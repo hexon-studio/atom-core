@@ -48,10 +48,9 @@ const atomFleetInfo = Command.make(
 	{ fleetNameOrAddress },
 	({ fleetNameOrAddress }) =>
 		atom.pipe(
-			Effect.flatMap((cliGlobalOpts) =>
+			Effect.flatMap(
 				makeFleetInfoCommand({
 					fleetNameOrAddress,
-					globalOpts: cliGlobalOpts,
 				}),
 			),
 		),
@@ -62,10 +61,9 @@ const atomDock = Command.make(
 	{ fleetNameOrAddress },
 	({ fleetNameOrAddress }) =>
 		atom.pipe(
-			Effect.flatMap((cliGlobalOpts) =>
+			Effect.flatMap(
 				makeDockCommand({
 					fleetNameOrAddress,
-					globalOpts: cliGlobalOpts,
 				}),
 			),
 		),
@@ -76,29 +74,27 @@ const atomUndock = Command.make(
 	{ fleetNameOrAddress },
 	({ fleetNameOrAddress }) =>
 		atom.pipe(
-			Effect.flatMap((cliGlobalOpts) =>
+			Effect.flatMap(
 				makeUndockCommand({
 					fleetNameOrAddress,
-					globalOpts: cliGlobalOpts,
 				}),
 			),
 		),
 ).pipe(Command.withDescription("Undock a fleet from its current starbase"));
 
-const resourceMint = Args.text({ name: "resourceMint" }).pipe(
-	Args.map((value) => new PublicKey(value)),
+const resourceNameOrMint = Args.text({ name: "resourceNameOrMint" }).pipe(
+	Args.map((value) => (isPublicKey(value) ? new PublicKey(value) : value)),
 );
 
 const atomStartMining = Command.make(
 	"start-mining",
-	{ fleetNameOrAddress, resourceMint },
-	({ fleetNameOrAddress, resourceMint }) =>
+	{ fleetNameOrAddress, resourceNameOrMint },
+	({ fleetNameOrAddress, resourceNameOrMint }) =>
 		atom.pipe(
-			Effect.flatMap((cliGlobalOpts) =>
+			Effect.flatMap(
 				makeStartMining({
-					resourceMint,
+					resourceNameOrMint,
 					fleetNameOrAddress,
-					globalOpts: cliGlobalOpts,
 				}),
 			),
 		),
@@ -109,10 +105,9 @@ const atomStopMining = Command.make(
 	{ fleetNameOrAddress },
 	({ fleetNameOrAddress }) =>
 		atom.pipe(
-			Effect.flatMap((cliGlobalOpts) =>
+			Effect.flatMap(
 				makeStopMiningCommand({
 					fleetNameOrAddress,
-					globalOpts: cliGlobalOpts,
 				}),
 			),
 		),
@@ -156,11 +151,10 @@ const atomLoadCargo = Command.make(
 	{ fleetNameOrAddress, loadItems },
 	({ fleetNameOrAddress, loadItems }) =>
 		atom.pipe(
-			Effect.flatMap((cliGlobalOpts) =>
+			Effect.flatMap(
 				makeLoadCargoCommand({
 					items: loadItems,
 					fleetNameOrAddress,
-					globalOpts: cliGlobalOpts,
 				}),
 			),
 		),
@@ -202,11 +196,10 @@ const atomUnloadCargo = Command.make(
 	{ fleetNameOrAddress, unloadItems },
 	({ fleetNameOrAddress, unloadItems }) =>
 		atom.pipe(
-			Effect.flatMap((cliGlobalOpts) =>
+			Effect.flatMap(
 				makeUnloadCargoCommand({
 					items: unloadItems,
 					fleetNameOrAddress,
-					globalOpts: cliGlobalOpts,
 				}),
 			),
 		),
@@ -223,11 +216,10 @@ const atomSubwarp = Command.make(
 	{ fleetNameOrAddress, targetSector: sectorArgument },
 	({ fleetNameOrAddress, targetSector }) =>
 		atom.pipe(
-			Effect.flatMap((cliGlobalOpts) =>
+			Effect.flatMap(
 				makeSubwarpCommand({
 					targetSector,
 					fleetNameOrAddress,
-					globalOpts: cliGlobalOpts,
 				}),
 			),
 		),
@@ -238,18 +230,18 @@ const atomWarp = Command.make(
 	{ fleetNameOrAddress, targetSector: sectorArgument },
 	({ fleetNameOrAddress, targetSector }) =>
 		atom.pipe(
-			Effect.flatMap((cliGlobalOpts) =>
+			Effect.flatMap(
 				makeWarpCommand({
 					targetSector,
 					fleetNameOrAddress,
-					globalOpts: cliGlobalOpts,
 				}),
 			),
 		),
 ).pipe(Command.withDescription("Warp a fleet to a different sector"));
 
-const crewAmount = Args.integer({ name: "crew-amount" }).pipe(
-	Args.withDescription("Number of crew members to load"),
+const crewAmount = Options.integer("crewAmount").pipe(
+	Options.withAlias("c"),
+	Options.withDescription("Number of crew members to load"),
 );
 
 const atomLoadCrew = Command.make(
@@ -257,11 +249,10 @@ const atomLoadCrew = Command.make(
 	{ fleetNameOrAddress, crewAmount },
 	({ fleetNameOrAddress, crewAmount }) =>
 		atom.pipe(
-			Effect.flatMap((cliGlobalOpts) =>
+			Effect.flatMap(
 				makeLoadCrewCommand({
 					crewAmount,
 					fleetNameOrAddress,
-					globalOpts: cliGlobalOpts,
 				}),
 			),
 		),
@@ -280,12 +271,11 @@ const atomUnloadCrew = Command.make(
 	{ fleetNameOrAddress, crewAmount, allowUnloadRequiredCrew },
 	({ fleetNameOrAddress, crewAmount, allowUnloadRequiredCrew }) =>
 		atom.pipe(
-			Effect.flatMap((cliGlobalOpts) =>
+			Effect.flatMap(
 				makeUnloadCrewCommand({
 					allowUnloadRequiredCrew,
 					crewAmount,
 					fleetNameOrAddress,
-					globalOpts: cliGlobalOpts,
 				}),
 			),
 		),
@@ -296,10 +286,9 @@ const atomStartScan = Command.make(
 	{ fleetNameOrAddress },
 	({ fleetNameOrAddress }) =>
 		atom.pipe(
-			Effect.flatMap((cliGlobalOpts) =>
+			Effect.flatMap(
 				makeStartScanCommand({
 					fleetNameOrAddress,
-					globalOpts: cliGlobalOpts,
 				}),
 			),
 		),
@@ -317,10 +306,9 @@ const atomPlayerProfile = Command.make(
 	{ playerProfile },
 	({ playerProfile }) =>
 		atom.pipe(
-			Effect.flatMap((cliGlobalOpts) =>
+			Effect.flatMap(
 				makeProfileInfoCommand({
 					playerProfile,
-					globalOpts: cliGlobalOpts,
 				}),
 			),
 		),
@@ -331,20 +319,15 @@ const atomPlayerProfile = Command.make(
 );
 
 const atomRecipeList = Command.make("recipe-list", {}, () =>
-	atom.pipe(
-		Effect.flatMap((cliGlobalOpts) =>
-			makeRecipeListCommand({
-				globalOpts: cliGlobalOpts,
-			}),
-		),
-	),
+	atom.pipe(Effect.flatMap(makeRecipeListCommand())),
 ).pipe(Command.withDescription("Get all the active crafting recipes accounts"));
 
 const recipe = Options.text("recipe").pipe(
 	Options.map((value) => new PublicKey(value)),
+	Options.withDescription("Public key of the crafting recipe"),
 );
 
-const quantity = Options.integer("quantity");
+const quantity = Options.integer("quantity").pipe(Options.withAlias("q"));
 
 const starbaseCoords = Options.text("sector").pipe(
 	Options.withDescription("Starbase sector coordinates (format: x,y)"),
@@ -355,20 +338,19 @@ const starbaseCoords = Options.text("sector").pipe(
 const atomStartCrafting = Command.make(
 	"start-crafting",
 	{
-		starbaseCoords,
 		crewAmount,
-		recipe,
 		quantity,
+		recipe,
+		starbaseCoords,
 	},
 	({ starbaseCoords, crewAmount, recipe, quantity }) =>
 		atom.pipe(
-			Effect.flatMap((cliGlobalOpts) =>
+			Effect.flatMap(
 				makeStartCraftingCommand({
 					crewAmount,
 					starbaseCoords,
 					quantity,
 					recipe,
-					globalOpts: cliGlobalOpts,
 				}),
 			),
 		),
@@ -382,18 +364,17 @@ const craftingId = Options.integer("craftingId").pipe(
 const atomStopCrafting = Command.make(
 	"stop-crafting",
 	{
-		starbaseCoords,
 		craftingId,
 		recipe,
+		starbaseCoords,
 	},
 	({ starbaseCoords, craftingId, recipe }) =>
 		atom.pipe(
-			Effect.flatMap((cliGlobalOpts) =>
+			Effect.flatMap(
 				makeStopCraftingCommand({
 					starbaseCoords,
 					craftingId,
 					recipe,
-					globalOpts: cliGlobalOpts,
 				}),
 			),
 		),
@@ -401,7 +382,6 @@ const atomStopCrafting = Command.make(
 
 const command = atom.pipe(
 	Command.withSubcommands([
-		atomFleetInfo,
 		atomDock,
 		atomUndock,
 		atomStartMining,
@@ -413,10 +393,11 @@ const command = atom.pipe(
 		atomLoadCrew,
 		atomUnloadCrew,
 		atomStartScan,
-		atomPlayerProfile,
-		atomRecipeList,
 		atomStartCrafting,
 		atomStopCrafting,
+		atomFleetInfo,
+		atomRecipeList,
+		atomPlayerProfile,
 	]),
 );
 

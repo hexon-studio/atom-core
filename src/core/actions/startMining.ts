@@ -1,5 +1,6 @@
 import type { PublicKey } from "@solana/web3.js";
-import { Effect } from "effect";
+import { Effect, unsafeCoerce } from "effect";
+import { resourceMintByName } from "~/constants/resources";
 import { getFleetAccountByNameOrAddress } from "~/libs/@staratlas/sage";
 import { createPreIxs } from "../fleet/instructions/createPreIxs";
 import { createStartMiningIx } from "../fleet/instructions/createStartMiningIx";
@@ -9,13 +10,18 @@ import { createDrainVaultIx } from "../vault/instructions/createDrainVaultIx";
 
 export const startMining = ({
 	fleetNameOrAddress,
-	resourceMint,
+	resourceNameOrMint,
 }: {
 	fleetNameOrAddress: string | PublicKey;
-	resourceMint: PublicKey;
+	resourceNameOrMint: string | PublicKey;
 }) =>
 	Effect.gen(function* () {
-		yield* Effect.log(`Start mining ${resourceMint.toString()}...`);
+		yield* Effect.log(`Start mining ${resourceNameOrMint.toString()}...`);
+
+		const resourceMint =
+			typeof resourceNameOrMint === "string"
+				? resourceMintByName(unsafeCoerce(resourceNameOrMint))
+				: resourceNameOrMint;
 
 		const fleetAccount =
 			yield* getFleetAccountByNameOrAddress(fleetNameOrAddress);

@@ -1,1 +1,1 @@
-export * from "./vanilla/createAtomApi";
+export * from "./vanilla/createAtom";

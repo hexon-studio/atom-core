@@ -1,7 +1,7 @@
 import type { PublicKey } from "@solana/web3.js";
 import { BN } from "bn.js";
 import { Effect, Option, Record } from "effect";
-import { resourceNameToMint } from "~/constants/resources";
+import { resourceMintByName } from "~/constants/resources";
 import { getFleetCargoPodInfoByType } from "~/libs/@staratlas/cargo";
 import { getFleetAccountByNameOrAddress } from "~/libs/@staratlas/sage";
 import {
@@ -53,7 +53,7 @@ export const startScan = ({
 				fleetAccount,
 			}).pipe(
 				Effect.map((info) => info.resources),
-				Effect.map(Record.get(resourceNameToMint.Food.toString())),
+				Effect.map(Record.get(resourceMintByName("Food").toString())),
 				Effect.map(Option.map((resource) => resource.amountInTokens)),
 				Effect.map(Option.getOrElse(() => new BN(0))),
 			);

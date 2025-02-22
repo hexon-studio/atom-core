@@ -11,40 +11,40 @@ type Param = {
 	recipe: PublicKey;
 	craftingId: number;
 	starbaseCoords: [number, number];
-	globalOpts: GlobalOptions;
 };
 
-export const makeStopCraftingCommand = ({
-	craftingId,
-	recipe,
-	starbaseCoords,
-	globalOpts,
-}: Param) =>
-	GameService.pipe(
-		Effect.tap((service) => service.initGame(service.gameContext, globalOpts)),
-		Effect.flatMap(() =>
-			runBaseCommand({
-				self: () =>
-					stopCrafting({
-						craftingId: new BN(craftingId),
-						recipe,
-						starbaseCoords,
+export const makeStopCraftingCommand =
+	({ craftingId, recipe, starbaseCoords }: Param) =>
+	(globalOpts: GlobalOptions) =>
+		GameService.pipe(
+			Effect.tap((service) =>
+				service.initGame(service.gameContext, globalOpts),
+			),
+			Effect.flatMap(() =>
+				runBaseCommand({
+					self: () =>
+						stopCrafting({
+							craftingId: new BN(craftingId),
+							recipe,
+							starbaseCoords,
+						}),
+					normalizeError: (err) => ({
+						tag: err._tag,
+						message: err.message,
+						signatures:
+							err._tag === "TransactionFailedError" ? err.signature : null,
 					}),
-				normalizeError: (err) => ({
-					tag: err._tag,
-					message: err.message,
-					signatures:
-						err._tag === "TransactionFailedError" ? err.signature : null,
 				}),
+			),
+			Effect.tapBoth({
+				onSuccess: (txIds) =>
+					Effect.log("Start crafting done").pipe(
+						Effect.annotateLogs({ txIds }),
+					),
+				onFailure: (error) =>
+					Effect.logError(`[${error._tag}] ${error.message}`).pipe(
+						Effect.annotateLogs({ error }),
+					),
 			}),
-		),
-		Effect.tapBoth({
-			onSuccess: (txIds) =>
-				Effect.log("Start crafting done").pipe(Effect.annotateLogs({ txIds })),
-			onFailure: (error) =>
-				Effect.logError(`[${error._tag}] ${error.message}`).pipe(
-					Effect.annotateLogs({ error }),
-				),
-		}),
-		Effect.provide(createMainLiveService(globalOpts)),
-	);
+			Effect.provide(createMainLiveService(globalOpts)),
+		);

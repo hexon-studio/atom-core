@@ -4,7 +4,7 @@ import { Effect } from "effect";
 import { getSagePrograms } from "~/core/programs";
 import { readFromSage } from "~/libs/@staratlas/data-source";
 
-export const getPlayerProfileAccout = (playeProfilePublicKey: PublicKey) =>
+export const getPlayerProfileAccount = (playeProfilePublicKey: PublicKey) =>
 	getSagePrograms().pipe(
 		Effect.flatMap((programs) =>
 			readFromSage(

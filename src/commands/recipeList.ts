@@ -7,11 +7,7 @@ import { SolanaService } from "~/core/services/SolanaService";
 import { createMainLiveService } from "~/utils/createMainLiveService";
 import type { GlobalOptions } from "~/utils/globalOptions";
 
-type Param = {
-	globalOpts: GlobalOptions;
-};
-
-export const makeRecipeListCommand = ({ globalOpts }: Param) =>
+export const makeRecipeListCommand = () => (globalOpts: GlobalOptions) =>
 	GameService.pipe(
 		Effect.tap((service) => service.initGame(service.gameContext, globalOpts)),
 		Effect.flatMap(() =>

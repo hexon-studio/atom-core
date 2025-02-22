@@ -9,38 +9,37 @@ import { runBaseCommand } from "./baseCommand";
 type Param = {
 	fleetNameOrAddress: string | PublicKey;
 	targetSector: [number, number];
-	globalOpts: GlobalOptions;
 };
 
-export const makeWarpCommand = ({
-	fleetNameOrAddress,
-	targetSector,
-	globalOpts,
-}: Param) =>
-	GameService.pipe(
-		Effect.tap((service) => service.initGame(service.gameContext, globalOpts)),
-		Effect.flatMap(() =>
-			runBaseCommand({
-				self: () =>
-					warpToSector({
-						fleetNameOrAddress,
-						targetSector,
+export const makeWarpCommand =
+	({ fleetNameOrAddress, targetSector }: Param) =>
+	(globalOpts: GlobalOptions) =>
+		GameService.pipe(
+			Effect.tap((service) =>
+				service.initGame(service.gameContext, globalOpts),
+			),
+			Effect.flatMap(() =>
+				runBaseCommand({
+					self: () =>
+						warpToSector({
+							fleetNameOrAddress,
+							targetSector,
+						}),
+					normalizeError: (err) => ({
+						tag: err._tag,
+						message: err.message,
+						signatures:
+							err._tag === "TransactionFailedError" ? err.signature : null,
 					}),
-				normalizeError: (err) => ({
-					tag: err._tag,
-					message: err.message,
-					signatures:
-						err._tag === "TransactionFailedError" ? err.signature : null,
 				}),
+			),
+			Effect.tapBoth({
+				onSuccess: (txIds) =>
+					Effect.log("Warp done").pipe(Effect.annotateLogs({ txIds })),
+				onFailure: (error) =>
+					Effect.logError(`[${error._tag}] ${error.message}`).pipe(
+						Effect.annotateLogs({ error }),
+					),
 			}),
-		),
-		Effect.tapBoth({
-			onSuccess: (txIds) =>
-				Effect.log("Warp done").pipe(Effect.annotateLogs({ txIds })),
-			onFailure: (error) =>
-				Effect.logError(`[${error._tag}] ${error.message}`).pipe(
-					Effect.annotateLogs({ error }),
-				),
-		}),
-		Effect.provide(createMainLiveService(globalOpts)),
-	);
+			Effect.provide(createMainLiveService(globalOpts)),
+		);

@@ -16,7 +16,7 @@ import {
 	getStarbaseAccount,
 	getStarbasePlayerAccount,
 } from "~/libs/@staratlas/sage";
-import { resourceNameToMint } from "../../../constants/resources";
+import { resourceMintByName } from "../../../constants/resources";
 import {
 	FleetNotEnoughFuelError,
 	PlanetNotFoundInSectorError,
@@ -132,7 +132,7 @@ export const createStopMiningIx = ({
 
 		const maybeFuelInTankData = Record.get(
 			fuelTankInfo.resources,
-			resourceNameToMint.Fuel.toString(),
+			resourceMintByName("Fuel").toString(),
 		);
 
 		if (Option.isNone(maybeFuelInTankData)) {
@@ -198,7 +198,7 @@ export const createStopMiningIx = ({
 			context.gameInfo.gameStateId,
 			context.gameInfo.gameId,
 			fuelInTankData.tokenAccountKey,
-			resourceNameToMint.Fuel,
+			resourceMintByName("Fuel"),
 			{ keyIndex: context.keyIndexes.sage },
 		);
 

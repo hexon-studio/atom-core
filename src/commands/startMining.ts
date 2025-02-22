@@ -8,39 +8,38 @@ import { runBaseCommand } from "./baseCommand";
 
 type Param = {
 	fleetNameOrAddress: string | PublicKey;
-	resourceMint: PublicKey;
-	globalOpts: GlobalOptions;
+	resourceNameOrMint: string | PublicKey;
 };
 
-export const makeStartMining = ({
-	fleetNameOrAddress,
-	resourceMint,
-	globalOpts,
-}: Param) =>
-	GameService.pipe(
-		Effect.tap((service) => service.initGame(service.gameContext, globalOpts)),
-		Effect.flatMap(() =>
-			runBaseCommand({
-				self: () =>
-					startMining({
-						fleetNameOrAddress,
-						resourceMint,
+export const makeStartMining =
+	({ fleetNameOrAddress, resourceNameOrMint }: Param) =>
+	(globalOpts: GlobalOptions) =>
+		GameService.pipe(
+			Effect.tap((service) =>
+				service.initGame(service.gameContext, globalOpts),
+			),
+			Effect.flatMap(() =>
+				runBaseCommand({
+					self: () =>
+						startMining({
+							fleetNameOrAddress,
+							resourceNameOrMint,
+						}),
+					normalizeError: (err) => ({
+						tag: err._tag,
+						message: err.message,
+						signatures:
+							err._tag === "TransactionFailedError" ? err.signature : null,
 					}),
-				normalizeError: (err) => ({
-					tag: err._tag,
-					message: err.message,
-					signatures:
-						err._tag === "TransactionFailedError" ? err.signature : null,
 				}),
+			),
+			Effect.tapBoth({
+				onSuccess: (txIds) =>
+					Effect.log("Start mining done").pipe(Effect.annotateLogs({ txIds })),
+				onFailure: (error) =>
+					Effect.logError(`[${error._tag}] ${error.message}`).pipe(
+						Effect.annotateLogs({ error }),
+					),
 			}),
-		),
-		Effect.tapBoth({
-			onSuccess: (txIds) =>
-				Effect.log("Start mining done").pipe(Effect.annotateLogs({ txIds })),
-			onFailure: (error) =>
-				Effect.logError(`[${error._tag}] ${error.message}`).pipe(
-					Effect.annotateLogs({ error }),
-				),
-		}),
-		Effect.provide(createMainLiveService(globalOpts)),
-	);
+			Effect.provide(createMainLiveService(globalOpts)),
+		);

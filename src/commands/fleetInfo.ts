@@ -7,18 +7,18 @@ import { GameService } from "../core/services/GameService";
 
 type Param = {
 	fleetNameOrAddress: string | PublicKey;
-	globalOpts: GlobalOptions;
 };
 
-export const makeFleetInfoCommand = ({
-	fleetNameOrAddress,
-	globalOpts,
-}: Param) =>
-	GameService.pipe(
-		Effect.tap((service) => service.initGame(service.gameContext, globalOpts)),
-		Effect.flatMap(() => getFleetAccountByNameOrAddress(fleetNameOrAddress)),
-		Effect.tap((fleet) =>
-			Effect.logInfo("Fleet found").pipe(Effect.annotateLogs({ fleet })),
-		),
-		Effect.provide(createMainLiveService(globalOpts)),
-	);
+export const makeFleetInfoCommand =
+	({ fleetNameOrAddress }: Param) =>
+	(globalOpts: GlobalOptions) =>
+		GameService.pipe(
+			Effect.tap((service) =>
+				service.initGame(service.gameContext, globalOpts),
+			),
+			Effect.flatMap(() => getFleetAccountByNameOrAddress(fleetNameOrAddress)),
+			Effect.tap((fleet) =>
+				Effect.logInfo("Fleet found").pipe(Effect.annotateLogs({ fleet })),
+			),
+			Effect.provide(createMainLiveService(globalOpts)),
+		);

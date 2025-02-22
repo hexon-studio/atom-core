@@ -1,12 +1,12 @@
 import { getAccount } from "@solana/spl-token";
 import { Fleet } from "@staratlas/sage";
 import { Effect, Match, Option } from "effect";
+import { resourceMintByName } from "~/constants/resources";
+import { getSagePrograms } from "~/core/programs";
+import { getGameContext } from "~/core/services/GameService/utils";
 import { SolanaService } from "~/core/services/SolanaService";
 import { findCargoTypePda } from "~/libs/@staratlas/cargo";
 import { findUserPointsPda } from "~/libs/@staratlas/points";
-import { resourceNameToMint } from "../../../constants/resources";
-import { getSagePrograms } from "../../programs";
-import { getGameContext } from "../../services/GameService/utils";
 
 export const createMovementHandlerIx = (fleetAccount: Fleet) =>
 	Effect.gen(function* () {
@@ -19,7 +19,7 @@ export const createMovementHandlerIx = (fleetAccount: Fleet) =>
 
 		const createFuelFuelTankAta =
 			yield* SolanaService.createAssociatedTokenAccountIdempotent(
-				resourceNameToMint.Fuel,
+				resourceMintByName("Fuel"),
 				fleetAccount.data.fuelTank,
 				true,
 			);
@@ -47,7 +47,7 @@ export const createMovementHandlerIx = (fleetAccount: Fleet) =>
 		});
 
 		const [cargoTypeAddress] = yield* findCargoTypePda(
-			resourceNameToMint.Fuel,
+			resourceMintByName("Fuel"),
 			context.gameInfo.cargoStatsDefinitionId,
 			context.gameInfo.cargoStatsDefinitionSeqId,
 		);
@@ -79,7 +79,7 @@ export const createMovementHandlerIx = (fleetAccount: Fleet) =>
 					cargoTypeAddress,
 					context.gameInfo.cargoStatsDefinitionId,
 					createFuelFuelTankAta.address,
-					resourceNameToMint.Fuel,
+					resourceMintByName("Fuel"),
 					pilotXpKey,
 					context.gameInfo.points.pilotXpCategory.category,
 					context.gameInfo.points.pilotXpCategory.modifier,

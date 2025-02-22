@@ -127,7 +127,7 @@ export const resourceMintToName: Record<string, ResourceName> = {
 	ammoK8AkX2wnebQb35cDAZtTkvsXQbi82cGeTnUvvfK: "Ammunition",
 } satisfies Record<ResourceMint, ResourceName>;
 
-export const resourceNameToMint = {
+const nameMintMap = {
 	Silica: new PublicKey("SiLiCA4xKGkyymB5XteUVmUeLqE4JGQTyWBpKFESLgh"),
 	Nitrogen: new PublicKey("Nitro6idW5JCb2ysUPGUAvVqv3HmUR7NVH7NdybGJ4L"),
 	TitaniumOre: new PublicKey("tiorehR1rLfeATZ96YoByUkvNFsBfUUSQWgSH2mizXL"),
@@ -173,3 +173,5 @@ export const resourceNameToMint = {
 	Toolkit: new PublicKey("tooLsNYLiVqzg8o4m3L2Uetbn62mvMWRqkog6PQeYKL"),
 	Ammunition: new PublicKey("ammoK8AkX2wnebQb35cDAZtTkvsXQbi82cGeTnUvvfK"),
 } satisfies Record<ResourceName, PublicKey>;
+
+export const resourceMintByName = (name: ResourceName) => nameMintMap[name];
