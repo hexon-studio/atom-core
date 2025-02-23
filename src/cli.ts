@@ -39,8 +39,9 @@ import { isPublicKey } from "./utils/public-key";
 
 const atom = Command.make("atom", globalOptions);
 
-const fleetNameOrAddress = Args.text({ name: "fleetNameOrAddress" }).pipe(
+const fleetNameOrAddress = Args.text({ name: "fleet" }).pipe(
 	Args.map((value) => (isPublicKey(value) ? new PublicKey(value) : value)),
+	Args.withDescription("Fleet name or address"),
 );
 
 const atomFleetInfo = Command.make(
@@ -82,8 +83,9 @@ const atomUndock = Command.make(
 		),
 ).pipe(Command.withDescription("Undock a fleet from its current starbase"));
 
-const resourceNameOrMint = Args.text({ name: "resourceNameOrMint" }).pipe(
+const resourceNameOrMint = Args.text({ name: "resource" }).pipe(
 	Args.map((value) => (isPublicKey(value) ? new PublicKey(value) : value)),
+	Args.withDescription("Resource name or mint address"),
 );
 
 const atomStartMining = Command.make(

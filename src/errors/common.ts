@@ -1,7 +1,7 @@
 import type { PublicKey } from "@solana/web3.js";
 import type BN from "bn.js";
 import { Data } from "effect";
-import { type ResourceMint, resourceMintToName } from "~/constants/resources";
+import { resourceNameByMint } from "~/constants/resources";
 
 export class FindAssociatedTokenPdaError extends Data.TaggedError(
 	"FindAssociatedTokenPdaError",
@@ -101,8 +101,8 @@ export class ResourceNotEnoughError extends Data.TaggedError(
 }> {
 	override get message() {
 		const location = this.from === "starbase" ? "Starbase" : "Fleet";
-		const resourceName =
-			resourceMintToName[this.resourceMint.toString() as ResourceMint];
+		const resourceName = resourceNameByMint(this.resourceMint);
+
 		return `Insufficient ${resourceName} at ${location} (${this.entity.toString()}). Available: ${this.amountAvailable}, Required: ${this.amountAdded}.`;
 	}
 }

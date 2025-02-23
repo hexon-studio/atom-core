@@ -1,47 +1,5 @@
 import { PublicKey } from "@solana/web3.js";
-
-const resourceMints = [
-	"SiLiCA4xKGkyymB5XteUVmUeLqE4JGQTyWBpKFESLgh",
-	"Nitro6idW5JCb2ysUPGUAvVqv3HmUR7NVH7NdybGJ4L",
-	"tiorehR1rLfeATZ96YoByUkvNFsBfUUSQWgSH2mizXL",
-	"TTNM1SMkM7VKtyPW6CNBZ4cg3An3zzQ8NVLS2HpMaWL",
-	"aeroBCMu6AX6bCLYd1VQtigqZh8NGSjn54H1YSczHeJ",
-	"FiELD9fGaCgiNMfzQKKZD78wxwnBHTwjiiJfsieb6VGb",
-	"LUMACqD5LaKjs1AeuJYToybasTXoYQ7YkxJEc4jowNj",
-	"PoWRYJnw3YDSyXgNtN3mQ3TKUMoUSsLAbvE8Ejade3u",
-	"EMAGoQSP89CJV5focVjrpEuE4CeqJ4k1DouQW7gUu7yX",
-	"HYDR4EPHJcDPcaLYUcNCtrXUdt1PnaN4MvE655pevBYp",
-	"CPPRam7wKuBkYzN5zCffgNU17RKaeMEns4ZD83BqBVNR",
-	"MASS9GqtJz6ABisAxcUn3FeR4phMqH1XfG6LPKJePog",
-	"FeorejFjRRAfusN9Fg3WjEZ1dRCf74o6xwT5vDt3R34J",
-	"GRAPHKGoKtXtdPBx17h6fWopdT5tLjfAP8cDJ1SvvDn4",
-	"CoNDDRCNxXAMGscCdejioDzb6XKxSzonbWb36wzSgp5T",
-	"EMiTWSLgjDVkBbLFaMcGU6QqFWzX9JX6kqs1UtUjsmJA",
-	"CARBWKWvxEuMcq3MqCxYfi7UoFVpL9c4rsQS99tw6i4X",
-	"ironxrUhTEaBiR9Pgp6hy4qWx6V2FirDoXhsFP25GFP",
-	"CUore1tNkiubxSwDEtLc3Ybs1xfWLs8uGjyydUYZ25xc",
-	"PTCLSWbwZ3mqZqHAporphY2ofio8acsastaHfoP87Dc",
-	"SDUsgfSZaDhhZ76U3ZgvtFiXsfnHbf2VrzYxjBZ5YbM",
-	"DMNDKqygEN3WXKVrAD4ofkYBc4CKNRhFUbXP4VK7a944",
-	"HYCBuSWCJ5ZEyANexU94y1BaBPtAX2kzBgGD2vES2t6M",
-	"RABSXX6RcqJ1L5qsGY64j91pmbQVbsYRQuw1mmxhxFe",
-	"SUBSVX9LYiPrzHeg2bZrqFSDSKkrQkiCesr6SjtdHaX",
-	"FMWKb7YJA5upZHbu5FjVRRoxdDw2FYFAu284VqUGF9C2",
-	"cwirGHLB2heKjCeTy4Mbp4M443fU4V7vy2JouvYbZna",
-	"PoLYs2hbRt5iDibrkPT9e6xWuhSS45yZji5ChgJBvcB",
-	"ELECrjC8m9GxCqcm4XCNpFvkS8fHStAvymS6MJbe3XLZ",
-	"MAGNMDeDJLvGAnriBvzWruZHfXNwWHhxnoNF75AQYM5",
-	"CRYSNnUd7cZvVfrEVtVNKmXiCPYdZ1S5pM5qG2FDVZHF",
-	"STEELXLJ8nfJy3P4aNuGxyNRbWPohqHSwxY75NsJRGG",
-	"ARCoQ9dndpg6wE2rRexzfwgJR3NoWWhpcww3xQcQLukg",
-	"RCH1Zhg4zcSSQK8rw2s6rDMVsgBEWa4kiv1oLFndrN5",
-	"fueL3hBZjLLLJHiFH9cqZoozTG3XQZ53diwFPwbzNim",
-	"foodQJAztMzX1DKpLaiounNe2BDMds5RNuPC6jsNrDG",
-	"tooLsNYLiVqzg8o4m3L2Uetbn62mvMWRqkog6PQeYKL",
-	"ammoK8AkX2wnebQb35cDAZtTkvsXQbi82cGeTnUvvfK",
-] as const;
-
-export type ResourceMint = (typeof resourceMints)[number];
+import { Option, Record } from "effect";
 
 const resourceNames = [
 	"Silica",
@@ -86,7 +44,7 @@ const resourceNames = [
 
 export type ResourceName = (typeof resourceNames)[number];
 
-export const resourceMintToName: Record<string, ResourceName> = {
+const resourceMintNameMap: Record<string, ResourceName> = {
 	SiLiCA4xKGkyymB5XteUVmUeLqE4JGQTyWBpKFESLgh: "Silica",
 	Nitro6idW5JCb2ysUPGUAvVqv3HmUR7NVH7NdybGJ4L: "Nitrogen",
 	tiorehR1rLfeATZ96YoByUkvNFsBfUUSQWgSH2mizXL: "TitaniumOre",
@@ -125,7 +83,12 @@ export const resourceMintToName: Record<string, ResourceName> = {
 	foodQJAztMzX1DKpLaiounNe2BDMds5RNuPC6jsNrDG: "Food",
 	tooLsNYLiVqzg8o4m3L2Uetbn62mvMWRqkog6PQeYKL: "Toolkit",
 	ammoK8AkX2wnebQb35cDAZtTkvsXQbi82cGeTnUvvfK: "Ammunition",
-} satisfies Record<ResourceMint, ResourceName>;
+};
+
+export const resourceNameByMint = (mint: PublicKey) =>
+	Record.get(resourceMintNameMap, mint.toString()).pipe(
+		Option.getOrElse(() => "Unknown resource"),
+	);
 
 const nameMintMap = {
 	Silica: new PublicKey("SiLiCA4xKGkyymB5XteUVmUeLqE4JGQTyWBpKFESLgh"),
