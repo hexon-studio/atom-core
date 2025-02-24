@@ -1,10 +1,10 @@
 import { Fleet, calculateDistance } from "@staratlas/sage";
 import type BN from "bn.js";
 import { Effect, Option, Record } from "effect";
-import { resourceMintByName } from "~/constants/resources";
 import { FleetNotEnoughFuelError } from "~/errors";
 import { getFleetCargoPodInfoByType } from "~/libs/@staratlas/cargo";
 import { findProfileFactionPda } from "~/libs/@staratlas/profile-faction";
+import { resourceMintByName } from "~/utils/resources";
 import { getSagePrograms } from "../../programs";
 import { GameService } from "../../services/GameService";
 import { getGameContext } from "../../services/GameService/utils";

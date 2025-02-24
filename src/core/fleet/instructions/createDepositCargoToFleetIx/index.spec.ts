@@ -9,13 +9,13 @@ import { constant, unsafeCoerce } from "effect/Function";
 import mock from "mock-fs";
 import { findAllPlanets } from "~/core/services/GameService/methods/findPlanets";
 import { createDepositCargoToFleetIx } from ".";
-import { resourceMintByName } from "../../../../constants/resources";
 import { noopPublicKey } from "../../../../constants/tokens";
 import {
 	FleetInvalidResourceForPodKindError,
 	InvalidAmountError,
 } from "../../../../errors";
 import type { CargoPodKind } from "../../../../utils/decoders";
+import { resourceMintByName } from "../../../../utils/resources";
 import { type GameContext, GameService } from "../../../services/GameService";
 import { findGame } from "../../../services/GameService/methods/findGame";
 import { initGame } from "../../../services/GameService/methods/initGame";

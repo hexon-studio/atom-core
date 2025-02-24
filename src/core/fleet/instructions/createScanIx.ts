@@ -2,7 +2,6 @@ import { getAccount } from "@solana/spl-token";
 import { readAllFromRPC } from "@staratlas/data-source";
 import { type Fleet, Sector, SurveyDataUnitTracker } from "@staratlas/sage";
 import { Effect, Array as EffectArray, Option } from "effect";
-import { resourceMintByName } from "~/constants/resources";
 import { getSagePrograms } from "~/core/programs";
 import { GameService } from "~/core/services/GameService";
 import { getGameContext } from "~/core/services/GameService/utils";
@@ -11,10 +10,11 @@ import { findCargoTypePda } from "~/libs/@staratlas/cargo";
 import { findUserPointsPda } from "~/libs/@staratlas/points";
 import { findProfileFactionPda } from "~/libs/@staratlas/profile-faction";
 import {
+	fetchSectorAccount,
 	findSectorPdaByCoordinates,
-	getSectorAccount,
 } from "~/libs/@staratlas/sage";
 import { findAssociatedTokenPda } from "~/utils/findAssociatedTokenPda";
+import { resourceMintByName } from "~/utils/resources";
 import {
 	GetSurveyDataUnitTrackerError,
 	GetSurveyDataUnitTrackerNotFoundError,
@@ -81,7 +81,7 @@ export const createScanIx = ({ fleetAccount }: { fleetAccount: Fleet }) =>
 
 		const ixs = [];
 
-		const sectionAccount = yield* getSectorAccount(sectorPda).pipe(
+		const sectionAccount = yield* fetchSectorAccount(sectorPda).pipe(
 			Effect.option,
 		);
 

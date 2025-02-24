@@ -2,8 +2,8 @@ import type { PublicKey } from "@solana/web3.js";
 import BN from "bn.js";
 import { Effect } from "effect";
 import {
-	getFleetAccount,
-	getFleetAccountByNameOrAddress,
+	fetchFleetAccount,
+	fetchFleetAccountByNameOrAddress,
 } from "~/libs/@staratlas/sage";
 import { createSubwarpToCoordinateIx } from "../fleet/instructions";
 import { createPreIxs } from "../fleet/instructions/createPreIxs";
@@ -22,7 +22,7 @@ export const subwarpToSector = ({
 		yield* Effect.log("Start subwarp...");
 
 		const preFleetAccount =
-			yield* getFleetAccountByNameOrAddress(fleetNameOrAddress);
+			yield* fetchFleetAccountByNameOrAddress(fleetNameOrAddress);
 
 		const {
 			options: { maxIxsPerTransaction },
@@ -54,7 +54,7 @@ export const subwarpToSector = ({
 			),
 		);
 
-		const freshFleetAccount = yield* getFleetAccount(preFleetAccount.key);
+		const freshFleetAccount = yield* fetchFleetAccount(preFleetAccount.key);
 
 		const subwarpIxs = yield* createSubwarpToCoordinateIx({
 			fleetAccount: freshFleetAccount,

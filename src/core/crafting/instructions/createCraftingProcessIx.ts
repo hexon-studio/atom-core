@@ -6,7 +6,7 @@ import { getSagePrograms } from "~/core/programs";
 import { GameService } from "~/core/services/GameService";
 import { getGameContext } from "~/core/services/GameService/utils";
 import { getStarbaseInfoByCoords } from "~/core/utils/getStarbaseInfo";
-import { getCraftingFacilityAccount } from "~/libs/@staratlas/crafting";
+import { fetchCraftingFacilityAccount } from "~/libs/@staratlas/crafting";
 import { findProfileFactionPda } from "~/libs/@staratlas/profile-faction";
 
 export const createCraftingProcessIx = ({
@@ -36,7 +36,7 @@ export const createCraftingProcessIx = ({
 			starbaseCoords,
 		});
 
-		const craftingFacility = yield* getCraftingFacilityAccount(
+		const craftingFacility = yield* fetchCraftingFacilityAccount(
 			starbaseInfo.starbaseAccount.data.craftingFacility,
 		);
 

@@ -11,20 +11,20 @@ import { isNone } from "effect/Option";
 import { getFleetCargoPodInfoByType } from "~/libs/@staratlas/cargo";
 import { findProfileFactionPda } from "~/libs/@staratlas/profile-faction";
 import {
+	fetchResourceAccount,
+	fetchStarbaseAccount,
+	fetchStarbasePlayerAccount,
 	findMineItemPda,
 	findResourcePda,
 	findSagePlayerProfilePda,
 	findStarbasePdaByCoordinates,
 	findStarbasePlayerPda,
-	getResourceAccount,
-	getStarbaseAccount,
-	getStarbasePlayerAccount,
 } from "~/libs/@staratlas/sage";
-import { resourceMintByName } from "../../../constants/resources";
 import {
 	FleetNotEnoughFuelError,
 	PlanetNotFoundInSectorError,
 } from "../../../errors";
+import { resourceMintByName } from "../../../utils/resources";
 import { getSagePrograms } from "../../programs";
 import { GameService } from "../../services/GameService";
 import { getGameContext } from "../../services/GameService/utils";
@@ -80,7 +80,7 @@ export const createStartMiningIx = ({
 			fleetCoordinates,
 		);
 
-		const starbaseAccount = yield* getStarbaseAccount(starbaseAddress);
+		const starbaseAccount = yield* fetchStarbaseAccount(starbaseAddress);
 
 		const playerProfile = fleetAccount.data.ownerProfile;
 
@@ -97,7 +97,7 @@ export const createStartMiningIx = ({
 			starbaseAccount.data.seqId,
 		);
 
-		const starbasePlayerAccount = yield* getStarbasePlayerAccount(
+		const starbasePlayerAccount = yield* fetchStarbasePlayerAccount(
 			starbasePlayerAddress,
 		).pipe(Effect.option);
 
@@ -140,7 +140,7 @@ export const createStartMiningIx = ({
 		);
 
 		// Check if the resource exists
-		yield* getResourceAccount(resourceKey);
+		yield* fetchResourceAccount(resourceKey);
 
 		const fleetKey = fleetAccount.key;
 

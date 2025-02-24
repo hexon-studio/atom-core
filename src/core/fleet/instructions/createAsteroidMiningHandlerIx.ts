@@ -10,8 +10,8 @@ import {
 	findResourcePda,
 	findStarbasePdaByCoordinates,
 } from "~/libs/@staratlas/sage";
-import { resourceMintByName } from "../../../constants/resources";
 import { findAssociatedTokenPda } from "../../../utils/findAssociatedTokenPda";
+import { resourceMintByName } from "../../../utils/resources";
 import { getSagePrograms } from "../../programs";
 import { getGameContext } from "../../services/GameService/utils";
 import { getCurrentFleetSectorCoordinates } from "../utils/getCurrentFleetSectorCoordinates";

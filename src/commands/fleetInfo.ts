@@ -1,6 +1,6 @@
 import type { PublicKey } from "@solana/web3.js";
 import { Effect } from "effect";
-import { getFleetAccountByNameOrAddress } from "~/libs/@staratlas/sage";
+import { fetchFleetAccountByNameOrAddress } from "~/libs/@staratlas/sage";
 import { createMainLiveService } from "~/utils/createMainLiveService";
 import type { GlobalOptions } from "~/utils/globalOptions";
 import { GameService } from "../core/services/GameService";
@@ -16,7 +16,9 @@ export const makeFleetInfoCommand =
 			Effect.tap((service) =>
 				service.initGame(service.gameContext, globalOpts),
 			),
-			Effect.flatMap(() => getFleetAccountByNameOrAddress(fleetNameOrAddress)),
+			Effect.flatMap(() =>
+				fetchFleetAccountByNameOrAddress(fleetNameOrAddress),
+			),
 			Effect.tap((fleet) =>
 				Effect.logInfo("Fleet found").pipe(Effect.annotateLogs({ fleet })),
 			),

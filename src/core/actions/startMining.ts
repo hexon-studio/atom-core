@@ -1,7 +1,7 @@
 import type { PublicKey } from "@solana/web3.js";
 import { Effect, unsafeCoerce } from "effect";
-import { resourceMintByName } from "~/constants/resources";
-import { getFleetAccountByNameOrAddress } from "~/libs/@staratlas/sage";
+import { fetchFleetAccountByNameOrAddress } from "~/libs/@staratlas/sage";
+import { resourceMintByName } from "~/utils/resources";
 import { createPreIxs } from "../fleet/instructions/createPreIxs";
 import { createStartMiningIx } from "../fleet/instructions/createStartMiningIx";
 import { GameService } from "../services/GameService";
@@ -24,7 +24,7 @@ export const startMining = ({
 				: resourceNameOrMint;
 
 		const fleetAccount =
-			yield* getFleetAccountByNameOrAddress(fleetNameOrAddress);
+			yield* fetchFleetAccountByNameOrAddress(fleetNameOrAddress);
 
 		// TODO: Not enough resources to start mining (fuel, ammo, food)
 

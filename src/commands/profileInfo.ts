@@ -1,6 +1,6 @@
 import type { PublicKey } from "@solana/web3.js";
 import { Effect, type Option } from "effect";
-import { getPlayerProfileAccount } from "~/libs/@staratlas/player-profile";
+import { fetchPlayerProfileAccount } from "~/libs/@staratlas/player-profile";
 import { createMainLiveService } from "~/utils/createMainLiveService";
 import type { GlobalOptions } from "~/utils/globalOptions";
 import { GameService } from "../core/services/GameService";
@@ -15,7 +15,7 @@ export const makeProfileInfoCommand =
 			),
 			Effect.flatMap(() =>
 				playerProfile.pipe(
-					Effect.flatMap(getPlayerProfileAccount),
+					Effect.flatMap(fetchPlayerProfileAccount),
 					Effect.orElse(() =>
 						getGameContext().pipe(
 							Effect.map((context) => context.playerProfile),

@@ -1,12 +1,12 @@
 import { Fleet, type ShipStats, calculateDistance } from "@staratlas/sage";
 import type BN from "bn.js";
 import { Effect, Option, Record } from "effect";
-import { resourceMintByName } from "~/constants/resources";
 import {
 	findCargoTypePda,
 	getFleetCargoPodInfoByType,
 } from "~/libs/@staratlas/cargo";
 import { findProfileFactionPda } from "~/libs/@staratlas/profile-faction";
+import { resourceMintByName } from "~/utils/resources";
 import { FleetNotEnoughFuelError, SectorTooFarError } from "../../../errors";
 import { findAssociatedTokenPda } from "../../../utils/findAssociatedTokenPda";
 import { getSagePrograms } from "../../programs";

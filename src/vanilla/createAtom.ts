@@ -13,14 +13,15 @@ import { unloadCargo } from "~/core/actions/unloadCargo";
 import { unloadCrew } from "~/core/actions/unloadCrew";
 import { warpToSector } from "~/core/actions/warpToSector";
 import { GameService } from "~/core/services/GameService";
-import { getRecipeAccount } from "~/libs/@staratlas/crafting";
-import { getPlayerProfileAccount } from "~/libs/@staratlas/player-profile";
-import { getFleetAccountByNameOrAddress } from "~/libs/@staratlas/sage";
+import { fetchRecipeAccount } from "~/libs/@staratlas/crafting";
+import { fetchPlayerProfileAccount } from "~/libs/@staratlas/player-profile";
+import { fetchFleetAccountByNameOrAddress } from "~/libs/@staratlas/sage";
 import { createMainLiveService } from "~/utils/createMainLiveService";
 import {
 	type ParsedGlobalOptions,
 	createOptionsFromParsed,
 } from "~/utils/globalOptions";
+import { createAccountsUtils } from "./createAccountsUtils";
 import { createPdasUtils } from "./createPdasUtils";
 import { makeVanilla } from "./makeVanilla";
 
@@ -42,9 +43,11 @@ export const createAtom = (
 	const runtime = ManagedRuntime.make(appLayer);
 
 	const pdas = createPdasUtils(runtime);
+	const accounts = createAccountsUtils(runtime);
 
 	return {
 		pdas,
+		accounts,
 		init: makeVanilla(
 			() =>
 				GameService.pipe(
@@ -56,10 +59,10 @@ export const createAtom = (
 		),
 		dispose: () => runtime.dispose(),
 		profile: {
-			fetch: makeVanilla(getPlayerProfileAccount, runtime),
+			fetch: makeVanilla(fetchPlayerProfileAccount, runtime),
 		},
 		fleet: {
-			fetch: makeVanilla(getFleetAccountByNameOrAddress, runtime),
+			fetch: makeVanilla(fetchFleetAccountByNameOrAddress, runtime),
 			dock: makeVanilla(dockToStarbase, runtime),
 			undock: makeVanilla(undockFromStarbase, runtime),
 			startMining: makeVanilla(startMining, runtime),
@@ -77,7 +80,7 @@ export const createAtom = (
 			unloadCrew: makeVanilla(unloadCrew, runtime),
 		},
 		recipe: {
-			fetch: makeVanilla(getRecipeAccount, runtime),
+			fetch: makeVanilla(fetchRecipeAccount, runtime),
 		},
 	};
 };

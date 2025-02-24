@@ -1,12 +1,12 @@
 import { getAccount } from "@solana/spl-token";
 import { Fleet } from "@staratlas/sage";
 import { Effect, Match, Option } from "effect";
-import { resourceMintByName } from "~/constants/resources";
 import { getSagePrograms } from "~/core/programs";
 import { getGameContext } from "~/core/services/GameService/utils";
 import { SolanaService } from "~/core/services/SolanaService";
 import { findCargoTypePda } from "~/libs/@staratlas/cargo";
 import { findUserPointsPda } from "~/libs/@staratlas/points";
+import { resourceMintByName } from "~/utils/resources";
 
 export const createMovementHandlerIx = (fleetAccount: Fleet) =>
 	Effect.gen(function* () {

@@ -1,7 +1,7 @@
 import type { PublicKey } from "@solana/web3.js";
 import type BN from "bn.js";
 import { Data } from "effect";
-import { resourceNameByMint } from "~/constants/resources";
+import { resourceNameByMint } from "~/utils/resources";
 
 export class FindAssociatedTokenPdaError extends Data.TaggedError(
 	"FindAssociatedTokenPdaError",
@@ -33,12 +33,14 @@ export class GameNotFoundError extends Data.TaggedError("GameNotFoundError")<{
 
 export class ReadFromRPCError extends Data.TaggedError("ReadFromRPCError")<{
 	readonly error: unknown;
+	readonly key: PublicKey;
 	readonly accountName: string;
 }> {
 	override get message() {
 		const errorMsg =
 			this.error instanceof Error ? this.error.message : String(this.error);
-		return `Unable to read ${this.accountName} data from the network. ${errorMsg}`;
+
+		return `Failed to get ${this.accountName} account for ${this.key.toString()}, ${errorMsg}`;
 	}
 }
 

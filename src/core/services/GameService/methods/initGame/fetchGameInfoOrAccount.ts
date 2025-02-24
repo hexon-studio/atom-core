@@ -1,13 +1,9 @@
 import type { CargoStatsDefinition } from "@staratlas/cargo";
 import type { Game } from "@staratlas/sage";
 import { Effect, type Option } from "effect";
-import type {
-	AccountError,
-	GameNotFoundError,
-	ReadFromRPCError,
-} from "~/errors";
-import { getCargoStatsDefinitionAccount } from "~/libs/@staratlas/cargo";
-import { getGameAccount } from "~/libs/@staratlas/sage";
+import type { GameNotFoundError, ReadFromRPCError } from "~/errors";
+import { fetchCargoStatsDefinitionAccount } from "~/libs/@staratlas/cargo";
+import { fetchGameAccount } from "~/libs/@staratlas/sage";
 import type { SolanaService } from "../../../SolanaService";
 import { findGame } from "../findGame";
 import { type GameInfo, fetchGameInfo } from "./fetchGameInfo";
@@ -81,7 +77,7 @@ export const fetchGameInfoOrAccounts = (
 	commonApiUrl: Option.Option<string>,
 ): Effect.Effect<
 	GameInfo,
-	GameNotFoundError | ReadFromRPCError | AccountError,
+	GameNotFoundError | ReadFromRPCError,
 	SolanaService
 > =>
 	commonApiUrl.pipe(
@@ -90,11 +86,11 @@ export const fetchGameInfoOrAccounts = (
 			Effect.Do.pipe(
 				Effect.bind("gameAccount", () =>
 					findGame.pipe(
-						Effect.flatMap((game) => getGameAccount(game.publicKey)),
+						Effect.flatMap((game) => fetchGameAccount(game.publicKey)),
 					),
 				),
 				Effect.bind("cargoStatsDefinition", ({ gameAccount }) =>
-					getCargoStatsDefinitionAccount(
+					fetchCargoStatsDefinitionAccount(
 						gameAccount.data.cargo.statsDefinition,
 					),
 				),

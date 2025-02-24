@@ -15,18 +15,18 @@ import {
 } from "~/errors";
 import {
 	type CargoPodEnhanced,
+	fetchCargoTypeAccount,
 	findCargoPodPda,
 	findCargoTypePda,
-	getCargoTypeAccount,
 	isResourceAllowedForCargoPod,
 } from "~/libs/@staratlas/cargo";
 import { findProfileFactionPda } from "~/libs/@staratlas/profile-faction";
 import {
+	fetchStarbaseAccount,
 	findSagePlayerProfilePda,
 	findStarbasePdaByCoordinates,
 	findStarbasePlayerPda,
 	getCargoUnitsFromTokenAmount,
-	getStarbaseAccount,
 } from "~/libs/@staratlas/sage";
 import { getCargoPodsByAuthority } from "~/libs/@staratlas/sage/utils/getCargoPodsByAuthority";
 import { getCargoTypeResourceMultiplier } from "~/libs/@staratlas/sage/utils/getCargoTypeResourceMultiplier";
@@ -93,7 +93,7 @@ export const createWithdrawCargoFromFleetIx = ({
 			fleetCoords,
 		);
 
-		const starbaseAccount = yield* getStarbaseAccount(starbaseAddress);
+		const starbaseAccount = yield* fetchStarbaseAccount(starbaseAddress);
 
 		// PDA Starbase - Player
 		const [starbasePlayerAddress] = yield* findStarbasePlayerPda(
@@ -182,7 +182,7 @@ export const createWithdrawCargoFromFleetIx = ({
 			context.gameInfo.cargoStatsDefinitionSeqId,
 		);
 
-		const cargoTypeAccount = yield* getCargoTypeAccount(cargoTypeAddress);
+		const cargoTypeAccount = yield* fetchCargoTypeAccount(cargoTypeAddress);
 
 		const resourceAmountInFleetInCargoUnits = Record.get(
 			cargoPodInfo.resources,

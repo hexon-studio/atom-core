@@ -1,9 +1,9 @@
 import type { PublicKey } from "@solana/web3.js";
 import { BN } from "bn.js";
 import { Effect, Option, Record } from "effect";
-import { resourceMintByName } from "~/constants/resources";
 import { getFleetCargoPodInfoByType } from "~/libs/@staratlas/cargo";
-import { getFleetAccountByNameOrAddress } from "~/libs/@staratlas/sage";
+import { fetchFleetAccountByNameOrAddress } from "~/libs/@staratlas/sage";
+import { resourceMintByName } from "~/utils/resources";
 import {
 	FleetCooldownError,
 	NotEnoughCargoSpaceForScanError,
@@ -22,7 +22,7 @@ export const startScan = ({
 		yield* Effect.log("Start scanning...");
 
 		const fleetAccount =
-			yield* getFleetAccountByNameOrAddress(fleetNameOrAddress);
+			yield* fetchFleetAccountByNameOrAddress(fleetNameOrAddress);
 
 		const isScanCooldown = fleetAccount.data.scanCooldownExpiresAt.gt(
 			new BN(Math.floor(Date.now() / 1000)),

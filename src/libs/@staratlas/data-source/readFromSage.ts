@@ -25,7 +25,8 @@ export const readFromSage = <A extends Account, IDL extends Idl>(
 			),
 		catch: (error) =>
 			new ReadFromRPCError({
-				error,
 				accountName: resourceType.ACCOUNT_NAME,
+				error,
+				key: resourceKey,
 			}),
 	});
