@@ -13,9 +13,6 @@ import { unloadCargo } from "~/core/actions/unloadCargo";
 import { unloadCrew } from "~/core/actions/unloadCrew";
 import { warpToSector } from "~/core/actions/warpToSector";
 import { GameService } from "~/core/services/GameService";
-import { fetchRecipeAccount } from "~/libs/@staratlas/crafting";
-import { fetchPlayerProfileAccount } from "~/libs/@staratlas/player-profile";
-import { fetchFleetAccountByNameOrAddress } from "~/libs/@staratlas/sage";
 import { createMainLiveService } from "~/utils/createMainLiveService";
 import {
 	type ParsedGlobalOptions,
@@ -46,8 +43,8 @@ export const createAtom = (
 	const accounts = createAccountsUtils(runtime);
 
 	return {
-		pdas,
 		accounts,
+		pdas,
 		init: makeVanilla(
 			() =>
 				GameService.pipe(
@@ -58,29 +55,22 @@ export const createAtom = (
 			runtime,
 		),
 		dispose: () => runtime.dispose(),
-		profile: {
-			fetch: makeVanilla(fetchPlayerProfileAccount, runtime),
-		},
 		fleet: {
-			fetch: makeVanilla(fetchFleetAccountByNameOrAddress, runtime),
 			dock: makeVanilla(dockToStarbase, runtime),
-			undock: makeVanilla(undockFromStarbase, runtime),
-			startMining: makeVanilla(startMining, runtime),
-			stopMining: makeVanilla(stopMining, runtime),
 			loadCargo: makeVanilla(loadCargo, runtime),
-			unloadCargo: makeVanilla(unloadCargo, runtime),
-			subwarp: makeVanilla(subwarpToSector, runtime),
-			warp: makeVanilla(warpToSector, runtime),
+			startMining: makeVanilla(startMining, runtime),
 			startScan: makeVanilla(startScan, runtime),
+			stopMining: makeVanilla(stopMining, runtime),
+			subwarp: makeVanilla(subwarpToSector, runtime),
+			undock: makeVanilla(undockFromStarbase, runtime),
+			unloadCargo: makeVanilla(unloadCargo, runtime),
+			warp: makeVanilla(warpToSector, runtime),
 		},
 		starbase: {
+			loadCrew: makeVanilla(loadCrew, runtime),
 			startCrafting: makeVanilla(startCrafting, runtime),
 			stopCrafting: makeVanilla(stopCrafting, runtime),
-			loadCrew: makeVanilla(loadCrew, runtime),
 			unloadCrew: makeVanilla(unloadCrew, runtime),
-		},
-		recipe: {
-			fetch: makeVanilla(fetchRecipeAccount, runtime),
 		},
 	};
 };
