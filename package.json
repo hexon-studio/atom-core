@@ -31,22 +31,22 @@
 	"license": "ISC",
 	"description": "",
 	"devDependencies": {
-		"@arethetypeswrong/cli": "^0.17.3",
+		"@arethetypeswrong/cli": "^0.17.4",
 		"@biomejs/biome": "^1.9.4",
 		"@release-it/conventional-changelog": "^10.0.0",
 		"@total-typescript/ts-reset": "^0.6.1",
 		"@total-typescript/tsconfig": "^1.0.4",
 		"@types/bn.js": "^5.1.6",
 		"@types/mock-fs": "^4.13.4",
-		"@types/node": "^22.13.1",
+		"@types/node": "^22.13.5",
 		"mock-fs": "^5.5.0",
 		"neverthrow": "6.2.2",
 		"release-it": "^18.1.2",
-		"tsup": "^8.3.6",
-		"tsx": "^4.19.2",
+		"tsup": "^8.4.0",
+		"tsx": "^4.19.3",
 		"typescript": "^5.7.3",
 		"vite-tsconfig-paths": "^5.1.4",
-		"vitest": "^3.0.5"
+		"vitest": "^3.0.7"
 	},
 	"dependencies": {
 		"@logtail/pino": "^0.5.2",
@@ -72,10 +72,10 @@
 		"bs58": "^5.0.0",
 		"commander": "^13.1.0",
 		"dotenv": "^16.4.7",
-		"effect": "^3.12.10",
+		"effect": "^3.13.2",
 		"pino": "^9.6.0",
-		"uuid": "^11.0.5",
-		"zod": "^3.24.1"
+		"uuid": "^11.1.0",
+		"zod": "^3.24.2"
 	},
 	"pnpm": {
 		"overrides": {
