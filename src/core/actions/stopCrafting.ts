@@ -7,7 +7,7 @@ import { createCraftingClaimOutputsIxs } from "../crafting/instructions/createCr
 import { createCraftingCloseProcessIx } from "../crafting/instructions/createCraftingCloseProcessIx";
 import { GameService } from "../services/GameService";
 import { getGameContext } from "../services/GameService/utils";
-import { createDrainVaultIx } from "../vault/instructions/createDrainVaultIx";
+import { createAfterIxs } from "../vault/instructions/createAfterIxs";
 
 export const stopCrafting = ({
 	craftingId,
@@ -52,7 +52,7 @@ export const stopCrafting = ({
 			}),
 		]);
 
-		const drainVaultIx = yield* createDrainVaultIx();
+		const afterIxs = yield* createAfterIxs();
 
 		const {
 			options: { maxIxsPerTransaction },
@@ -60,7 +60,7 @@ export const stopCrafting = ({
 
 		const txs = yield* GameService.buildAndSignTransaction({
 			ixs: [...burnIxs, ...claimIxs, stopIx],
-			afterIxs: drainVaultIx,
+			afterIxs,
 			size: maxIxsPerTransaction,
 		});
 

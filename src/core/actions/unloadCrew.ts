@@ -9,7 +9,7 @@ import { getCurrentFleetSectorCoordinates } from "../fleet/utils/getCurrentFleet
 import { GameService } from "../services/GameService";
 import { getGameContext } from "../services/GameService/utils";
 import { getStarbaseInfoByCoords } from "../utils/getStarbaseInfo";
-import { createDrainVaultIx } from "../vault/instructions/createDrainVaultIx";
+import { createAfterIxs } from "../vault/instructions/createAfterIxs";
 
 export const unloadCrew = ({
 	allowUnloadRequiredCrew = false,
@@ -74,7 +74,7 @@ export const unloadCrew = ({
 
 		ixs.push(...unloadCrewIxs);
 
-		const drainVaultIx = yield* createDrainVaultIx();
+		const afterIxs = yield* createAfterIxs();
 
 		const {
 			options: { maxIxsPerTransaction },
@@ -82,7 +82,7 @@ export const unloadCrew = ({
 
 		const txs = yield* GameService.buildAndSignTransaction({
 			ixs,
-			afterIxs: drainVaultIx,
+			afterIxs,
 			size: maxIxsPerTransaction,
 		});
 

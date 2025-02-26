@@ -6,7 +6,7 @@ import { createPreIxs } from "../fleet/instructions/createPreIxs";
 import { createStartMiningIx } from "../fleet/instructions/createStartMiningIx";
 import { GameService } from "../services/GameService";
 import { getGameContext } from "../services/GameService/utils";
-import { createDrainVaultIx } from "../vault/instructions/createDrainVaultIx";
+import { createAfterIxs } from "../vault/instructions/createAfterIxs";
 
 export const startMining = ({
 	fleetNameOrAddress,
@@ -47,7 +47,7 @@ export const startMining = ({
 
 		ixs.push(...startMiningIxs);
 
-		const drainVaultIx = yield* createDrainVaultIx();
+		const afterIxs = yield* createAfterIxs();
 
 		const {
 			options: { maxIxsPerTransaction },
@@ -55,7 +55,7 @@ export const startMining = ({
 
 		const txs = yield* GameService.buildAndSignTransaction({
 			ixs,
-			afterIxs: drainVaultIx,
+			afterIxs,
 			size: maxIxsPerTransaction,
 		});
 

@@ -40,7 +40,7 @@ import {
 	enhanceLoadResourceItem,
 } from "../utils/enhanceLoadResourceItem";
 import { getStarbaseInfoByCoords } from "../utils/getStarbaseInfo";
-import { createDrainVaultIx } from "../vault/instructions/createDrainVaultIx";
+import { createAfterIxs } from "../vault/instructions/createAfterIxs";
 
 export const loadCargo = ({
 	items: itemsParam,
@@ -81,11 +81,11 @@ export const loadCargo = ({
 					targetState: "StarbaseLoadingBay",
 				}),
 			),
-			Effect.bind("drainVaultIx", () => createDrainVaultIx()),
-			Effect.flatMap(({ preIxs, drainVaultIx }) =>
+			Effect.bind("afterIxs", () => createAfterIxs()),
+			Effect.flatMap(({ preIxs, afterIxs }) =>
 				GameService.buildAndSignTransaction({
 					ixs: preIxs,
-					afterIxs: drainVaultIx,
+					afterIxs,
 					size: maxIxsPerTransaction,
 				}),
 			),
@@ -226,11 +226,11 @@ export const loadCargo = ({
 
 		ixs.push(...loadCargoIxs);
 
-		const drainVaultIx = yield* createDrainVaultIx();
+		const afterIxs = yield* createAfterIxs();
 
 		const txs = yield* GameService.buildAndSignTransaction({
 			ixs,
-			afterIxs: drainVaultIx,
+			afterIxs,
 			size: maxIxsPerTransaction,
 		});
 

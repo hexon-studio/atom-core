@@ -13,7 +13,7 @@ import { getCurrentFleetSectorCoordinates } from "../fleet/utils/getCurrentFleet
 import { GameService } from "../services/GameService";
 import { getGameContext } from "../services/GameService/utils";
 import { getStarbaseInfoByCoords } from "../utils/getStarbaseInfo";
-import { createDrainVaultIx } from "../vault/instructions/createDrainVaultIx";
+import { createAfterIxs } from "../vault/instructions/createAfterIxs";
 
 export const loadCrew = ({
 	fleetNameOrAddress,
@@ -93,14 +93,14 @@ export const loadCrew = ({
 
 		ixs.push(...loadCrewIxs);
 
-		const drainVaultIx = yield* createDrainVaultIx();
+		const afterIxs = yield* createAfterIxs();
 
 		const {
 			options: { maxIxsPerTransaction },
 		} = yield* getGameContext();
 
 		const txs = yield* GameService.buildAndSignTransaction({
-			afterIxs: drainVaultIx,
+			afterIxs,
 			ixs,
 			size: maxIxsPerTransaction,
 		});
