@@ -4,7 +4,7 @@ import { getFleetAccountByNameOrAddress } from "~/libs/@staratlas/sage";
 import { createPreIxs } from "../fleet/instructions/createPreIxs";
 import { GameService } from "../services/GameService";
 import { getGameContext } from "../services/GameService/utils";
-import { createDrainVaultIx } from "../vault/instructions/createDrainVaultIx";
+import { createAfterIxs } from "../vault/instructions/createAfterIxs";
 
 export const stopMining = ({
 	fleetNameOrAddress,
@@ -28,7 +28,7 @@ export const stopMining = ({
 			targetState: "Idle",
 		});
 
-		const drainVaultIx = yield* createDrainVaultIx();
+		const afterIxs = yield* createAfterIxs();
 
 		const {
 			options: { maxIxsPerTransaction },
@@ -36,7 +36,7 @@ export const stopMining = ({
 
 		const txs = yield* GameService.buildAndSignTransaction({
 			ixs,
-			afterIxs: drainVaultIx,
+			afterIxs,
 			size: maxIxsPerTransaction,
 		});
 

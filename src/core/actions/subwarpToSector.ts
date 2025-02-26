@@ -10,7 +10,7 @@ import { createSubwarpToCoordinateIx } from "../fleet/instructions";
 import { createPreIxs } from "../fleet/instructions/createPreIxs";
 import { GameService } from "../services/GameService";
 import { getGameContext } from "../services/GameService/utils";
-import { createDrainVaultIx } from "../vault/instructions/createDrainVaultIx";
+import { createAfterIxs } from "../vault/instructions/createAfterIxs";
 
 export const subwarpToSector = ({
 	fleetNameOrAddress,
@@ -36,12 +36,12 @@ export const subwarpToSector = ({
 					targetState: "Idle",
 				}),
 			),
-			Effect.bind("drainVaultIx", () => createDrainVaultIx()),
+			Effect.bind("afterIxs", () => createAfterIxs()),
 			// Sending the transactions before doing the next step
-			Effect.flatMap(({ preIxs, drainVaultIx }) =>
+			Effect.flatMap(({ preIxs, afterIxs }) =>
 				GameService.buildAndSignTransaction({
 					ixs: preIxs,
-					afterIxs: drainVaultIx,
+					afterIxs,
 					size: maxIxsPerTransaction,
 				}),
 			),
@@ -67,11 +67,11 @@ export const subwarpToSector = ({
 		}
 
 		ixs.push(...subwarpIxs);
-		const drainVaultIx = yield* createDrainVaultIx();
+		const afterIxs = yield* createAfterIxs();
 
 		const txs = yield* GameService.buildAndSignTransaction({
 			ixs,
-			afterIxs: drainVaultIx,
+			afterIxs,
 			size: maxIxsPerTransaction,
 		});
 

@@ -11,7 +11,7 @@ import { getGameContext } from "../../services/GameService/utils";
 
 const maxFee = 1 * ATLAS_DECIMALS;
 
-export const createDrainVaultIx = () =>
+export const createDrainVaultIxs = () =>
 	Effect.gen(function* () {
 		const programs = yield* getSagePrograms();
 

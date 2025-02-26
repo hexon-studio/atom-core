@@ -10,7 +10,7 @@ import { createCraftingProcessIx } from "../crafting/instructions/createCrafting
 import { createCraftingStartIxs } from "../crafting/instructions/createCraftingStartIxs";
 import { GameService } from "../services/GameService";
 import { getGameContext } from "../services/GameService/utils";
-import { createDrainVaultIx } from "../vault/instructions/createDrainVaultIx";
+import { createAfterIxs } from "../vault/instructions/createAfterIxs";
 
 export const startCrafting = ({
 	recipe,
@@ -55,14 +55,14 @@ export const startCrafting = ({
 			}),
 		]);
 
-		const drainVaultIx = yield* createDrainVaultIx();
+		const afterIxs = yield* createAfterIxs();
 		const {
 			options: { maxIxsPerTransaction },
 		} = yield* getGameContext();
 
 		const txs = yield* GameService.buildAndSignTransaction({
 			ixs: [createIx, ...depositIxs, ...startIxs],
-			afterIxs: drainVaultIx,
+			afterIxs,
 			size: maxIxsPerTransaction,
 		});
 

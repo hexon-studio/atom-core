@@ -175,6 +175,11 @@ const main = async () => {
 			"--mipt, --max-ixs-per-transaction <mipt>",
 			"Maximum number of instructions per transaction",
 			"5",
+		)
+		.option(
+			"--trackingAddress <trackingAddress>",
+			"Address used for tracking transactions",
+			parsePublicKey,
 		);
 
 	program

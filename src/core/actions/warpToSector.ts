@@ -8,7 +8,7 @@ import { createWarpToCoordinateIx } from "../fleet/instructions";
 import { createPreIxs } from "../fleet/instructions/createPreIxs";
 import { GameService } from "../services/GameService";
 import { getGameContext } from "../services/GameService/utils";
-import { createDrainVaultIx } from "../vault/instructions/createDrainVaultIx";
+import { createAfterIxs } from "../vault/instructions/createAfterIxs";
 
 export const warpToSector = ({
 	fleetNameOrAddress,
@@ -53,7 +53,7 @@ export const warpToSector = ({
 		}
 
 		ixs.push(...warpIxs);
-		const drainVaultIx = yield* createDrainVaultIx();
+		const afterIxs = yield* createAfterIxs();
 
 		const {
 			options: { maxIxsPerTransaction },
@@ -61,7 +61,7 @@ export const warpToSector = ({
 
 		const txs = yield* GameService.buildAndSignTransaction({
 			ixs,
-			afterIxs: drainVaultIx,
+			afterIxs,
 			size: maxIxsPerTransaction,
 		});
 

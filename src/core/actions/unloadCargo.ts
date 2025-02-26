@@ -32,7 +32,7 @@ import {
 import { getFleetCargoPodInfosForItems } from "../fleet/utils/getFleetCargoPodInfosForItems";
 import { GameService } from "../services/GameService";
 import { getGameContext } from "../services/GameService/utils";
-import { createDrainVaultIx } from "../vault/instructions/createDrainVaultIx";
+import { createAfterIxs } from "../vault/instructions/createAfterIxs";
 
 export const unloadCargo = ({
 	fleetNameOrAddress,
@@ -60,11 +60,11 @@ export const unloadCargo = ({
 					targetState: "StarbaseLoadingBay",
 				}),
 			),
-			Effect.bind("drainVaultIx", () => createDrainVaultIx()),
-			Effect.flatMap(({ preIxs, drainVaultIx }) =>
+			Effect.bind("afterIxs", () => createAfterIxs()),
+			Effect.flatMap(({ preIxs, afterIxs }) =>
 				GameService.buildAndSignTransaction({
 					ixs: preIxs,
-					afterIxs: drainVaultIx,
+					afterIxs,
 					size: maxIxsPerTransaction,
 				}),
 			),
@@ -119,11 +119,11 @@ export const unloadCargo = ({
 
 		ixs.push(...unloadCargoIxs);
 
-		const drainVaultIx = yield* createDrainVaultIx();
+		const afterIxs = yield* createAfterIxs();
 
 		const txs = yield* GameService.buildAndSignTransaction({
 			ixs,
-			afterIxs: drainVaultIx,
+			afterIxs,
 			size: maxIxsPerTransaction,
 		});
 
