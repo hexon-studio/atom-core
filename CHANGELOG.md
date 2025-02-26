@@ -1,5 +1,12 @@
 # Changelog
 
+# [2.3.0](https://github.com/hexon-studio/atom-core/compare/v2.2.0...v2.3.0) (2025-02-26)
+
+
+### Features
+
+* add tracking address option and implement tracking instructions ([5ee0555](https://github.com/hexon-studio/atom-core/commit/5ee055556ae5fec8fddb888bea2321b93901097c))
+
 # [2.2.0](https://github.com/hexon-studio/atom-core/compare/v2.1.1...v2.2.0) (2025-02-20)
 
 
