@@ -177,9 +177,9 @@ const main = async () => {
 			"5",
 		)
 		.option(
-			"--trackingAddress <trackingAddress>",
-			"Address used for tracking transactions",
-			parsePublicKey,
+			"--trackingKeypair <trackingKeypair>",
+			"Keypair used for send tracking transfers",
+			parseSecretKey,
 		);
 
 	program

@@ -1,5 +1,8 @@
 import { SystemProgram } from "@solana/web3.js";
-import type { InstructionReturn } from "@staratlas/data-source";
+import {
+	type InstructionReturn,
+	signerToAsyncSigner,
+} from "@staratlas/data-source";
 import { Effect } from "effect";
 import type { SolanaService } from "~/core/services/SolanaService";
 import type { GameNotInitializedError } from "~/errors";
@@ -14,9 +17,9 @@ export const createTrackingIxs = (): Effect.Effect<
 	Effect.gen(function* () {
 		const context = yield* getGameContext();
 
-		const trackingAddress = context.options.trackingAddress;
+		const trackingKeypair = context.options.trackingKeypair;
 
-		if (!trackingAddress) {
+		if (!trackingKeypair) {
 			return [];
 		}
 
@@ -24,10 +27,10 @@ export const createTrackingIxs = (): Effect.Effect<
 
 		return [
 			async () => ({
-				signers: [signer],
+				signers: [signerToAsyncSigner(trackingKeypair)],
 				instruction: SystemProgram.transfer({
-					fromPubkey: signer.publicKey(),
-					toPubkey: trackingAddress,
+					fromPubkey: trackingKeypair.publicKey,
+					toPubkey: signer.publicKey(),
 					lamports: 1,
 				}),
 			}),

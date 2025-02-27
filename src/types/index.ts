@@ -58,7 +58,7 @@ export const cliOptionsDecoder = requiredOptionsDecoder.extend({
 	loggingToken: z.string().optional(),
 	webhookSecret: z.string().optional(),
 	webhookUrl: z.string().optional(),
-	trackingAddress: z.instanceof(PublicKey).optional(),
+	trackingKeypair: z.instanceof(Keypair).optional(),
 });
 
 export type CliGlobalOptions = z.infer<typeof cliOptionsDecoder>;
