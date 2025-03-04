@@ -1,3 +1,4 @@
+import { getAccount } from "@solana/spl-token";
 import { PublicKey } from "@solana/web3.js";
 import BN from "bn.js";
 import { Effect, Option, Record } from "effect";
@@ -15,6 +16,7 @@ import {
 import type { LoadResourceInput } from "~/utils/decoders";
 import { fetchTokenBalance } from "~/utils/fetchTokenBalance";
 import { findAssociatedTokenPda } from "~/utils/findAssociatedTokenPda";
+import { SolanaService } from "../services/SolanaService";
 
 export const enhanceLoadResourceItem = ({
 	item,
@@ -37,8 +39,21 @@ export const enhanceLoadResourceItem = ({
 			owner: starbasePlayerCargoPodsPubkey,
 		});
 
-		const starbaseResourceAmountInTokens = yield* fetchTokenBalance(
-			starbaseResourceTokenAccount,
+		const provider = yield* SolanaService.anchorProvider;
+
+		const starbaseResourceAmountInTokens = yield* Effect.tryPromise(() =>
+			getAccount(
+				provider.connection,
+				starbaseResourceTokenAccount,
+				"confirmed",
+			),
+		).pipe(
+			Effect.orElseSucceed(() => new BN(0)),
+			Effect.flatMap(() =>
+				fetchTokenBalance(starbaseResourceTokenAccount).pipe(
+					Effect.retry({ times: 3 }),
+				),
+			),
 		);
 
 		const resourceAmountInFleetInCargoUnits = Record.get(

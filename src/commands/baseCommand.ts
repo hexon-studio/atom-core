@@ -1,6 +1,7 @@
 import { getAssociatedTokenAddressSync } from "@solana/spl-token";
 import { LAMPORTS_PER_SOL } from "@solana/web3.js";
 import { ProfileVault } from "@staratlas/profile-vault";
+import { BN } from "bn.js";
 import { Effect, Array as EffectArray, unsafeCoerce } from "effect";
 import { GameService } from "~/core/services/GameService";
 import { AtlasNotEnoughError, SolNotEnoughError } from "~/errors";
@@ -29,7 +30,9 @@ const checkAtlasBalance = () =>
 			true,
 		);
 
-		const atlasBalance = yield* fetchTokenBalance(funderVault);
+		const atlasBalance = yield* fetchTokenBalance(funderVault).pipe(
+			Effect.orElseSucceed(() => new BN(0)),
+		);
 
 		if (atlasBalance.ltn(MIN_ATLAS_QTY)) {
 			return yield* Effect.fail(
