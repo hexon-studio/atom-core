@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.3.2](https://github.com/hexon-studio/atom-core/compare/v2.3.1...v2.3.2) (2025-03-04)
+
+
+### Bug Fixes
+
+* handle token balance fetching errors and ensure default values ([a4a0ac9](https://github.com/hexon-studio/atom-core/commit/a4a0ac955b71741879e1aba5b69ebdece2fbe458))
+
 ## [2.3.1](https://github.com/hexon-studio/atom-core/compare/v2.3.0...v2.3.1) (2025-03-03)
 
 # [2.3.0](https://github.com/hexon-studio/atom-core/compare/v2.2.0...v2.3.0) (2025-02-26)
