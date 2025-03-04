@@ -3,6 +3,12 @@ import type BN from "bn.js";
 import { Data } from "effect";
 import { type ResourceMint, resourceMintToName } from "~/constants/resources";
 
+export class FetchTokenBalanceError extends Data.TaggedError(
+	"FetchTokenBalanceError",
+)<{
+	readonly error: unknown;
+}> {}
+
 export class FindAssociatedTokenPdaError extends Data.TaggedError(
 	"FindAssociatedTokenPdaError",
 )<{

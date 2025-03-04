@@ -1,7 +1,7 @@
 import { getAccount } from "@solana/spl-token";
 import type { Recipe } from "@staratlas/crafting";
 import { CraftingInstance } from "@staratlas/sage";
-import type BN from "bn.js";
+import BN from "bn.js";
 import { Effect, Option } from "effect";
 import { getSagePrograms } from "~/core/programs";
 import { GameService } from "~/core/services/GameService";
@@ -89,7 +89,9 @@ export const createCraftingWithdrawIngredientsIxs = ({
 				owner: craftingProcess,
 			});
 
-			const amount = yield* fetchTokenBalance(inputIngridientAta);
+			const amount = yield* fetchTokenBalance(inputIngridientAta).pipe(
+				Effect.orElseSucceed(() => new BN(0)),
+			);
 
 			const ix = CraftingInstance.withdrawCraftingIngredient(
 				programs.sage,
