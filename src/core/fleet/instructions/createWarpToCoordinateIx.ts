@@ -109,7 +109,7 @@ export const createWarpToCoordinateIx = ({
 		});
 
 		const [playerFactionAddress] = yield* findProfileFactionPda(
-			fleetAccount.data.ownerProfile,
+			context.playerProfile.key,
 		);
 
 		const movementHandlerIxs = yield* createMovementHandlerIx(fleetAccount);
@@ -127,7 +127,7 @@ export const createWarpToCoordinateIx = ({
 		const warpIx = Fleet.warpToCoordinate(
 			programs.sage,
 			signer,
-			fleetAccount.data.ownerProfile,
+			context.playerProfile.key,
 			playerFactionAddress,
 			fleetAccount.key,
 			fleetAccount.data.fuelTank,

@@ -82,7 +82,7 @@ export const createStartMiningIx = ({
 
 		const starbaseAccount = yield* getStarbaseAccount(starbaseAddress);
 
-		const playerProfile = fleetAccount.data.ownerProfile;
+		const playerProfile = context.playerProfile.key;
 
 		const [playerFactionAddress] = yield* findProfileFactionPda(playerProfile);
 

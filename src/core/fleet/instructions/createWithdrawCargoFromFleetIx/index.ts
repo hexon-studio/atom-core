@@ -68,15 +68,14 @@ export const createWithdrawCargoFromFleetIx = ({
 
 		const provider = yield* SolanaService.anchorProvider;
 
-		const playerProfilePubkey = fleetAccount.data.ownerProfile;
-
 		const [sagePlayerProfilePubkey] = yield* findSagePlayerProfilePda(
 			fleetAccount.data.gameId,
-			playerProfilePubkey,
+			context.playerProfile.key,
 		);
 
-		const [playerFactionAddress] =
-			yield* findProfileFactionPda(playerProfilePubkey);
+		const [playerFactionAddress] = yield* findProfileFactionPda(
+			context.playerProfile.key,
+		);
 
 		const cargoPodTokenAccount = yield* findAssociatedTokenPda({
 			mint: resourceMint,
@@ -248,7 +247,7 @@ export const createWithdrawCargoFromFleetIx = ({
 			programs.cargo,
 			signer,
 			"funder",
-			playerProfilePubkey,
+			context.playerProfile.key,
 			playerFactionAddress,
 			starbaseAddress,
 			starbasePlayerAddress,

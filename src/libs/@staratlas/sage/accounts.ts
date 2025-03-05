@@ -1,4 +1,5 @@
 import type { PublicKey } from "@solana/web3.js";
+import { byteArrayToString } from "@staratlas/data-source";
 import {
 	Fleet,
 	Game,
@@ -10,12 +11,14 @@ import {
 	Starbase,
 	StarbasePlayer,
 } from "@staratlas/sage";
-import { Effect } from "effect";
+import { Effect, Array as EffectArray, Option, identity } from "effect";
 import { getSagePrograms } from "~/core/programs";
+import { getGameContext } from "~/core/services/GameService/utils";
 import type { ReadFromRPCError } from "~/errors";
 import { AccountError } from "~/errors/account";
 import { readFromSage } from "~/libs/@staratlas/data-source";
 import { isPublicKey } from "~/utils/public-key";
+import { readAllFromSage } from "../data-source/readAllFromSage";
 import { findFleetPdaByName } from "./pdas";
 
 export const getGameAccount = (gamePublicKey: PublicKey) =>
@@ -50,23 +53,50 @@ export const getGameStateAccount = (gameStatePublicKey: PublicKey) =>
 		),
 	);
 
+export const getFleetAccountsByPlayerProfile = () =>
+	Effect.all([getGameContext(), getSagePrograms()]).pipe(
+		Effect.flatMap(([context, programs]) =>
+			readAllFromSage(programs.sage, Fleet, "confirmed", [
+				{
+					memcmp: {
+						offset: 105,
+						bytes: context.playerProfile.key.toString(),
+					},
+				},
+			]),
+		),
+		Effect.map(
+			EffectArray.filterMap((account) =>
+				account.type === "ok" ? Option.some(account.data) : Option.none(),
+			),
+		),
+	);
+
 export const getFleetAccountByNameOrAddress = (
 	fleetNameOrAddress: string | PublicKey,
 ) =>
-	(isPublicKey(fleetNameOrAddress)
-		? Effect.succeed(fleetNameOrAddress)
-		: findFleetPdaByName(fleetNameOrAddress).pipe(
-				Effect.map(([fleetAddress]) => fleetAddress),
-				Effect.mapError(
-					(error) =>
-						new AccountError({
-							error,
-							keyOrName: fleetNameOrAddress as string,
-							reason: "Failed to get fleet account by name",
-						}),
+	Effect.gen(function* () {
+		if (isPublicKey(fleetNameOrAddress)) {
+			return yield* getFleetAccount(fleetNameOrAddress);
+		}
+
+		const [fleetPda] = yield* findFleetPdaByName(fleetNameOrAddress);
+
+		return yield* getFleetAccount(fleetPda).pipe(
+			Effect.orElse(() =>
+				getFleetAccountsByPlayerProfile().pipe(
+					Effect.map(
+						EffectArray.filter(
+							(fleet) =>
+								byteArrayToString(fleet.data.fleetLabel) === fleetNameOrAddress,
+						),
+					),
+					Effect.map(EffectArray.head),
+					Effect.flatMap(identity),
 				),
-			)
-	).pipe(Effect.flatMap(getFleetAccount));
+			),
+		);
+	});
 
 export const getFleetAccount = (fleetPubkey: PublicKey) =>
 	getSagePrograms()

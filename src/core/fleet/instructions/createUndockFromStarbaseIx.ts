@@ -48,11 +48,11 @@ export const createUndockFromStarbaseIx = (fleetAccount: Fleet) =>
 
 		const [sagePlayerProfileAddress] = yield* findSagePlayerProfilePda(
 			context.gameInfo.gameId,
-			fleetAccount.data.ownerProfile,
+			context.playerProfile.key,
 		);
 
 		const [playerFactionAddress] = yield* findProfileFactionPda(
-			fleetAccount.data.ownerProfile,
+			context.playerProfile.key,
 		);
 
 		const [starbasePlayerKey] = yield* findStarbasePlayerPda(
@@ -67,7 +67,7 @@ export const createUndockFromStarbaseIx = (fleetAccount: Fleet) =>
 			Fleet.loadingBayToIdle(
 				programs.sage,
 				signer,
-				fleetAccount.data.ownerProfile,
+				context.playerProfile.key,
 				playerFactionAddress,
 				fleetAccount.key,
 				starbaseKey,

@@ -13,19 +13,23 @@ import type BN from "bn.js";
 import { Effect } from "effect";
 import { getSagePrograms } from "~/core/programs";
 import { getGameContext } from "~/core/services/GameService/utils";
+import { FindPdaError } from "~/errors";
 
 export const findFleetPdaByName = (fleetName: string) =>
 	Effect.all([getSagePrograms(), getGameContext()]).pipe(
 		Effect.flatMap(([programs, context]) =>
-			Effect.try(() => {
-				const fleetLabel = stringToByteArray(fleetName, 32);
+			Effect.try({
+				try: () => {
+					const fleetLabel = stringToByteArray(fleetName, 32);
 
-				return Fleet.findAddress(
-					programs.sage,
-					context.gameInfo.gameId,
-					context.playerProfile.key,
-					fleetLabel,
-				);
+					return Fleet.findAddress(
+						programs.sage,
+						context.gameInfo.gameId,
+						context.playerProfile.key,
+						fleetLabel,
+					);
+				},
+				catch: (error) => new FindPdaError({ error }),
 			}),
 		),
 	);
