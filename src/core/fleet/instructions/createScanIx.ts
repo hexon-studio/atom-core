@@ -31,7 +31,7 @@ export const createScanIx = ({ fleetAccount }: { fleetAccount: Fleet }) =>
 		const signer = yield* GameService.signer;
 
 		const [profileFaction] = yield* findProfileFactionPda(
-			fleetAccount.data.ownerProfile,
+			context.playerProfile.key,
 		);
 
 		const sectorCoordinates = yield* getCurrentFleetSectorCoordinates(

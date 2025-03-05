@@ -81,7 +81,7 @@ export const createSubwarpToCoordinateIx = ({
 		const ixs = [];
 
 		const [playerFactionAddress] = yield* findProfileFactionPda(
-			fleetAccount.data.ownerProfile,
+			context.playerProfile.key,
 		);
 
 		const movementHandlerIxs = yield* createMovementHandlerIx(fleetAccount);
@@ -99,7 +99,7 @@ export const createSubwarpToCoordinateIx = ({
 		const subwarpIx = Fleet.startSubwarp(
 			programs.sage,
 			signer,
-			fleetAccount.data.ownerProfile,
+			context.playerProfile.key,
 			playerFactionAddress,
 			fleetAccount.key,
 			context.gameInfo.gameId,

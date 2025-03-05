@@ -50,7 +50,7 @@
 	},
 	"dependencies": {
 		"@logtail/pino": "^0.5.2",
-		"@solana/spl-token": "^0.4.12",
+		"@solana/spl-token": "^0.4.13",
 		"@solana/web3.js": "1.98.0",
 		"@staratlas/anchor": "^0.25.1",
 		"@staratlas/atlas-prime": "^0.13.1",
@@ -72,7 +72,7 @@
 		"bs58": "^5.0.0",
 		"commander": "^13.1.0",
 		"dotenv": "^16.4.7",
-		"effect": "^3.13.4",
+		"effect": "^3.13.6",
 		"pino": "^9.6.0",
 		"uuid": "^11.1.0",
 		"zod": "^3.24.2"

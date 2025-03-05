@@ -31,13 +31,15 @@ export const createDockToStarbaseIx = (fleetAccount: Fleet) =>
 
 		const signer = yield* GameService.signer;
 
+		const context = yield* getGameContext();
+
 		const [sagePlayerProfilePda, playerFactionPda, fleetCoords] =
 			yield* Effect.all([
 				findSagePlayerProfilePda(
 					fleetAccount.data.gameId,
-					fleetAccount.data.ownerProfile,
+					context.playerProfile.key,
 				),
-				findProfileFactionPda(fleetAccount.data.ownerProfile),
+				findProfileFactionPda(context.playerProfile.key),
 				getCurrentFleetSectorCoordinates(fleetAccount.state),
 			]);
 
@@ -65,8 +67,6 @@ export const createDockToStarbaseIx = (fleetAccount: Fleet) =>
 		const ixs: InstructionReturn[] = [];
 
 		const programs = yield* getSagePrograms();
-
-		const context = yield* getGameContext();
 
 		const gameId = context.gameInfo.gameId;
 		const gameState = context.gameInfo.gameStateId;
@@ -122,7 +122,7 @@ export const createDockToStarbaseIx = (fleetAccount: Fleet) =>
 		const dockIx = Fleet.idleToLoadingBay(
 			programs.sage,
 			signer,
-			fleetAccount.data.ownerProfile,
+			context.playerProfile.key,
 			playerFactionAddress,
 			fleetAccount.key,
 			starbaseAddress,

@@ -37,6 +37,17 @@ export class GameNotFoundError extends Data.TaggedError("GameNotFoundError")<{
 	readonly error: unknown;
 }> {}
 
+export class ReadAllFromRPCError extends Data.TaggedError(
+	"ReadAllFromRPCError",
+)<{
+	readonly error: unknown;
+}> {
+	override get message() {
+		const errorMsg =
+			this.error instanceof Error ? this.error.message : String(this.error);
+		return `Unable to read data from the network. ${errorMsg}`;
+	}
+}
 export class ReadFromRPCError extends Data.TaggedError("ReadFromRPCError")<{
 	readonly error: unknown;
 	readonly accountName: string;

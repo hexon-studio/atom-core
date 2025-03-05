@@ -23,7 +23,7 @@ export const createUnloadCrewIx = ({
 		const signer = yield* GameService.signer;
 
 		const [profileFaction] = yield* findProfileFactionPda(
-			fleetAccount.data.ownerProfile,
+			context.playerProfile.key,
 		);
 
 		const { starbasePlayerPubkey, starbasePubkey } = starbaseInfo;

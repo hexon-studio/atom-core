@@ -72,10 +72,9 @@ export const createDepositCargoToFleetIx = ({
 
 		const context = yield* getGameContext();
 
-		const playerProfilePubkey = fleetAccount.data.ownerProfile;
-
-		const [profileFactionPubkey] =
-			yield* findProfileFactionPda(playerProfilePubkey);
+		const [profileFactionPubkey] = yield* findProfileFactionPda(
+			context.playerProfile.key,
+		);
 
 		const targetTokenIx =
 			yield* SolanaService.createAssociatedTokenAccountIdempotent(
@@ -119,7 +118,7 @@ export const createDepositCargoToFleetIx = ({
 			programs.sage,
 			programs.cargo,
 			signer,
-			playerProfilePubkey,
+			context.playerProfile.key,
 			profileFactionPubkey,
 			"funder",
 			starbasePubkey,
