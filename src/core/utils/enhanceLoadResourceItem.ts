@@ -48,11 +48,15 @@ export const enhanceLoadResourceItem = ({
 				"confirmed",
 			),
 		).pipe(
-			Effect.orElseSucceed(() => new BN(0)),
-			Effect.flatMap(() =>
-				fetchTokenBalance(starbaseResourceTokenAccount).pipe(
-					Effect.retry({ times: 3 }),
-				),
+			Effect.option,
+			Effect.flatMap(
+				Option.match({
+					onNone: () => Effect.succeed(new BN(0)),
+					onSome: () =>
+						fetchTokenBalance(starbaseResourceTokenAccount).pipe(
+							Effect.retry({ times: 3 }),
+						),
+				}),
 			),
 		);
 
