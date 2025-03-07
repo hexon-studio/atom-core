@@ -24,7 +24,7 @@ const mapGameAccoutToGameInfo = ({
 		cargoStatsDefinitionSeqId: cargoStatsDefinition.data.seqId,
 		gameId: gameAccount.key,
 		gameStateId: gameAccount.data.gameState,
-		craftingDomain: gameAccount.data.gameState,
+		craftingDomain: gameAccount.data.crafting.domain,
 		points: {
 			pilotXpCategory: {
 				category:
