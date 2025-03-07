@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.4.2](https://github.com/hexon-studio/atom-core/compare/v2.4.1...v2.4.2) (2025-03-07)
+
+
+### Bug Fixes
+
+* correct crafting domain mapping in game info retrieval ([0e2ca97](https://github.com/hexon-studio/atom-core/commit/0e2ca977fae91f94df0602904017ceacd9183978))
+
 ## [2.4.1](https://github.com/hexon-studio/atom-core/compare/v2.4.0...v2.4.1) (2025-03-05)
 
 
