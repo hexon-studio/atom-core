@@ -1,5 +1,12 @@
 # Changelog
 
+# [2.5.0](https://github.com/hexon-studio/atom-core/compare/v2.4.2...v2.5.0) (2025-03-08)
+
+
+### Features
+
+* check rent ([c580259](https://github.com/hexon-studio/atom-core/commit/c5802594e5f7bccad827928e29c5198952485041))
+
 ## [2.4.2](https://github.com/hexon-studio/atom-core/compare/v2.4.1...v2.4.2) (2025-03-07)
 
 
