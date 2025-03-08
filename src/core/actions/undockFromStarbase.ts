@@ -1,6 +1,9 @@
 import type { PublicKey } from "@solana/web3.js";
 import { Effect } from "effect";
-import { getFleetAccountByNameOrAddress } from "~/libs/@staratlas/sage";
+import {
+	assertRentIsValid,
+	getFleetAccountByNameOrAddress,
+} from "~/libs/@staratlas/sage";
 import { createPreIxs } from "../fleet/instructions/createPreIxs";
 import { GameService } from "../services/GameService";
 import { getGameContext } from "../services/GameService/utils";
@@ -14,6 +17,8 @@ export const undockFromStarbase = ({
 
 		const fleetAccount =
 			yield* getFleetAccountByNameOrAddress(fleetNameOrAddress);
+
+		yield* assertRentIsValid(fleetAccount);
 
 		const ixs = yield* createPreIxs({ fleetAccount, targetState: "Idle" });
 

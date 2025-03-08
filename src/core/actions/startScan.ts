@@ -4,7 +4,10 @@ import { BN } from "bn.js";
 import { Effect, Option, Record } from "effect";
 import { resourceNameToMint } from "~/constants/resources";
 import { getFleetCargoPodInfoByType } from "~/libs/@staratlas/cargo";
-import { getFleetAccountByNameOrAddress } from "~/libs/@staratlas/sage";
+import {
+	assertRentIsValid,
+	getFleetAccountByNameOrAddress,
+} from "~/libs/@staratlas/sage";
 import {
 	FleetCooldownError,
 	NotEnoughCargoSpaceForScanError,
@@ -24,6 +27,8 @@ export const startScan = ({
 
 		const fleetAccount =
 			yield* getFleetAccountByNameOrAddress(fleetNameOrAddress);
+
+		yield* assertRentIsValid(fleetAccount);
 
 		const isScanCooldown = fleetAccount.data.scanCooldownExpiresAt.gt(
 			new BN(Math.floor(Date.now() / 1000)),
