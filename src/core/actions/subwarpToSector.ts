@@ -3,6 +3,7 @@ import type { InstructionReturn } from "@staratlas/data-source";
 import BN from "bn.js";
 import { Effect } from "effect";
 import {
+	assertRentIsValid,
 	getFleetAccount,
 	getFleetAccountByNameOrAddress,
 } from "~/libs/@staratlas/sage";
@@ -24,6 +25,9 @@ export const subwarpToSector = ({
 
 		const preFleetAccount =
 			yield* getFleetAccountByNameOrAddress(fleetNameOrAddress);
+
+		yield* assertRentIsValid(preFleetAccount);
+
 		const ixs: InstructionReturn[] = [];
 		const {
 			options: { maxIxsPerTransaction },

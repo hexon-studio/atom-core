@@ -2,7 +2,10 @@ import type { PublicKey } from "@solana/web3.js";
 import type { InstructionReturn } from "@staratlas/data-source";
 import type { MiscStats } from "@staratlas/sage";
 import { Effect } from "effect";
-import { getFleetAccountByNameOrAddress } from "~/libs/@staratlas/sage";
+import {
+	assertRentIsValid,
+	getFleetAccountByNameOrAddress,
+} from "~/libs/@staratlas/sage";
 import { createPreIxs } from "../fleet/instructions/createPreIxs";
 import { createUnloadCrewIx } from "../fleet/instructions/createUnloadCrewIx";
 import { getCurrentFleetSectorCoordinates } from "../fleet/utils/getCurrentFleetSectorCoordinates";
@@ -25,6 +28,8 @@ export const unloadCrew = ({
 
 		const fleetAccount =
 			yield* getFleetAccountByNameOrAddress(fleetNameOrAddress);
+
+		yield* assertRentIsValid(fleetAccount);
 
 		yield* Effect.log(
 			`Unloading crew from fleet ${fleetAccount.key.toString()}`,

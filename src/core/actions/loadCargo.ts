@@ -12,6 +12,7 @@ import {
 import { constNull } from "effect/Function";
 import { createItemUuid } from "~/constants/uuid";
 import {
+	assertRentIsValid,
 	getFleetAccount,
 	getFleetAccountByNameOrAddress,
 } from "~/libs/@staratlas/sage";
@@ -65,6 +66,8 @@ export const loadCargo = ({
 
 		const preFleetAccount =
 			yield* getFleetAccountByNameOrAddress(fleetNameOrAddress);
+
+		yield* assertRentIsValid(preFleetAccount);
 
 		yield* Effect.log(
 			`Loading cargo to fleet ${preFleetAccount.key.toString()}`,

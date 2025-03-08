@@ -3,6 +3,14 @@ import type { FleetStateData } from "@staratlas/sage";
 import { Data } from "effect";
 import type { CargoPodKind } from "~/utils/decoders";
 
+export class FleetRentPermissionError extends Data.TaggedError(
+	"FleetRentPermissionError",
+) {
+	override get message() {
+		return "The user profile has not enough permission on this rented fleet, mybe the rent is over";
+	}
+}
+
 export class FindFleetsError extends Data.TaggedError("FindFleetsError")<{
 	readonly error: unknown;
 }> {}

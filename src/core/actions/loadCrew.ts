@@ -4,6 +4,7 @@ import type { MiscStats } from "@staratlas/sage";
 import { BN } from "bn.js";
 import { Effect } from "effect";
 import {
+	assertRentIsValid,
 	getFleetAccountByNameOrAddress,
 	getStarbasePlayerAccount,
 } from "~/libs/@staratlas/sage";
@@ -27,6 +28,8 @@ export const loadCrew = ({
 
 		const fleetAccount =
 			yield* getFleetAccountByNameOrAddress(fleetNameOrAddress);
+
+		yield* assertRentIsValid(fleetAccount);
 
 		yield* Effect.log(`Loading crew to fleet ${fleetAccount.key.toString()}`);
 
