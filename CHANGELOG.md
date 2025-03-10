@@ -1,5 +1,12 @@
 # Changelog
 
+# [2.6.0](https://github.com/hexon-studio/atom-core/compare/v2.5.0...v2.6.0) (2025-03-10)
+
+
+### Features
+
+* add Atlas Prime Fee Payer URL option and disable rent validation checks ([c14aad6](https://github.com/hexon-studio/atom-core/commit/c14aad6399f727d714da3bddf3de72150f060586))
+
 # [2.5.0](https://github.com/hexon-studio/atom-core/compare/v2.4.2...v2.5.0) (2025-03-08)
 
 
