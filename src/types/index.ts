@@ -40,6 +40,7 @@ export const requiredOptionsDecoder = z.object({
 	feeMode: z.union([z.literal("low"), z.literal("medium"), z.literal("high")]),
 
 	// Optinal fields
+	afpUrl: z.string().optional(),
 	feeAtlas: z.number().optional(),
 	feeLamports: z.number().optional(),
 	feeRecipient: z.instanceof(PublicKey).optional(),

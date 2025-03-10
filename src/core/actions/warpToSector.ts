@@ -2,10 +2,7 @@ import type { PublicKey } from "@solana/web3.js";
 import type { InstructionReturn } from "@staratlas/data-source";
 import BN from "bn.js";
 import { Effect } from "effect";
-import {
-	assertRentIsValid,
-	getFleetAccountByNameOrAddress,
-} from "~/libs/@staratlas/sage";
+import { getFleetAccountByNameOrAddress } from "~/libs/@staratlas/sage";
 import { FleetCooldownError } from "../../errors";
 import { createWarpToCoordinateIx } from "../fleet/instructions";
 import { createPreIxs } from "../fleet/instructions/createPreIxs";
@@ -26,7 +23,7 @@ export const warpToSector = ({
 		const fleetAccount =
 			yield* getFleetAccountByNameOrAddress(fleetNameOrAddress);
 
-		yield* assertRentIsValid(fleetAccount);
+		// yield* assertRentIsValid(fleetAccount);
 
 		const warpCooldownExpiresAt =
 			fleetAccount.data.warpCooldownExpiresAt.toNumber();

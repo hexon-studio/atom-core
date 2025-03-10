@@ -11,7 +11,6 @@ import {
 } from "effect";
 import { constNull } from "effect/Function";
 import {
-	assertRentIsValid,
 	getFleetAccount,
 	getFleetAccountByNameOrAddress,
 } from "~/libs/@staratlas/sage";
@@ -50,7 +49,7 @@ export const unloadCargo = ({
 		const preFleetAccount =
 			yield* getFleetAccountByNameOrAddress(fleetNameOrAddress);
 
-		yield* assertRentIsValid(preFleetAccount);
+		// yield* assertRentIsValid(preFleetAccount);
 
 		const {
 			options: { maxIxsPerTransaction },

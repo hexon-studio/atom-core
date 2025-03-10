@@ -53,8 +53,14 @@ export const buildTransactions = ({
 						maxTraceCount: 2,
 					}));
 
+					if (!context.options.afpUrl) {
+						throw new BuildAndSignTransactionError({
+							error: "AFP URL is required for Atlas Prime transactions",
+						});
+					}
+
 					const builder = await AtlasPrimeTransactionBuilder.new({
-						afpUrl: "https://prime.staratlas.com/",
+						afpUrl: context.options.afpUrl,
 						connection: provider.connection,
 						commitment: "confirmed",
 						lookupTables: lookupTable.value ? [lookupTable.value] : undefined,

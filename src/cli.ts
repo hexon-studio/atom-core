@@ -84,6 +84,12 @@ const main = async () => {
 				.makeOptionMandatory(true),
 		)
 		.addOption(
+			new Option("--afpUrl <afpUrl>", "Atlas Prime Fee Payer URL")
+				.env("ATOM_AFP_URL")
+				.implies({ atlasPrime: true })
+				.makeOptionMandatory(false),
+		)
+		.addOption(
 			new Option(
 				"-w, --webhookUrl <webhookUrl>",
 				"Webhook URL for notifications",
