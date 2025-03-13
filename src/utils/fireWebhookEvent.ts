@@ -13,5 +13,10 @@ export const fireWebhookEvent = <A>(event: WebhookEvent<A>) =>
 			),
 		),
 		Effect.flatMap((service) => service.fireWebhookEvent(event)),
+		Effect.tapError((error) =>
+			Effect.logError("[WebhookService] Error firing event").pipe(
+				Effect.annotateLogs({ event, error }),
+			),
+		),
 		Effect.orElseSucceed(constNull),
 	);
