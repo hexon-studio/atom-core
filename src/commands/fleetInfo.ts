@@ -8,7 +8,7 @@ import {
 	ManagedRuntime,
 	Option,
 } from "effect";
-import { getFleetAccountByNameOrAddress } from "~/libs/@staratlas/sage";
+import { fetchFleetAccountByNameOrAddress } from "~/libs/@staratlas/sage";
 import { GameService } from "../core/services/GameService";
 import type { GlobalOptions } from "../types";
 import { createMainLiveService } from "../utils/createMainLiveService";
@@ -29,7 +29,7 @@ export const runFleetInfo = async ({
 	const program = GameService.pipe(
 		Effect.tap((service) => service.initGame(service.gameContext, globalOpts)),
 		Effect.tap(() => Effect.log("Game initialized.")),
-		Effect.flatMap(() => getFleetAccountByNameOrAddress(fleetNameOrAddress)),
+		Effect.flatMap(() => fetchFleetAccountByNameOrAddress(fleetNameOrAddress)),
 		Effect.tap((fleet) =>
 			Effect.logInfo("Fleet found").pipe(Effect.annotateLogs({ fleet })),
 		),

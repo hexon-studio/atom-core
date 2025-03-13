@@ -1,7 +1,10 @@
 import type { Fleet } from "@staratlas/sage";
 import { Effect, Match, pipe } from "effect";
 import { FleetIsMovingError } from "~/errors";
-import { getMineItemAccount, getResourceAccount } from "~/libs/@staratlas/sage";
+import {
+	fetchMineItemAccount,
+	fetchResourceAccount,
+} from "~/libs/@staratlas/sage";
 import { createDockToStarbaseIx } from "./createDockToStarbaseIx";
 import { createMovementHandlerIx } from "./createMovementHandlerIx";
 import { createStopMiningIx } from "./createStopMiningIx";
@@ -149,9 +152,9 @@ export const createPreIxs = ({ fleetAccount, targetState }: Param) =>
 				},
 			}) =>
 				pipe(
-					getResourceAccount(resource),
+					fetchResourceAccount(resource),
 					Effect.flatMap((resource) =>
-						getMineItemAccount(resource.data.mineItem),
+						fetchMineItemAccount(resource.data.mineItem),
 					),
 					Effect.flatMap((mineItem) =>
 						createStopMiningIx({
@@ -173,9 +176,9 @@ export const createPreIxs = ({ fleetAccount, targetState }: Param) =>
 			}) =>
 				Effect.gen(function* () {
 					const stopMiningIxs = yield* pipe(
-						getResourceAccount(resource),
+						fetchResourceAccount(resource),
 						Effect.flatMap((resource) =>
-							getMineItemAccount(resource.data.mineItem),
+							fetchMineItemAccount(resource.data.mineItem),
 						),
 						Effect.flatMap((mineItem) =>
 							createStopMiningIx({

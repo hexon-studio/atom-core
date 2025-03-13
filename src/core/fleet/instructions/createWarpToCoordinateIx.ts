@@ -6,7 +6,7 @@ import {
 	getFleetCargoPodInfoByType,
 } from "~/libs/@staratlas/cargo";
 import { findProfileFactionPda } from "~/libs/@staratlas/profile-faction";
-import { resourceNameToMint } from "../../../constants/resources";
+import { resourceMintByName } from "~/utils";
 import { FleetNotEnoughFuelError, SectorTooFarError } from "../../../errors";
 import { findAssociatedTokenPda } from "../../../utils/findAssociatedTokenPda";
 import { getSagePrograms } from "../../programs";
@@ -67,7 +67,7 @@ export const createWarpToCoordinateIx = ({
 
 		const maybeFuelInTankData = Record.get(
 			fuelCargoPodInfo.resources,
-			resourceNameToMint.Fuel.toString(),
+			resourceMintByName("Fuel").toString(),
 		);
 
 		if (Option.isNone(maybeFuelInTankData)) {
@@ -98,13 +98,13 @@ export const createWarpToCoordinateIx = ({
 		const ixs = [];
 
 		const [cargoTypeAddress] = yield* findCargoTypePda(
-			resourceNameToMint.Fuel,
+			resourceMintByName("Fuel"),
 			context.gameInfo.cargoStatsDefinitionId,
 			context.gameInfo.cargoStatsDefinitionSeqId,
 		);
 
 		const fuelBankAta = yield* findAssociatedTokenPda({
-			mint: resourceNameToMint.Fuel,
+			mint: resourceMintByName("Fuel"),
 			owner: fleetAccount.data.fuelTank,
 		});
 
@@ -134,7 +134,7 @@ export const createWarpToCoordinateIx = ({
 			cargoTypeAddress,
 			context.gameInfo.cargoStatsDefinitionId,
 			fuelBankAta,
-			resourceNameToMint.Fuel,
+			resourceMintByName("Fuel"),
 			context.gameInfo.gameStateId,
 			context.gameInfo.gameId,
 			programs.cargo,

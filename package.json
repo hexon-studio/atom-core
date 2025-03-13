@@ -15,6 +15,10 @@
 		"./errors": {
 			"import": "./dist/errors/index.js",
 			"require": "./dist/errors/index.cjs"
+		},
+		"./utils": {
+			"import": "./dist/utils.js",
+			"require": "./dist/utils.cjs"
 		}
 	},
 	"scripts": {

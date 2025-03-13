@@ -9,8 +9,8 @@ import { constant, unsafeCoerce } from "effect/Function";
 import mock from "mock-fs";
 import { findAllPlanets } from "~/core/services/GameService/methods/findPlanets";
 import type { RequiredOptions } from "~/types";
+import { resourceMintByName } from "~/utils";
 import { createDepositCargoToFleetIx } from ".";
-import { resourceNameToMint } from "../../../../constants/resources";
 import { noopPublicKey } from "../../../../constants/tokens";
 import {
 	FleetInvalidResourceForPodKindError,
@@ -111,7 +111,7 @@ describe("createDepositCargoToFleetIx", () => {
 			item: {
 				amount: new BN(0),
 				cargoPodKind: "ammo_bank",
-				resourceMint: resourceNameToMint.Carbon,
+				resourceMint: resourceMintByName("Carbon"),
 				starbaseResourceTokenAccount: PublicKey.default,
 			},
 			fleetAccount: {} as Fleet,
@@ -123,15 +123,15 @@ describe("createDepositCargoToFleetIx", () => {
 			Exit.fail(
 				new InvalidAmountError({
 					amount: "0",
-					resourceMint: resourceNameToMint.Carbon,
+					resourceMint: resourceMintByName("Carbon"),
 				}),
 			),
 		);
 	});
 
 	it.each([
-		["ammo_bank", resourceNameToMint.Carbon.toString()],
-		["fuel_tank", resourceNameToMint.Carbon.toString()],
+		["ammo_bank", resourceMintByName("Carbon").toString()],
+		["fuel_tank", resourceMintByName("Carbon").toString()],
 	] satisfies [CargoPodKind, string][])(
 		"returns InvalidResourceForPodKind error if the resourceMint does not match the cargo type: %s, %s",
 		async (cargoPodKind, resourceMint) => {

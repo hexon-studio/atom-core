@@ -1,6 +1,6 @@
 import type { PublicKey } from "@solana/web3.js";
 import { Effect } from "effect";
-import { getFleetAccountByNameOrAddress } from "~/libs/@staratlas/sage";
+import { fetchFleetAccountByNameOrAddress } from "~/libs/@staratlas/sage";
 import { createPreIxs } from "../fleet/instructions/createPreIxs";
 import { GameService } from "../services/GameService";
 import { getGameContext } from "../services/GameService/utils";
@@ -13,7 +13,7 @@ export const stopMining = ({
 }) =>
 	Effect.gen(function* () {
 		const fleetAccount =
-			yield* getFleetAccountByNameOrAddress(fleetNameOrAddress);
+			yield* fetchFleetAccountByNameOrAddress(fleetNameOrAddress);
 
 		if (!fleetAccount.state.MineAsteroid) {
 			yield* Effect.log("Fleet is not mining on asteroid");

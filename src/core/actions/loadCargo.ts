@@ -12,8 +12,8 @@ import {
 import { constNull } from "effect/Function";
 import { createItemUuid } from "~/constants/uuid";
 import {
-	getFleetAccount,
-	getFleetAccountByNameOrAddress,
+	fetchFleetAccount,
+	fetchFleetAccountByNameOrAddress,
 } from "~/libs/@staratlas/sage";
 import { getCargoTypeResourceMultiplier } from "~/libs/@staratlas/sage/utils/getCargoTypeResourceMultiplier";
 import {
@@ -64,7 +64,7 @@ export const loadCargo = ({
 		);
 
 		const preFleetAccount =
-			yield* getFleetAccountByNameOrAddress(fleetNameOrAddress);
+			yield* fetchFleetAccountByNameOrAddress(fleetNameOrAddress);
 
 		// yield* assertRentIsValid(preFleetAccount);
 
@@ -103,7 +103,7 @@ export const loadCargo = ({
 
 		yield* Effect.sleep("10 seconds");
 
-		const freshFleetAccount = yield* getFleetAccount(preFleetAccount.key);
+		const freshFleetAccount = yield* fetchFleetAccount(preFleetAccount.key);
 		const ixs: InstructionReturn[] = [];
 
 		const itemsCargoPodsKinds = [

@@ -2,7 +2,7 @@ import { Effect, Option, Ref } from "effect";
 import { programIds } from "~/constants/programs";
 import type { GameContext } from "~/core/services/GameService";
 import { GameAlreadyInitializedError } from "~/errors";
-import { getPlayerProfileAccout } from "~/libs/@staratlas/player-profile";
+import { fetchPlayerProfileAccount } from "~/libs/@staratlas/player-profile";
 import type { GlobalOptions } from "~/types";
 import { fetchGameInfoOrAccounts } from "./fetchGameInfoOrAccount";
 
@@ -21,7 +21,7 @@ export const initGame = (
 
 		const [playerProfileAccount, gameInfo] = yield* Effect.all(
 			[
-				getPlayerProfileAccout(playerProfile),
+				fetchPlayerProfileAccount(playerProfile),
 				fetchGameInfoOrAccounts(commonApiUrl),
 			],
 			{ concurrency: "unbounded" },

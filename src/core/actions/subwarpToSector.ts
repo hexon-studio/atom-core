@@ -3,8 +3,8 @@ import type { InstructionReturn } from "@staratlas/data-source";
 import BN from "bn.js";
 import { Effect } from "effect";
 import {
-	getFleetAccount,
-	getFleetAccountByNameOrAddress,
+	fetchFleetAccount,
+	fetchFleetAccountByNameOrAddress,
 } from "~/libs/@staratlas/sage";
 import { createSubwarpToCoordinateIx } from "../fleet/instructions";
 import { createPreIxs } from "../fleet/instructions/createPreIxs";
@@ -23,7 +23,7 @@ export const subwarpToSector = ({
 		yield* Effect.log("Start subwarp...");
 
 		const preFleetAccount =
-			yield* getFleetAccountByNameOrAddress(fleetNameOrAddress);
+			yield* fetchFleetAccountByNameOrAddress(fleetNameOrAddress);
 
 		// yield* assertRentIsValid(preFleetAccount);
 
@@ -58,7 +58,7 @@ export const subwarpToSector = ({
 			),
 		);
 
-		const freshFleetAccount = yield* getFleetAccount(preFleetAccount.key);
+		const freshFleetAccount = yield* fetchFleetAccount(preFleetAccount.key);
 		const subwarpIxs = yield* createSubwarpToCoordinateIx({
 			fleetAccount: freshFleetAccount,
 			targetSector: [new BN(targetSectorX), new BN(targetSectorY)],

@@ -3,7 +3,6 @@ import { byteArrayToString } from "@staratlas/data-source";
 import {
 	Fleet,
 	Game,
-	GameState,
 	MineItem,
 	Planet,
 	Resource,
@@ -21,7 +20,7 @@ import { isPublicKey } from "~/utils/public-key";
 import { readAllFromSage } from "../data-source/readAllFromSage";
 import { findFleetPdaByName } from "./pdas";
 
-export const getGameAccount = (gamePublicKey: PublicKey) =>
+export const fetchGameAccount = (gamePublicKey: PublicKey) =>
 	getSagePrograms().pipe(
 		Effect.flatMap((programs) =>
 			readFromSage(programs.sage, gamePublicKey, Game),
@@ -37,23 +36,7 @@ export const getGameAccount = (gamePublicKey: PublicKey) =>
 		),
 	);
 
-export const getGameStateAccount = (gameStatePublicKey: PublicKey) =>
-	getSagePrograms().pipe(
-		Effect.flatMap((programs) =>
-			readFromSage(programs.sage, gameStatePublicKey, GameState),
-		),
-		Effect.catchTag("ReadFromRPCError", (error: ReadFromRPCError) =>
-			Effect.fail(
-				new AccountError({
-					error: error.error,
-					keyOrName: gameStatePublicKey.toString(),
-					reason: "Failed to get game state account",
-				}),
-			),
-		),
-	);
-
-export const getFleetAccountsByPlayerProfile = () =>
+export const fetchFleetAccountsByPlayerProfile = () =>
 	Effect.all([getGameContext(), getSagePrograms()]).pipe(
 		Effect.flatMap(([context, programs]) =>
 			readAllFromSage(programs.sage, Fleet, "confirmed", [
@@ -72,19 +55,19 @@ export const getFleetAccountsByPlayerProfile = () =>
 		),
 	);
 
-export const getFleetAccountByNameOrAddress = (
+export const fetchFleetAccountByNameOrAddress = (
 	fleetNameOrAddress: string | PublicKey,
 ) =>
 	Effect.gen(function* () {
 		if (isPublicKey(fleetNameOrAddress)) {
-			return yield* getFleetAccount(fleetNameOrAddress);
+			return yield* fetchFleetAccount(fleetNameOrAddress);
 		}
 
 		const [fleetPda] = yield* findFleetPdaByName(fleetNameOrAddress);
 
-		return yield* getFleetAccount(fleetPda).pipe(
+		return yield* fetchFleetAccount(fleetPda).pipe(
 			Effect.orElse(() =>
-				getFleetAccountsByPlayerProfile().pipe(
+				fetchFleetAccountsByPlayerProfile().pipe(
 					Effect.map(
 						EffectArray.filter(
 							(fleet) =>
@@ -98,7 +81,7 @@ export const getFleetAccountByNameOrAddress = (
 		);
 	});
 
-export const getFleetAccount = (fleetPubkey: PublicKey) =>
+export const fetchFleetAccount = (fleetPubkey: PublicKey) =>
 	getSagePrograms()
 		.pipe(
 			Effect.flatMap((programs) =>
@@ -120,7 +103,7 @@ export const getFleetAccount = (fleetPubkey: PublicKey) =>
 			),
 		);
 
-export const getMineItemAccount = (mineItemPubkey: PublicKey) =>
+export const fetchMineItemAccount = (mineItemPubkey: PublicKey) =>
 	getSagePrograms().pipe(
 		Effect.flatMap((programs) =>
 			readFromSage(programs.sage, mineItemPubkey, MineItem),
@@ -136,7 +119,7 @@ export const getMineItemAccount = (mineItemPubkey: PublicKey) =>
 		),
 	);
 
-export const getPlanetAccount = (planetPubkey: PublicKey) =>
+export const fetchPlanetAccount = (planetPubkey: PublicKey) =>
 	getSagePrograms().pipe(
 		Effect.flatMap((programs) =>
 			readFromSage(programs.sage, planetPubkey, Planet),
@@ -152,7 +135,7 @@ export const getPlanetAccount = (planetPubkey: PublicKey) =>
 		),
 	);
 
-export const getResourceAccount = (resourcePubkey: PublicKey) =>
+export const fetchResourceAccount = (resourcePubkey: PublicKey) =>
 	getSagePrograms().pipe(
 		Effect.flatMap((programs) =>
 			readFromSage(programs.sage, resourcePubkey, Resource),
@@ -168,7 +151,7 @@ export const getResourceAccount = (resourcePubkey: PublicKey) =>
 		),
 	);
 
-export const getSectorAccount = (sectorPubkey: PublicKey) =>
+export const fetchSectorAccount = (sectorPubkey: PublicKey) =>
 	getSagePrograms().pipe(
 		Effect.flatMap((programs) =>
 			readFromSage(programs.sage, sectorPubkey, Sector),
@@ -184,7 +167,7 @@ export const getSectorAccount = (sectorPubkey: PublicKey) =>
 		),
 	);
 
-export const getStarbaseAccount = (starbasePubkey: PublicKey) =>
+export const fetchStarbaseAccount = (starbasePubkey: PublicKey) =>
 	getSagePrograms().pipe(
 		Effect.flatMap((programs) =>
 			readFromSage(programs.sage, starbasePubkey, Starbase),
@@ -200,7 +183,7 @@ export const getStarbaseAccount = (starbasePubkey: PublicKey) =>
 		),
 	);
 
-export const getStarbasePlayerAccount = (starbasePlayerPubkey: PublicKey) =>
+export const fetchStarbasePlayerAccount = (starbasePlayerPubkey: PublicKey) =>
 	getSagePrograms().pipe(
 		Effect.flatMap((programs) =>
 			readFromSage(programs.sage, starbasePlayerPubkey, StarbasePlayer),

@@ -2,7 +2,6 @@ import { getAccount } from "@solana/spl-token";
 import { readAllFromRPC } from "@staratlas/data-source";
 import { type Fleet, Sector, SurveyDataUnitTracker } from "@staratlas/sage";
 import { Effect, Array as EffectArray, Option } from "effect";
-import { resourceNameToMint } from "~/constants/resources";
 import { getSagePrograms } from "~/core/programs";
 import { GameService } from "~/core/services/GameService";
 import { getGameContext } from "~/core/services/GameService/utils";
@@ -11,9 +10,10 @@ import { findCargoTypePda } from "~/libs/@staratlas/cargo";
 import { findUserPointsPda } from "~/libs/@staratlas/points";
 import { findProfileFactionPda } from "~/libs/@staratlas/profile-faction";
 import {
+	fetchSectorAccount,
 	findSectorPdaByCoordinates,
-	getSectorAccount,
 } from "~/libs/@staratlas/sage";
+import { resourceMintByName } from "~/utils";
 import { findAssociatedTokenPda } from "~/utils/findAssociatedTokenPda";
 import {
 	GetSurveyDataUnitTrackerError,
@@ -63,25 +63,25 @@ export const createScanIx = ({ fleetAccount }: { fleetAccount: Fleet }) =>
 		}
 
 		const [sduCargoTypeAddress] = yield* findCargoTypePda(
-			resourceNameToMint.SurveyDataUnit,
+			resourceMintByName("SurveyDataUnit"),
 			context.gameInfo.cargoStatsDefinitionId,
 			context.gameInfo.cargoStatsDefinitionSeqId,
 		);
 
 		const [foodCargoTypeAddress] = yield* findCargoTypePda(
-			resourceNameToMint.Food,
+			resourceMintByName("Food"),
 			context.gameInfo.cargoStatsDefinitionId,
 			context.gameInfo.cargoStatsDefinitionSeqId,
 		);
 
 		const sduTokenFrom = yield* findAssociatedTokenPda({
-			mint: resourceNameToMint.SurveyDataUnit,
+			mint: resourceMintByName("SurveyDataUnit"),
 			owner: surveyDataUnitTracker.value.data.data.signer,
 		});
 
 		const ixs = [];
 
-		const sectionAccount = yield* getSectorAccount(sectorPda).pipe(
+		const sectionAccount = yield* fetchSectorAccount(sectorPda).pipe(
 			Effect.option,
 		);
 
@@ -107,7 +107,7 @@ export const createScanIx = ({ fleetAccount }: { fleetAccount: Fleet }) =>
 
 		const sduTokenToIx =
 			yield* SolanaService.createAssociatedTokenAccountIdempotent(
-				resourceNameToMint.SurveyDataUnit,
+				resourceMintByName("SurveyDataUnit"),
 				fleetAccount.data.cargoHold,
 				true,
 			);
@@ -121,7 +121,7 @@ export const createScanIx = ({ fleetAccount }: { fleetAccount: Fleet }) =>
 		}
 
 		const foodTokenFrom = yield* findAssociatedTokenPda({
-			mint: resourceNameToMint.Food,
+			mint: resourceMintByName("Food"),
 			owner: fleetAccount.data.cargoHold,
 		});
 
@@ -154,7 +154,7 @@ export const createScanIx = ({ fleetAccount }: { fleetAccount: Fleet }) =>
 				sduTokenFrom,
 				sduTokenToIx.address,
 				foodTokenFrom,
-				resourceNameToMint.Food,
+				resourceMintByName("Food"),
 				dataRunningXpPda,
 				context.gameInfo.points.dataRunningXpCategory.category,
 				context.gameInfo.points.dataRunningXpCategory.modifier,

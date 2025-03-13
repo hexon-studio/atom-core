@@ -1,10 +1,10 @@
 import { Fleet, calculateDistance } from "@staratlas/sage";
 import type BN from "bn.js";
 import { Effect, Option, Record } from "effect";
-import { resourceNameToMint } from "~/constants/resources";
 import { FleetNotEnoughFuelError } from "~/errors";
 import { getFleetCargoPodInfoByType } from "~/libs/@staratlas/cargo";
 import { findProfileFactionPda } from "~/libs/@staratlas/profile-faction";
+import { resourceMintByName } from "~/utils";
 import { getSagePrograms } from "../../programs";
 import { GameService } from "../../services/GameService";
 import { getGameContext } from "../../services/GameService/utils";
@@ -50,7 +50,7 @@ export const createSubwarpToCoordinateIx = ({
 
 		const maybeFuelInTankData = Record.get(
 			fuelCargoPodInfo.resources,
-			resourceNameToMint.Fuel.toString(),
+			resourceMintByName("Fuel").toString(),
 		);
 
 		if (Option.isNone(maybeFuelInTankData)) {

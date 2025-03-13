@@ -2,8 +2,8 @@ import type { PublicKey } from "@solana/web3.js";
 import type BN from "bn.js";
 import { Effect } from "effect";
 import {
+	fetchRecipeAccount,
 	generateCraftingProcessId,
-	getRecipeAccount,
 } from "~/libs/@staratlas/crafting";
 import { createCraftingDepositIngredientsIxs } from "../crafting/instructions/createCraftingDepositIngredientsIxs";
 import { createCraftingProcessIx } from "../crafting/instructions/createCraftingProcessIx";
@@ -29,7 +29,7 @@ export const startCrafting = ({
 			Effect.annotateLogs({ craftingId: craftingId.toString() }),
 		);
 
-		const recipeAccount = yield* getRecipeAccount(recipe);
+		const recipeAccount = yield* fetchRecipeAccount(recipe);
 		yield* Effect.log("Crafting recipe loaded").pipe(
 			Effect.annotateLogs({ recipeAccount }),
 		);
