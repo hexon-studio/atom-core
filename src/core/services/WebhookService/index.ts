@@ -17,7 +17,7 @@ export type WebhookEvent<A> =
 				tag: string;
 				message: string;
 				signatures: string[];
-				context?: Record<string, unknown>;
+				context: Record<string, unknown> | null;
 			};
 	  };
 
@@ -38,7 +38,8 @@ const fireWebhookEvent =
 								},
 								body: JSON.stringify({
 									...event,
-									owner: options.owner.toString(),
+									owner:
+										options.kind === "exec" ? options.owner.toString() : null,
 									playerProfile: playerProfile.key.toString(),
 									contextId,
 								}),

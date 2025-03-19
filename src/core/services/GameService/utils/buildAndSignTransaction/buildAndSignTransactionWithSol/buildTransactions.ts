@@ -10,6 +10,7 @@ import type { Result } from "neverthrow";
 import { SolanaService } from "~/core/services/SolanaService";
 import { getHeliusEstimatedTransactionFee } from "~/core/utils/getHeliusEstimatedTransactionFee";
 import { BuildAndSignTransactionError, BuildOptimalTxError } from "~/errors";
+import { getGameContext } from "../..";
 import { GameService } from "../../..";
 
 export const buildTransactions = ({
@@ -17,13 +18,19 @@ export const buildTransactions = ({
 	afterIxs: afterIxsParam = [],
 }: { ixs: Array<InstructionReturn>; afterIxs?: Array<InstructionReturn> }) =>
 	Effect.all([
-		SolanaService.helius,
+		getGameContext(),
 		SolanaService.anchorProvider,
 		GameService.signer,
 	]).pipe(
-		Effect.flatMap(([helius, provider, feePayer]) =>
+		Effect.flatMap(([context, provider, feePayer]) =>
 			Effect.tryPromise({
 				try: async () => {
+					if (context.options.kind !== "exec") {
+						return [];
+					}
+
+					const options = context.options;
+
 					const lookupTable = await provider.connection.getAddressLookupTable(
 						// TODO: remove hardcode
 						new PublicKey("5NrYTRkLRsSSJGgfX2vNRbSXiEFi9yUHV5n7bs7VM9P2"),
@@ -43,20 +50,21 @@ export const buildTransactions = ({
 						feePayer,
 						lookupTables: lookupTable.value ? [lookupTable.value] : undefined,
 						afterIxs,
-						getFee: helius.pipe(
+						getFee: Option.fromNullable(options.heliusRpcUrl).pipe(
 							Option.map(
-								({ rpc: heliusRpcUrl, feeMode, feeLimit }) =>
-									async (writableAccounts: PublicKey[]) => {
-										if (!heliusFee) {
-											heliusFee = await getHeliusEstimatedTransactionFee({
-												feeMode,
-												heliusRpcUrl,
-												writableAccounts,
-											});
-										}
+								(heliusRpcUrl) => async (writableAccounts: PublicKey[]) => {
+									if (!heliusFee) {
+										heliusFee = await getHeliusEstimatedTransactionFee({
+											feeMode: options.feeMode,
+											heliusRpcUrl,
+											writableAccounts,
+										});
+									}
 
-										return feeLimit ? Math.min(heliusFee, feeLimit) : heliusFee;
-									},
+									const feeLimit = options.feeLimit;
+
+									return feeLimit ? Math.min(heliusFee, feeLimit) : heliusFee;
+								},
 							),
 							Option.getOrUndefined,
 						),

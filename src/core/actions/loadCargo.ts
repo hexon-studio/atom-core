@@ -72,9 +72,10 @@ export const loadCargo = ({
 			`Loading cargo to fleet ${preFleetAccount.key.toString()}`,
 		);
 
-		const {
-			options: { maxIxsPerTransaction },
-		} = yield* getGameContext();
+		const { options } = yield* getGameContext();
+
+		const maxIxsPerTransaction =
+			options.kind === "exec" ? options.maxIxsPerTransaction : 1;
 
 		const preIxsSignatures = yield* Effect.Do.pipe(
 			Effect.bind("preIxs", () =>

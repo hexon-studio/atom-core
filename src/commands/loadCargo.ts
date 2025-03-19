@@ -1,20 +1,8 @@
 import type { PublicKey } from "@solana/web3.js";
-import { BN } from "bn.js";
-import {
-	Cause,
-	Effect,
-	Exit,
-	LogLevel,
-	Logger,
-	ManagedRuntime,
-	Option,
-} from "effect";
 import { loadCargo } from "../core/actions/loadCargo";
-import { GameService } from "../core/services/GameService";
 import type { GlobalOptions } from "../types";
-import { createMainLiveService } from "../utils/createMainLiveService";
 import type { LoadResourceInput } from "../utils/decoders";
-import { runBaseCommand } from "./baseCommand";
+import { makeAtomCommand } from "./makeAtomCommand";
 
 type Param = {
 	fleetNameOrAddress: string | PublicKey;
@@ -26,70 +14,10 @@ export const runLoadCargo = async ({
 	fleetNameOrAddress,
 	items,
 	globalOpts,
-}: Param) => {
-	const mainServiceLive = createMainLiveService(globalOpts);
-
-	const runtime = ManagedRuntime.make(mainServiceLive);
-
-	const program = GameService.pipe(
-		Effect.tap((service) => service.initGame(service.gameContext, globalOpts)),
-		Effect.tap(() => Effect.log("Game initialized.")),
-		Effect.flatMap(() =>
-			runBaseCommand({
-				self: () =>
-					loadCargo({
-						fleetNameOrAddress,
-						items,
-					}),
-				normalizeError: (err) => ({
-					tag: err._tag,
-					message: err.message,
-					signatures:
-						err._tag === "LoadUnloadPartiallyFailedError"
-							? err.signatures
-							: null,
-					context:
-						err._tag === "LoadUnloadPartiallyFailedError"
-							? (JSON.parse(
-									JSON.stringify(err.context, (_, value) =>
-										value instanceof BN ? value.toString() : value,
-									),
-								) as Record<string, unknown>)
-							: undefined,
-				}),
-			}),
-		),
-		Effect.tapBoth({
-			onSuccess: (txIds) =>
-				Effect.log("Load done").pipe(Effect.annotateLogs({ txIds })),
-			onFailure: (error) =>
-				Effect.logError(`[${error._tag}] ${error.message}`).pipe(
-					Effect.annotateLogs({ error }),
-				),
+}: Param) =>
+	makeAtomCommand(() =>
+		loadCargo({
+			fleetNameOrAddress,
+			items,
 		}),
-		Logger.withMinimumLogLevel(LogLevel.Debug),
-	);
-
-	const exit = await runtime.runPromiseExit(program);
-
-	await runtime.dispose();
-
-	exit.pipe(
-		Exit.match({
-			onSuccess: () => {
-				process.exit(0);
-			},
-			onFailure: (cause) => {
-				console.log(`Transaction error: ${Cause.pretty(cause)}`);
-
-				const error = Cause.failureOption(cause).pipe(Option.getOrUndefined);
-
-				if (error) {
-					console.log(error);
-				}
-
-				process.exit(1);
-			},
-		}),
-	);
-};
+	)(globalOpts);

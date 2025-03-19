@@ -9,10 +9,10 @@ import {
 import { constVoid } from "effect/Function";
 import pino from "pino";
 import { version as packageJsonVersion } from "../../../../package.json";
-import type { GlobalOptions } from "../../../types";
+import type { AtomExecOptions } from "../../../types";
 import { getEnv } from "../../../utils/env";
 
-const createLogger = (opts: GlobalOptions) => {
+const createLogger = (opts: AtomExecOptions) => {
 	const createPino = () => {
 		if (opts.loggingToken) {
 			const transport = pino.transport({
@@ -56,15 +56,10 @@ const createLogger = (opts: GlobalOptions) => {
 	});
 };
 
-export const createLoggerServiceLive = (opts: GlobalOptions) => {
-	if (opts.logDisabled) {
-		return Logger.remove(Logger.defaultLogger);
-	}
-
-	return getEnv() === "production" && opts.loggingToken
+export const createLoggerServiceLive = (opts: AtomExecOptions) =>
+	getEnv() === "production" && opts.loggingToken
 		? Logger.replace(Logger.defaultLogger, createLogger(opts))
 		: Logger.replace(
 				Logger.defaultLogger,
 				Logger.prettyLogger({ mode: "auto" }),
 			);
-};

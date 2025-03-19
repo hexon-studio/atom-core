@@ -2,12 +2,12 @@ import { Keypair, PublicKey } from "@solana/web3.js";
 import { z } from "zod";
 
 export type WebhookOptions = Required<
-	Pick<CliGlobalOptions, "webhookSecret" | "webhookUrl">
+	Pick<CliExecGlobalOptions, "webhookSecret" | "webhookUrl">
 > &
-	Pick<CliGlobalOptions, "contextId">;
+	Pick<CliExecGlobalOptions, "contextId">;
 
-export type GlobalOptions = Omit<
-	CliGlobalOptions,
+export type AtomExecOptions = Omit<
+	CliExecGlobalOptions,
 	| "feeAtlas"
 	| "feeLamports"
 	| "feeRecipient"
@@ -29,14 +29,25 @@ export type GlobalOptions = Omit<
 	webhookArgs?: WebhookOptions;
 };
 
-export const requiredOptionsDecoder = z.object({
+export const queryOptionsDecoder = z.object({
+	kind: z.literal("query"),
+	commonApiUrl: z.string().optional(),
+	rpcUrl: z.string(),
+	playerProfile: z.instanceof(PublicKey),
+
+	loggingToken: z.string().optional(),
+});
+
+export type QueryOptions = z.infer<typeof queryOptionsDecoder>;
+
+export type GlobalOptions = QueryOptions | AtomExecOptions;
+
+export const requiredExecOptionsDecoder = queryOptionsDecoder.extend({
+	kind: z.literal("exec"),
 	atlasPrime: z.boolean().default(false),
 	keypair: z.instanceof(Keypair),
 	maxIxsPerTransaction: z.string().transform(Number),
 	owner: z.instanceof(PublicKey),
-	playerProfile: z.instanceof(PublicKey),
-	rpcUrl: z.string(),
-
 	feeMode: z.union([z.literal("low"), z.literal("medium"), z.literal("high")]),
 
 	// Optinal fields
@@ -44,22 +55,21 @@ export const requiredOptionsDecoder = z.object({
 	feeAtlas: z.number().optional(),
 	feeLamports: z.number().optional(),
 	feeRecipient: z.instanceof(PublicKey).optional(),
-	commonApiUrl: z.string().optional(),
 	feeLimit: z.number().optional(),
 	heliusRpcUrl: z.string().optional(),
 	logDisabled: z.boolean().optional(),
 });
 
-export type RequiredOptions = z.infer<typeof requiredOptionsDecoder>;
+export type RequiredOptions = z.infer<typeof requiredExecOptionsDecoder>;
 
 export type FeeMode = RequiredOptions["feeMode"];
 
-export const cliOptionsDecoder = requiredOptionsDecoder.extend({
+export const cliOptionsDecoder = requiredExecOptionsDecoder.extend({
 	contextId: z.string().optional(),
-	loggingToken: z.string().optional(),
+
 	webhookSecret: z.string().optional(),
 	webhookUrl: z.string().optional(),
 	trackingAddress: z.instanceof(PublicKey).optional(),
 });
 
-export type CliGlobalOptions = z.infer<typeof cliOptionsDecoder>;
+export type CliExecGlobalOptions = z.infer<typeof cliOptionsDecoder>;

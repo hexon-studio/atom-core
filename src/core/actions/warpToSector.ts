@@ -57,9 +57,10 @@ export const warpToSector = ({
 		ixs.push(...warpIxs);
 		const afterIxs = yield* createAfterIxs();
 
-		const {
-			options: { maxIxsPerTransaction },
-		} = yield* getGameContext();
+		const { options } = yield* getGameContext();
+
+		const maxIxsPerTransaction =
+			options.kind === "exec" ? options.maxIxsPerTransaction : 1;
 
 		const txs = yield* GameService.buildAndSignTransaction({
 			ixs,

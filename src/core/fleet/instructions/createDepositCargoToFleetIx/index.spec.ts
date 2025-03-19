@@ -45,7 +45,6 @@ const createMockedSolanaService = (signer: Keypair) =>
 	Layer.succeed(
 		SolanaService,
 		SolanaService.of({
-			helius: Effect.succeed(Option.none()),
 			anchorProvider: AnchorProvider.env(),
 			signer,
 			getParsedTokenAccountsByOwner: constant(Effect.succeed(unsafeCoerce([]))),

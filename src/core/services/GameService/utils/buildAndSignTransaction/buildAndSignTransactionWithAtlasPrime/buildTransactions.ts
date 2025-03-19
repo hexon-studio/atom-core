@@ -27,17 +27,22 @@ export const buildTransactions = ({
 	Effect.all([
 		getSagePrograms(),
 		getGameContext(),
-		SolanaService.helius,
 		SolanaService.anchorProvider,
 		GameService.signer,
 	]).pipe(
-		Effect.flatMap(([programs, context, helius, provider, signer]) =>
+		Effect.flatMap(([programs, context, provider, signer]) =>
 			Effect.tryPromise({
 				try: async () => {
+					if (context.options.kind !== "exec") {
+						return [];
+					}
+
+					const options = context.options;
+
 					const [vaultAuthority] = ProfileVault.findVaultSigner(
 						programs.profileVaultProgram,
 						context.playerProfile.key,
-						context.options.owner,
+						options.owner,
 					);
 
 					const lookupTable = await provider.connection.getAddressLookupTable(
@@ -53,32 +58,33 @@ export const buildTransactions = ({
 						maxTraceCount: 2,
 					}));
 
-					if (!context.options.afpUrl) {
+					if (!options.afpUrl) {
 						throw new BuildAndSignTransactionError({
 							error: "AFP URL is required for Atlas Prime transactions",
 						});
 					}
 
 					const builder = await AtlasPrimeTransactionBuilder.new({
-						afpUrl: context.options.afpUrl,
+						afpUrl: options.afpUrl,
 						connection: provider.connection,
 						commitment: "confirmed",
 						lookupTables: lookupTable.value ? [lookupTable.value] : undefined,
 						afterIxs,
-						getFee: helius.pipe(
+						getFee: Option.fromNullable(options.heliusRpcUrl).pipe(
 							Option.map(
-								({ rpc: heliusRpcUrl, feeMode, feeLimit }) =>
-									async (writableAccounts: PublicKey[]) => {
-										if (!heliusFee) {
-											heliusFee = await getHeliusEstimatedTransactionFee({
-												heliusRpcUrl,
-												writableAccounts,
-												feeMode,
-											});
-										}
+								(heliusRpcUrl) => async (writableAccounts: PublicKey[]) => {
+									if (!heliusFee) {
+										heliusFee = await getHeliusEstimatedTransactionFee({
+											heliusRpcUrl,
+											writableAccounts,
+											feeMode: options.feeMode,
+										});
+									}
 
-										return feeLimit ? Math.min(heliusFee, feeLimit) : heliusFee;
-									},
+									const feeLimit = options.feeLimit;
+
+									return feeLimit ? Math.min(heliusFee, feeLimit) : heliusFee;
+								},
 							),
 							Option.getOrUndefined,
 						),
