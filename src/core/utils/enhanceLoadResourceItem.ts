@@ -6,8 +6,8 @@ import { computeDepositAmount } from "~/core/fleet/instructions/createDepositCar
 import { getGameContext } from "~/core/services/GameService/utils";
 import {
 	type CargoPodEnhanced,
+	fetchCargoTypeAccount,
 	findCargoTypePda,
-	getCargoTypeAccount,
 } from "~/libs/@staratlas/cargo";
 import {
 	getCargoTypeResourceMultiplier,
@@ -74,7 +74,7 @@ export const enhanceLoadResourceItem = ({
 			context.gameInfo.cargoStatsDefinitionSeqId,
 		);
 
-		const cargoTypeAccount = yield* getCargoTypeAccount(cargoTypeAddress);
+		const cargoTypeAccount = yield* fetchCargoTypeAccount(cargoTypeAddress);
 
 		const amountInCargoUnits = getCargoUnitsFromTokenAmount({
 			amount: new BN(amount),

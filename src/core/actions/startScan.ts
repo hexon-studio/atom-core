@@ -2,9 +2,9 @@ import type { PublicKey } from "@solana/web3.js";
 import type { InstructionReturn } from "@staratlas/data-source";
 import { BN } from "bn.js";
 import { Effect, Option, Record } from "effect";
-import { resourceNameToMint } from "~/constants/resources";
 import { getFleetCargoPodInfoByType } from "~/libs/@staratlas/cargo";
-import { getFleetAccountByNameOrAddress } from "~/libs/@staratlas/sage";
+import { fetchFleetAccountByNameOrAddress } from "~/libs/@staratlas/sage";
+import { resourceMintByName } from "~/utils";
 import {
 	FleetCooldownError,
 	NotEnoughCargoSpaceForScanError,
@@ -23,7 +23,7 @@ export const startScan = ({
 		yield* Effect.log("Start scanning...");
 
 		const fleetAccount =
-			yield* getFleetAccountByNameOrAddress(fleetNameOrAddress);
+			yield* fetchFleetAccountByNameOrAddress(fleetNameOrAddress);
 
 		// yield* assertRentIsValid(fleetAccount);
 
@@ -56,7 +56,7 @@ export const startScan = ({
 				fleetAccount,
 			}).pipe(
 				Effect.map((info) => info.resources),
-				Effect.map(Record.get(resourceNameToMint.Food.toString())),
+				Effect.map(Record.get(resourceMintByName("Food").toString())),
 				Effect.map(Option.map((resource) => resource.amountInTokens)),
 				Effect.map(Option.getOrElse(() => new BN(0))),
 			);

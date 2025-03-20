@@ -1,53 +1,21 @@
-import {
-	Cause,
-	Effect,
-	Exit,
-	LogLevel,
-	Logger,
-	ManagedRuntime,
-	Option,
-} from "effect";
+import { Effect, LogLevel, Logger } from "effect";
 import { GameService } from "../core/services/GameService";
 import { getGameContext } from "../core/services/GameService/utils";
 import type { GlobalOptions } from "../types";
-import { createMainLiveService } from "../utils/createMainLiveService";
+import { makeAtomCommand } from "./makeAtomCommand";
 
-export const runProfileInfo = async (globalOpts: GlobalOptions) => {
-	const mainServiceLive = createMainLiveService(globalOpts);
-
-	const runtime = ManagedRuntime.make(mainServiceLive);
-
-	const program = GameService.pipe(
-		Effect.tap((service) => service.initGame(service.gameContext, globalOpts)),
-		Effect.tap(() => Effect.log("Game initialized.")),
-		Effect.flatMap(getGameContext),
-		Effect.map((context) => context.playerProfile),
-		Effect.tap((profile) =>
-			Effect.log("Profile fetched.").pipe(Effect.annotateLogs({ profile })),
+export const runProfileInfo = async (globalOpts: GlobalOptions) =>
+	makeAtomCommand(() =>
+		GameService.pipe(
+			Effect.tap((service) =>
+				service.initGame(service.gameContext, globalOpts),
+			),
+			Effect.tap(() => Effect.log("Game initialized.")),
+			Effect.flatMap(getGameContext),
+			Effect.map((context) => context.playerProfile),
+			Effect.tap((profile) =>
+				Effect.log("Profile fetched.").pipe(Effect.annotateLogs({ profile })),
+			),
+			Logger.withMinimumLogLevel(LogLevel.Debug),
 		),
-		Logger.withMinimumLogLevel(LogLevel.Debug),
-	);
-
-	const exit = await runtime.runPromiseExit(program);
-
-	await runtime.dispose();
-
-	exit.pipe(
-		Exit.match({
-			onSuccess: () => {
-				process.exit(0);
-			},
-			onFailure: (cause) => {
-				console.log(`Transaction error: ${Cause.pretty(cause)}`);
-
-				const error = Cause.failureOption(cause).pipe(Option.getOrUndefined);
-
-				if (error) {
-					console.log(error);
-				}
-
-				process.exit(1);
-			},
-		}),
-	);
-};
+	)(globalOpts);

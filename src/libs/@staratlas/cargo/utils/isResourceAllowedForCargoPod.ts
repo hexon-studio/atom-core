@@ -1,13 +1,15 @@
 import type { PublicKey } from "@solana/web3.js";
 import { Match } from "effect";
-import { resourceNameToMint } from "~/constants/resources";
+import { resourceMintByName } from "~/utils";
 import type { CargoPodKind } from "~/utils/decoders";
 
 export const isResourceAllowedForCargoPod = (resourceMint: PublicKey) =>
 	Match.type<CargoPodKind>().pipe(
-		Match.when("fuel_tank", () => resourceMint.equals(resourceNameToMint.Fuel)),
+		Match.when("fuel_tank", () =>
+			resourceMint.equals(resourceMintByName("Fuel")),
+		),
 		Match.when("ammo_bank", () =>
-			resourceMint.equals(resourceNameToMint.Ammunition),
+			resourceMint.equals(resourceMintByName("Ammunition")),
 		),
 		Match.when("cargo_hold", () => true),
 		Match.exhaustive,

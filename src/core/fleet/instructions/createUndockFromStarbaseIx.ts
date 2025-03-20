@@ -3,9 +3,9 @@ import { Effect } from "effect";
 import { getFleetStateName } from "~/core/utils/getFleetStateName";
 import { findProfileFactionPda } from "~/libs/@staratlas/profile-faction";
 import {
+	fetchStarbaseAccount,
 	findSagePlayerProfilePda,
 	findStarbasePlayerPda,
-	getStarbaseAccount,
 } from "~/libs/@staratlas/sage";
 import {
 	FleetCrewNotNormalizedError,
@@ -44,7 +44,7 @@ export const createUndockFromStarbaseIx = (fleetAccount: Fleet) =>
 		);
 
 		const starbaseKey = fleetAccount.state.StarbaseLoadingBay.starbase;
-		const starbaseAccount = yield* getStarbaseAccount(starbaseKey);
+		const starbaseAccount = yield* fetchStarbaseAccount(starbaseKey);
 
 		const [sagePlayerProfileAddress] = yield* findSagePlayerProfilePda(
 			context.gameInfo.gameId,

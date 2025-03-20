@@ -4,8 +4,8 @@ import type { MiscStats } from "@staratlas/sage";
 import { BN } from "bn.js";
 import { Effect } from "effect";
 import {
-	getFleetAccountByNameOrAddress,
-	getStarbasePlayerAccount,
+	fetchFleetAccountByNameOrAddress,
+	fetchStarbasePlayerAccount,
 } from "~/libs/@staratlas/sage";
 import { createLoadCrewIx } from "../fleet/instructions/createLoadCrewIx";
 import { createPreIxs } from "../fleet/instructions/createPreIxs";
@@ -26,7 +26,7 @@ export const loadCrew = ({
 		yield* Effect.log("Start loading crew...");
 
 		const fleetAccount =
-			yield* getFleetAccountByNameOrAddress(fleetNameOrAddress);
+			yield* fetchFleetAccountByNameOrAddress(fleetNameOrAddress);
 
 		// yield* assertRentIsValid(fleetAccount);
 
@@ -40,7 +40,7 @@ export const loadCrew = ({
 			starbaseCoords: fleetCoords,
 		});
 
-		const starbasePlayerAccount = yield* getStarbasePlayerAccount(
+		const starbasePlayerAccount = yield* fetchStarbasePlayerAccount(
 			starbaseInfo.starbasePlayerPubkey,
 		);
 
@@ -97,9 +97,10 @@ export const loadCrew = ({
 
 		const afterIxs = yield* createAfterIxs();
 
-		const {
-			options: { maxIxsPerTransaction },
-		} = yield* getGameContext();
+		const { options } = yield* getGameContext();
+
+		const maxIxsPerTransaction =
+			options.kind === "exec" ? options.maxIxsPerTransaction : 1;
 
 		const txs = yield* GameService.buildAndSignTransaction({
 			afterIxs,

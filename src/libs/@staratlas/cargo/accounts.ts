@@ -4,21 +4,21 @@ import { Effect } from "effect";
 import { getSagePrograms } from "~/core/programs";
 import { readFromSage } from "~/libs/@staratlas/data-source";
 
-export const getCargoPodAccount = (cargoPodPublicKey: PublicKey) =>
+export const fetchCargoPodAccount = (cargoPodPublicKey: PublicKey) =>
 	getSagePrograms().pipe(
 		Effect.flatMap((programs) =>
 			readFromSage(programs.cargo, cargoPodPublicKey, CargoPod),
 		),
 	);
 
-export const getCargoTypeAccount = (cargoTypePublicKey: PublicKey) =>
+export const fetchCargoTypeAccount = (cargoTypePublicKey: PublicKey) =>
 	getSagePrograms().pipe(
 		Effect.flatMap((programs) =>
 			readFromSage(programs.cargo, cargoTypePublicKey, CargoType),
 		),
 	);
 
-export const getCargoStatsDefinitionAccount = (
+export const fetchCargoStatsDefinitionAccount = (
 	cargoStatsDefPublicKey: PublicKey,
 ) =>
 	getSagePrograms().pipe(

@@ -11,6 +11,7 @@ import { SAGE_IDL } from "@staratlas/sage";
 import { Effect } from "effect";
 import { programIds } from "../../constants/programs";
 import { SolanaService } from "../services/SolanaService";
+
 export const getSagePrograms = () =>
 	SolanaService.anchorProvider.pipe(
 		Effect.map((anchorProvider) => ({

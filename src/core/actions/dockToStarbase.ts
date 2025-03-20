@@ -1,6 +1,6 @@
 import type { PublicKey } from "@solana/web3.js";
 import { Effect } from "effect";
-import { getFleetAccountByNameOrAddress } from "~/libs/@staratlas/sage";
+import { fetchFleetAccountByNameOrAddress } from "~/libs/@staratlas/sage";
 import { createPreIxs } from "../fleet/instructions/createPreIxs";
 import { GameService } from "../services/GameService";
 import { getGameContext } from "../services/GameService/utils";
@@ -13,7 +13,7 @@ export const dockToStarbase = ({
 		yield* Effect.log("Start docking...");
 
 		const fleetAccount =
-			yield* getFleetAccountByNameOrAddress(fleetNameOrAddress);
+			yield* fetchFleetAccountByNameOrAddress(fleetNameOrAddress);
 
 		// yield* assertRentIsValid(fleetAccount);
 
@@ -32,9 +32,10 @@ export const dockToStarbase = ({
 
 		const afterIxs = yield* createAfterIxs();
 
-		const {
-			options: { maxIxsPerTransaction },
-		} = yield* getGameContext();
+		const { options } = yield* getGameContext();
+
+		const maxIxsPerTransaction =
+			options.kind === "exec" ? options.maxIxsPerTransaction : 1;
 
 		const txs = yield* GameService.buildAndSignTransaction({
 			ixs,

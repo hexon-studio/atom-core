@@ -14,7 +14,8 @@ export const createTrackingIxs = (): Effect.Effect<
 	Effect.gen(function* () {
 		const context = yield* getGameContext();
 
-		const trackingAddress = context.options.trackingAddress;
+		const trackingAddress =
+			context.options.kind === "exec" ? context.options.trackingAddress : null;
 
 		if (!trackingAddress) {
 			return [];

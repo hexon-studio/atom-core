@@ -5,11 +5,11 @@ import { Effect, Option } from "effect";
 import { isNone } from "effect/Option";
 import { findProfileFactionPda } from "~/libs/@staratlas/profile-faction";
 import {
+	fetchStarbaseAccount,
+	fetchStarbasePlayerAccount,
 	findSagePlayerProfilePda,
 	findStarbasePdaByCoordinates,
 	findStarbasePlayerPda,
-	getStarbaseAccount,
-	getStarbasePlayerAccount,
 } from "~/libs/@staratlas/sage";
 import { getCargoPodsByAuthority } from "~/libs/@staratlas/sage/utils/getCargoPodsByAuthority";
 import { InvalidFleetStateError } from "../../../errors";
@@ -52,7 +52,7 @@ export const createDockToStarbaseIx = (fleetAccount: Fleet) =>
 			fleetCoords,
 		);
 
-		const starbaseAccount = yield* getStarbaseAccount(starbaseAddress);
+		const starbaseAccount = yield* fetchStarbaseAccount(starbaseAddress);
 
 		const [starbasePlayerAddress] = yield* findStarbasePlayerPda(
 			starbaseAccount.key,
@@ -60,7 +60,7 @@ export const createDockToStarbaseIx = (fleetAccount: Fleet) =>
 			starbaseAccount.data.seqId,
 		);
 
-		const starbasePlayerAccount = yield* getStarbasePlayerAccount(
+		const starbasePlayerAccount = yield* fetchStarbasePlayerAccount(
 			starbasePlayerAddress,
 		).pipe(Effect.option);
 

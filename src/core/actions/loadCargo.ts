@@ -12,8 +12,8 @@ import {
 import { constNull } from "effect/Function";
 import { createItemUuid } from "~/constants/uuid";
 import {
-	getFleetAccount,
-	getFleetAccountByNameOrAddress,
+	fetchFleetAccount,
+	fetchFleetAccountByNameOrAddress,
 } from "~/libs/@staratlas/sage";
 import { getCargoTypeResourceMultiplier } from "~/libs/@staratlas/sage/utils/getCargoTypeResourceMultiplier";
 import {
@@ -64,7 +64,7 @@ export const loadCargo = ({
 		);
 
 		const preFleetAccount =
-			yield* getFleetAccountByNameOrAddress(fleetNameOrAddress);
+			yield* fetchFleetAccountByNameOrAddress(fleetNameOrAddress);
 
 		// yield* assertRentIsValid(preFleetAccount);
 
@@ -72,9 +72,10 @@ export const loadCargo = ({
 			`Loading cargo to fleet ${preFleetAccount.key.toString()}`,
 		);
 
-		const {
-			options: { maxIxsPerTransaction },
-		} = yield* getGameContext();
+		const { options } = yield* getGameContext();
+
+		const maxIxsPerTransaction =
+			options.kind === "exec" ? options.maxIxsPerTransaction : 1;
 
 		const preIxsSignatures = yield* Effect.Do.pipe(
 			Effect.bind("preIxs", () =>
@@ -103,7 +104,7 @@ export const loadCargo = ({
 
 		yield* Effect.sleep("10 seconds");
 
-		const freshFleetAccount = yield* getFleetAccount(preFleetAccount.key);
+		const freshFleetAccount = yield* fetchFleetAccount(preFleetAccount.key);
 		const ixs: InstructionReturn[] = [];
 
 		const itemsCargoPodsKinds = [

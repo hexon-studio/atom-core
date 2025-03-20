@@ -11,8 +11,8 @@ import {
 } from "effect";
 import { constNull } from "effect/Function";
 import {
-	getFleetAccount,
-	getFleetAccountByNameOrAddress,
+	fetchFleetAccount,
+	fetchFleetAccountByNameOrAddress,
 } from "~/libs/@staratlas/sage";
 import {
 	LoadUnloadFailedError,
@@ -47,13 +47,14 @@ export const unloadCargo = ({
 		);
 
 		const preFleetAccount =
-			yield* getFleetAccountByNameOrAddress(fleetNameOrAddress);
+			yield* fetchFleetAccountByNameOrAddress(fleetNameOrAddress);
 
 		// yield* assertRentIsValid(preFleetAccount);
 
-		const {
-			options: { maxIxsPerTransaction },
-		} = yield* getGameContext();
+		const { options } = yield* getGameContext();
+
+		const maxIxsPerTransaction =
+			options.kind === "exec" ? options.maxIxsPerTransaction : 1;
 
 		const preIxsSignatures = yield* Effect.Do.pipe(
 			Effect.bind("preIxs", () =>
@@ -82,7 +83,7 @@ export const unloadCargo = ({
 
 		yield* Effect.sleep("10 seconds");
 
-		const freshFleetAccount = yield* getFleetAccount(preFleetAccount.key);
+		const freshFleetAccount = yield* fetchFleetAccount(preFleetAccount.key);
 		const ixs: InstructionReturn[] = [];
 
 		const itemsCargoPodsKinds = [

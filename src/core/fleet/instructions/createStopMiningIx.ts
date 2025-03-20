@@ -8,15 +8,15 @@ import { getFleetCargoPodInfoByType } from "~/libs/@staratlas/cargo";
 import { findUserPointsPda } from "~/libs/@staratlas/points";
 import { findProfileFactionPda } from "~/libs/@staratlas/profile-faction";
 import {
+	fetchStarbaseAccount,
+	fetchStarbasePlayerAccount,
 	findMineItemPda,
 	findResourcePda,
 	findSagePlayerProfilePda,
 	findStarbasePdaByCoordinates,
 	findStarbasePlayerPda,
-	getStarbaseAccount,
-	getStarbasePlayerAccount,
 } from "~/libs/@staratlas/sage";
-import { resourceNameToMint } from "../../../constants/resources";
+import { resourceMintByName } from "~/utils";
 import {
 	FleetNotEnoughFuelError,
 	PlanetNotFoundInSectorError,
@@ -76,7 +76,7 @@ export const createStopMiningIx = ({
 			fleetCoordinates,
 		);
 
-		const starbaseAccount = yield* getStarbaseAccount(starbaseAddress);
+		const starbaseAccount = yield* fetchStarbaseAccount(starbaseAddress);
 
 		const playerProfile = context.playerProfile.key;
 
@@ -93,7 +93,7 @@ export const createStopMiningIx = ({
 			starbaseAccount.data.seqId,
 		);
 
-		const starbasePlayerAccount = yield* getStarbasePlayerAccount(
+		const starbasePlayerAccount = yield* fetchStarbasePlayerAccount(
 			starbasePlayerAddress,
 		).pipe(Effect.option);
 
@@ -132,7 +132,7 @@ export const createStopMiningIx = ({
 
 		const maybeFuelInTankData = Record.get(
 			fuelTankInfo.resources,
-			resourceNameToMint.Fuel.toString(),
+			resourceMintByName("Fuel").toString(),
 		);
 
 		if (Option.isNone(maybeFuelInTankData)) {
@@ -198,7 +198,7 @@ export const createStopMiningIx = ({
 			context.gameInfo.gameStateId,
 			context.gameInfo.gameId,
 			fuelInTankData.tokenAccountKey,
-			resourceNameToMint.Fuel,
+			resourceMintByName("Fuel"),
 			{ keyIndex: context.keyIndexes.sage },
 		);
 

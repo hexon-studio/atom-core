@@ -1,7 +1,7 @@
 import type { PublicKey } from "@solana/web3.js";
 import type BN from "bn.js";
 import { Effect } from "effect";
-import { getRecipeAccount } from "~/libs/@staratlas/crafting";
+import { fetchRecipeAccount } from "~/libs/@staratlas/crafting";
 import { createCraftingBurnConsumablesIxs } from "../crafting/instructions/createCraftingBurnConsumablesIxs";
 import { createCraftingClaimOutputsIxs } from "../crafting/instructions/createCraftingClaimOutputsIxs";
 import { createCraftingCloseProcessIx } from "../crafting/instructions/createCraftingCloseProcessIx";
@@ -23,7 +23,7 @@ export const stopCrafting = ({
 			Effect.annotateLogs({ craftingId: craftingId.toString() }),
 		);
 
-		const recipeAccount = yield* getRecipeAccount(recipe);
+		const recipeAccount = yield* fetchRecipeAccount(recipe);
 
 		// if (recipeAccount.data.status !== RecipeStatus.Active) {
 
@@ -54,9 +54,10 @@ export const stopCrafting = ({
 
 		const afterIxs = yield* createAfterIxs();
 
-		const {
-			options: { maxIxsPerTransaction },
-		} = yield* getGameContext();
+		const { options } = yield* getGameContext();
+
+		const maxIxsPerTransaction =
+			options.kind === "exec" ? options.maxIxsPerTransaction : 1;
 
 		const txs = yield* GameService.buildAndSignTransaction({
 			ixs: [...burnIxs, ...claimIxs, stopIx],

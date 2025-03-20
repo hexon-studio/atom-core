@@ -21,21 +21,20 @@ import {
 	runDock,
 	runFleetInfo,
 	runLoadCargo,
+	runLoadCrew,
 	runProfileInfo,
+	runRecipeList,
+	runStartCrafting,
 	runStartMining,
+	runStartScan,
+	runStopCrafting,
 	runStopMining,
 	runSubwarp,
 	runUndock,
 	runUnloadCargo,
+	runUnloadCrew,
 	runWarp,
 } from "./commands";
-import { runLoadCrew } from "./commands/loadCrew";
-import { runRecipeList } from "./commands/recipeList";
-import { runStartCrafting } from "./commands/startCrafting";
-import { runStartScan } from "./commands/startScan";
-import { runStopCrafting } from "./commands/stopCrafting";
-import { runUnloadCrew } from "./commands/unloadCrew";
-import type { CliGlobalOptions } from "./types";
 import {
 	cargoPodKinds,
 	loadResourceDecoder,
@@ -43,6 +42,7 @@ import {
 } from "./utils/decoders";
 import { parseSecretKey } from "./utils/keypair";
 import { parseOptions } from "./utils/parseOptions";
+import { parseQueryOptions } from "./utils/parseQueryOptions";
 import { isPublicKey, parsePublicKey } from "./utils/public-key";
 
 Dotenv.config();
@@ -51,15 +51,6 @@ const main = async () => {
 	const program = commander
 		.name("atom")
 		.version(packageJsonVersion)
-		.addOption(
-			new Option(
-				"-o, --owner <publickKey>",
-				"The publicKey of the player's wallet",
-			)
-				.argParser(parsePublicKey)
-				.env("ATOM_OWNER")
-				.makeOptionMandatory(true),
-		)
 		.addOption(
 			new Option(
 				"-p, --playerProfile <publickKey>",
@@ -74,6 +65,37 @@ const main = async () => {
 				.env("ATOM_RPC_URL")
 				.makeOptionMandatory(true),
 		)
+		.addOption(
+			new Option(
+				"--commonApiUrl <commonApiUrl>",
+				"Cache API endpoint for game data (falls back to blockchain if not provided)",
+			)
+				.env("ATOM_COMMON_API_URL")
+				.makeOptionMandatory(false),
+		)
+		.addOption(
+			new Option(
+				"--loggingToken <token>",
+				"Authentication token for cloud logging service",
+			)
+				.env("ATOM_LOGGING_TOKEN")
+				.makeOptionMandatory(false),
+		);
+
+	const query = program.command("query");
+
+	const exec = program
+		.command("exec")
+		.addOption(
+			new Option(
+				"-o, --owner <publickKey>",
+				"The publicKey of the player's wallet",
+			)
+				.argParser(parsePublicKey)
+				.env("ATOM_OWNER")
+				.makeOptionMandatory(true),
+		)
+
 		.addOption(
 			new Option(
 				"-k, --keypair <secretKey>",
@@ -154,22 +176,7 @@ const main = async () => {
 				.env("ATOM_WEBHOOK_SECRET")
 				.makeOptionMandatory(false),
 		)
-		.addOption(
-			new Option(
-				"--loggingToken <token>",
-				"Authentication token for cloud logging service",
-			)
-				.env("ATOM_LOGGING_TOKEN")
-				.makeOptionMandatory(false),
-		)
-		.addOption(
-			new Option(
-				"--commonApiUrl <commonApiUrl>",
-				"Cache API endpoint for game data (falls back to blockchain if not provided)",
-			)
-				.env("ATOM_COMMON_API_URL")
-				.makeOptionMandatory(false),
-		)
+
 		.addOption(
 			new Option(
 				"--contextId <contextId>",
@@ -188,18 +195,44 @@ const main = async () => {
 			parsePublicKey,
 		);
 
-	program
+	// Query commands
+
+	query
 		.command("recipe-list")
 		.description("List all available crafting recipes")
 		.action(async () => {
-			const globalOpts = parseOptions(program.opts<CliGlobalOptions>());
+			const globalOpts = parseQueryOptions({
+				kind: "query",
+				...program.opts(),
+				...query.opts(),
+			});
 
 			return runRecipeList({
 				globalOpts,
 			});
 		});
 
-	program
+	query
+		.command("fleet <fleetNameOrAddress>")
+		.description("Display detailed information about a fleet")
+		.action(async (fleetNameOrAddress: string) => {
+			const globalOpts = parseQueryOptions({
+				kind: "query",
+				...program.opts(),
+				...query.opts(),
+			});
+
+			return runFleetInfo({
+				globalOpts,
+				fleetNameOrAddress: isPublicKey(fleetNameOrAddress)
+					? new PublicKey(fleetNameOrAddress)
+					: fleetNameOrAddress,
+			});
+		});
+
+	// Exec commands
+
+	exec
 		.command("start-crafting")
 		.description("Start crafting items at a starbase")
 		.option(
@@ -225,7 +258,11 @@ const main = async () => {
 			}) => {
 				const { crewAmount, quantity, recipe, sector } = options;
 
-				const globalOpts = parseOptions(program.opts<CliGlobalOptions>());
+				const globalOpts = parseOptions({
+					kind: "exec",
+					...program.opts(),
+					...exec.opts(),
+				});
 
 				const maybeSector = EffectString.split(sector, ",");
 
@@ -248,7 +285,7 @@ const main = async () => {
 			},
 		);
 
-	program
+	exec
 		.command("stop-crafting")
 		.description("Stop a completed crafting process")
 		.option(
@@ -268,7 +305,11 @@ const main = async () => {
 				recipe,
 				sector,
 			}: { craftingId: number; recipe: PublicKey; sector: string }) => {
-				const globalOpts = parseOptions(program.opts<CliGlobalOptions>());
+				const globalOpts = parseOptions({
+					kind: "exec",
+					...program.opts(),
+					...exec.opts(),
+				});
 
 				const maybeSector = EffectString.split(sector, ",");
 
@@ -290,30 +331,20 @@ const main = async () => {
 			},
 		);
 
-	program
-		.command("fleet-info <fleetNameOrAddress>")
-		.description("Display detailed information about a fleet")
-		.action(async (fleetNameOrAddress: string) => {
-			const globalOpts = parseOptions(program.opts<CliGlobalOptions>());
-
-			return runFleetInfo({
-				globalOpts,
-				fleetNameOrAddress: isPublicKey(fleetNameOrAddress)
-					? new PublicKey(fleetNameOrAddress)
-					: fleetNameOrAddress,
-			});
-		});
-
-	program
+	exec
 		.command("profile-info")
 		.description("Display detailed information about a player profile")
 		.action(async () => {
-			const globalOpts = parseOptions(program.opts<CliGlobalOptions>());
+			const globalOpts = parseOptions({
+				kind: "exec",
+				...program.opts(),
+				...exec.opts(),
+			});
 
 			return runProfileInfo(globalOpts);
 		});
 
-	program
+	exec
 		.command("load-cargo <fleetNameOrAddress>")
 		.description("Load resources into a fleet")
 		.option(
@@ -343,7 +374,11 @@ const main = async () => {
 			) => {
 				const resources = options.resources ?? [];
 
-				const globalOpts = parseOptions(program.opts<CliGlobalOptions>());
+				const globalOpts = parseOptions({
+					kind: "exec",
+					...program.opts(),
+					...exec.opts(),
+				});
 
 				const items = pipe(
 					resources,
@@ -374,7 +409,7 @@ const main = async () => {
 			},
 		);
 
-	program
+	exec
 		.command("unload-cargo <fleetNameOrAddress>")
 		.description("Unload cargo from a fleet")
 		.option(
@@ -402,7 +437,11 @@ const main = async () => {
 			) => {
 				const resources = options.resources ?? [];
 
-				const globalOpts = parseOptions(program.opts<CliGlobalOptions>());
+				const globalOpts = parseOptions({
+					kind: "exec",
+					...program.opts(),
+					...exec.opts(),
+				});
 
 				const items = pipe(
 					resources,
@@ -433,11 +472,15 @@ const main = async () => {
 			},
 		);
 
-	program
+	exec
 		.command("start-scan <fleetNameOrAddress>")
 		.description("Start scanning the current sector with a fleet")
 		.action(async (fleetNameOrAddress: string) => {
-			const globalOpts = parseOptions(program.opts<CliGlobalOptions>());
+			const globalOpts = parseOptions({
+				kind: "exec",
+				...program.opts(),
+				...exec.opts(),
+			});
 
 			return runStartScan({
 				globalOpts,
@@ -447,11 +490,15 @@ const main = async () => {
 			});
 		});
 
-	program
+	exec
 		.command("dock <fleetNameOrAddress>")
 		.description("Dock a fleet at the starbase")
 		.action(async (fleetNameOrAddress: string) => {
-			const globalOpts = parseOptions(program.opts<CliGlobalOptions>());
+			const globalOpts = parseOptions({
+				kind: "exec",
+				...program.opts(),
+				...exec.opts(),
+			});
 
 			return runDock({
 				globalOpts,
@@ -461,11 +508,15 @@ const main = async () => {
 			});
 		});
 
-	program
+	exec
 		.command("undock <fleetNameOrAddress>")
 		.description("Undock a fleet from its current starbase")
 		.action(async (fleetNameOrAddress: string) => {
-			const globalOpts = parseOptions(program.opts<CliGlobalOptions>());
+			const globalOpts = parseOptions({
+				kind: "exec",
+				...program.opts(),
+				...exec.opts(),
+			});
 
 			return runUndock({
 				globalOpts,
@@ -475,7 +526,7 @@ const main = async () => {
 			});
 		});
 
-	program
+	exec
 		.command("start-mining")
 		.description("Start mining resources with a fleet")
 		.argument("<fleetNameOrAddress>", "Name or address of the fleet to use")
@@ -485,7 +536,11 @@ const main = async () => {
 			parsePublicKey,
 		)
 		.action(async (fleetNameOrAddress: string, resourceMint: PublicKey) => {
-			const globalOpts = parseOptions(program.opts<CliGlobalOptions>());
+			const globalOpts = parseOptions({
+				kind: "exec",
+				...program.opts(),
+				...exec.opts(),
+			});
 
 			return runStartMining({
 				globalOpts,
@@ -496,7 +551,7 @@ const main = async () => {
 			});
 		});
 
-	program
+	exec
 		.command("stop-mining")
 		.description("Stop the current mining operation")
 		.argument(
@@ -504,7 +559,11 @@ const main = async () => {
 			"Name or address of the fleet to stop mining with",
 		)
 		.action(async (fleetNameOrAddress: string) => {
-			const globalOpts = parseOptions(program.opts<CliGlobalOptions>());
+			const globalOpts = parseOptions({
+				kind: "exec",
+				...program.opts(),
+				...exec.opts(),
+			});
 
 			return runStopMining({
 				globalOpts,
@@ -514,7 +573,7 @@ const main = async () => {
 			});
 		});
 
-	program
+	exec
 		.command("load-crew")
 		.description("Load crew members into a fleet")
 		.argument("<fleetNameOrAddress>", "Name or address of the fleet")
@@ -524,7 +583,11 @@ const main = async () => {
 			z.coerce.number().parse,
 		)
 		.action(async (fleetNameOrAddress: string, crewAmount: number) => {
-			const globalOpts = parseOptions(program.opts<CliGlobalOptions>());
+			const globalOpts = parseOptions({
+				kind: "exec",
+				...program.opts(),
+				...exec.opts(),
+			});
 
 			return runLoadCrew({
 				globalOpts,
@@ -535,7 +598,7 @@ const main = async () => {
 			});
 		});
 
-	program
+	exec
 		.command("unload-crew")
 		.description("Unload crew members from a fleet")
 		.argument("<fleetNameOrAddress>", "Name or address of the fleet")
@@ -554,7 +617,11 @@ const main = async () => {
 				crewAmount: number,
 				options: { allowUnloadRequiredCrew: boolean },
 			) => {
-				const globalOpts = parseOptions(program.opts<CliGlobalOptions>());
+				const globalOpts = parseOptions({
+					kind: "exec",
+					...program.opts(),
+					...exec.opts(),
+				});
 
 				return runUnloadCrew({
 					globalOpts,
@@ -567,13 +634,17 @@ const main = async () => {
 			},
 		);
 
-	program
+	exec
 		.command("warp")
 		.description("Warp a fleet to a different sector")
 		.argument("<fleetNameOrAddress>", "Name or address of the fleet to warp")
 		.argument("<targetSector>", "Target sector coordinates (format: x,y)")
 		.action(async (fleetNameOrAddress: string, targetSectorArg: string) => {
-			const globalOpts = parseOptions(program.opts<CliGlobalOptions>());
+			const globalOpts = parseOptions({
+				kind: "exec",
+				...program.opts(),
+				...exec.opts(),
+			});
 
 			const maybeSector = EffectString.split(targetSectorArg, ",");
 
@@ -595,13 +666,17 @@ const main = async () => {
 			});
 		});
 
-	program
+	exec
 		.command("subwarp")
 		.description("Subwarp a fleet to a different sector")
 		.argument("<fleetNameOrAddress>", "Name or address of the fleet to move")
 		.argument("<targetSector>", "Target sector coordinates (format: x,y)")
 		.action(async (fleetNameOrAddress: string, targetSectorArg: string) => {
-			const globalOpts = parseOptions(program.opts<CliGlobalOptions>());
+			const globalOpts = parseOptions({
+				kind: "exec",
+				...program.opts(),
+				...exec.opts(),
+			});
 
 			const maybeSector = EffectString.split(targetSectorArg, ",");
 

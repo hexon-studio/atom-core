@@ -1,5 +1,5 @@
 import { getAssociatedTokenAddressSync } from "@solana/spl-token";
-import { SystemProgram } from "@solana/web3.js";
+import { PublicKey, SystemProgram } from "@solana/web3.js";
 import type { InstructionReturn } from "@staratlas/data-source";
 import { ProfileVault } from "@staratlas/profile-vault";
 import { BN } from "bn.js";
@@ -17,7 +17,8 @@ export const createDrainVaultIxs = () =>
 
 		const context = yield* getGameContext();
 
-		const feesOptions = context.options.fees;
+		const feesOptions =
+			context.options.kind === "exec" ? context.options.fees : null;
 
 		if (!feesOptions) {
 			return [];
@@ -32,7 +33,9 @@ export const createDrainVaultIxs = () =>
 				const [vaultAuthority] = ProfileVault.findVaultSigner(
 					programs.profileVaultProgram,
 					context.playerProfile.key,
-					context.options.owner,
+					context.options.kind === "exec"
+						? context.options.owner
+						: PublicKey.default,
 				);
 
 				const vault = getAssociatedTokenAddressSync(

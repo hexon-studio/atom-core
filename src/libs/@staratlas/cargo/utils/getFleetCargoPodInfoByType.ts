@@ -6,9 +6,9 @@ import { Effect, Match, Record } from "effect";
 import { getGameContext } from "~/core/services/GameService/utils";
 import { SolanaService } from "~/core/services/SolanaService";
 import {
+	fetchCargoPodAccount,
+	fetchCargoTypeAccount,
 	findCargoTypePda,
-	getCargoPodAccount,
-	getCargoTypeAccount,
 } from "~/libs/@staratlas/cargo";
 import { getCargoUnitsFromTokenAmount } from "~/libs/@staratlas/sage";
 import { getCargoTypeResourceMultiplier } from "~/libs/@staratlas/sage/utils/getCargoTypeResourceMultiplier";
@@ -38,7 +38,7 @@ export const getFleetCargoPodInfoByType = ({
 			Match.exhaustive,
 		);
 
-		const cargoPod = yield* getCargoPodAccount(cargoPodAddress);
+		const cargoPod = yield* fetchCargoPodAccount(cargoPodAddress);
 
 		const context = yield* getGameContext();
 
@@ -65,7 +65,7 @@ export const getFleetCargoPodInfoByType = ({
 						context.gameInfo.cargoStatsDefinitionSeqId,
 					);
 
-					const cargoTypeAccount = yield* getCargoTypeAccount(cargoTypeKey);
+					const cargoTypeAccount = yield* fetchCargoTypeAccount(cargoTypeKey);
 
 					return Record.set(acc, cargoPodTokenAccount.mint.toString(), {
 						mint: cargoPodTokenAccount.mint,

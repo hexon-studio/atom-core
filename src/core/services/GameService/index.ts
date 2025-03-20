@@ -56,7 +56,6 @@ export const createGameServiceLive = (withAtlasPrime: boolean) =>
 					Effect.map((service) => keypairToAsyncSigner(service.signer)),
 				),
 				buildAndSignTransaction: createBuildAndSignTransaction(withAtlasPrime),
-
 				sendTransaction,
 			}),
 		),

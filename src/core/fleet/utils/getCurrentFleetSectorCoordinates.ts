@@ -1,7 +1,10 @@
 import type { FleetStateData } from "@staratlas/sage";
 import type BN from "bn.js";
 import { Effect, Match } from "effect";
-import { getPlanetAccount, getStarbaseAccount } from "~/libs/@staratlas/sage";
+import {
+	fetchPlanetAccount,
+	fetchStarbaseAccount,
+} from "~/libs/@staratlas/sage";
 
 export const getCurrentFleetSectorCoordinates = (
 	fleetState: Readonly<FleetStateData>,
@@ -17,7 +20,7 @@ export const getCurrentFleetSectorCoordinates = (
 		Match.when(
 			{ StarbaseLoadingBay: { starbase: Match.defined } },
 			({ StarbaseLoadingBay: { starbase } }) =>
-				getStarbaseAccount(starbase).pipe(
+				fetchStarbaseAccount(starbase).pipe(
 					Effect.map((starbase) => starbase.data.sector as [BN, BN]),
 				),
 		),
@@ -30,7 +33,7 @@ export const getCurrentFleetSectorCoordinates = (
 		Match.when(
 			{ MineAsteroid: Match.defined },
 			({ MineAsteroid: { asteroid } }) =>
-				getPlanetAccount(asteroid).pipe(
+				fetchPlanetAccount(asteroid).pipe(
 					Effect.map((planet) => planet.data.sector as [BN, BN]),
 				),
 		),

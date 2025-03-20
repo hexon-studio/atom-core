@@ -10,7 +10,7 @@ import {
 	findResourcePda,
 	findStarbasePdaByCoordinates,
 } from "~/libs/@staratlas/sage";
-import { resourceNameToMint } from "../../../constants/resources";
+import { resourceMintByName } from "~/utils";
 import { findAssociatedTokenPda } from "../../../utils/findAssociatedTokenPda";
 import { getSagePrograms } from "../../programs";
 import { getGameContext } from "../../services/GameService/utils";
@@ -37,7 +37,7 @@ export const createAsteroidMiningHandlerIx = ({
 
 		const { address: foodCargoHoldAta, instructions: foodIx } =
 			yield* SolanaService.createAssociatedTokenAccountIdempotent(
-				resourceNameToMint.Food,
+				resourceMintByName("Food"),
 				fleetAccount.data.cargoHold,
 				true,
 			);
@@ -52,7 +52,7 @@ export const createAsteroidMiningHandlerIx = ({
 
 		const createAmmoBankAta =
 			yield* SolanaService.createAssociatedTokenAccountIdempotent(
-				resourceNameToMint.Ammunition,
+				resourceMintByName("Ammunition"),
 				fleetAccount.data.ammoBank,
 				true,
 			);
@@ -81,13 +81,13 @@ export const createAsteroidMiningHandlerIx = ({
 		}
 
 		const [foodCargoTypeAddress] = yield* findCargoTypePda(
-			resourceNameToMint.Food,
+			resourceMintByName("Food"),
 			context.gameInfo.cargoStatsDefinitionId,
 			context.gameInfo.cargoStatsDefinitionSeqId,
 		);
 
 		const [ammoCargoTypeAddress] = yield* findCargoTypePda(
-			resourceNameToMint.Ammunition,
+			resourceMintByName("Ammunition"),
 			context.gameInfo.cargoStatsDefinitionId,
 			context.gameInfo.cargoStatsDefinitionSeqId,
 		);
@@ -144,8 +144,8 @@ export const createAsteroidMiningHandlerIx = ({
 					createAmmoBankAta.address,
 					resourceTokenFromAta,
 					resourceCargoHoldAta,
-					resourceNameToMint.Food,
-					resourceNameToMint.Ammunition,
+					resourceMintByName("Food"),
+					resourceMintByName("Ammunition"),
 				),
 			),
 			Match.orElse(() => null),

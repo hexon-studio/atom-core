@@ -1,7 +1,7 @@
-import { Connection, type Keypair } from "@solana/web3.js";
+import { Connection, Keypair } from "@solana/web3.js";
 import { AnchorProvider, Wallet } from "@staratlas/anchor";
-import { Effect, Layer, type Option } from "effect";
-import type { FeeMode, GlobalOptions } from "../../../types";
+import { Effect, Layer, Match } from "effect";
+import type { GlobalOptions } from "../../../types";
 import type { CreateAssociatedTokenAccountIdempotent } from "./createAssociatedTokenAccountIdempotent";
 import { createAssociatedTokenAccountIdempotent } from "./createAssociatedTokenAccountIdempotent";
 import type { GetParsedTokenAccountsByOwner } from "./getParsedTokenAccountsByOwner";
@@ -12,10 +12,6 @@ export class SolanaService extends Effect.Tag("app/SolanaService")<
 	{
 		signer: Keypair;
 		anchorProvider: AnchorProvider;
-		helius: Effect.Effect<
-			Option.Option<{ rpc: string; feeMode: FeeMode; feeLimit?: number }>
-		>;
-
 		getParsedTokenAccountsByOwner: GetParsedTokenAccountsByOwner;
 		createAssociatedTokenAccountIdempotent: CreateAssociatedTokenAccountIdempotent;
 	}
@@ -31,24 +27,19 @@ const createAnchorProvider = ({
 		AnchorProvider.defaultOptions(),
 	);
 
-export const createSolanaServiceLive = ({
-	keypair,
-	rpcUrl,
-	heliusRpcUrl,
-	feeMode,
-	feeLimit,
-}: GlobalOptions) => {
-	const anchorProvider = createAnchorProvider({ rpcUrl, keypair });
+export const createSolanaServiceLive = (opts: GlobalOptions) => {
+	const keypair = Match.value(opts).pipe(
+		Match.when({ kind: "exec" }, ({ keypair }) => keypair),
+		Match.when({ kind: "query" }, () => Keypair.generate()),
+		Match.exhaustive,
+	);
+	const anchorProvider = createAnchorProvider({ rpcUrl: opts.rpcUrl, keypair });
 
 	return Layer.succeed(
 		SolanaService,
 		SolanaService.of({
 			signer: keypair,
 			anchorProvider,
-			helius: Effect.fromNullable(heliusRpcUrl).pipe(
-				Effect.map((rpc) => ({ rpc, feeMode, feeLimit })),
-				Effect.option,
-			),
 			getParsedTokenAccountsByOwner: createGetParsedTokenAccountsByOwner(
 				anchorProvider.connection,
 			),

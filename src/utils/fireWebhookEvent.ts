@@ -1,17 +1,31 @@
-import { Effect } from "effect";
-import { constNull } from "effect/Function";
+import { Effect, Option } from "effect";
+import { constVoid } from "effect/Function";
 import {
 	type WebhookEvent,
 	WebhookService,
 } from "../core/services/WebhookService";
 
 export const fireWebhookEvent = <A>(event: WebhookEvent<A>) =>
-	Effect.serviceOptional(WebhookService).pipe(
-		Effect.tap(() =>
-			Effect.log(`[WebhookService] Firing "${event.type}" event`).pipe(
-				Effect.annotateLogs({ event }),
+	Effect.serviceOption(WebhookService).pipe(
+		Effect.flatMap(
+			Option.match({
+				onSome: (service) =>
+					service
+						.fireWebhookEvent(event)
+						.pipe(
+							Effect.tap(() =>
+								Effect.log(
+									`[WebhookService] Firing "${event.type}" event`,
+								).pipe(Effect.annotateLogs({ event })),
+							),
+						),
+				onNone: () => Effect.void,
+			}),
+		),
+		Effect.tapError((error) =>
+			Effect.logError("[WebhookService] Error firing event").pipe(
+				Effect.annotateLogs({ event, error }),
 			),
 		),
-		Effect.flatMap((service) => service.fireWebhookEvent(event)),
-		Effect.orElseSucceed(constNull),
+		Effect.orElseSucceed(constVoid),
 	);
