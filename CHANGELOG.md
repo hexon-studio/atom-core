@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.8.2](https://github.com/hexon-studio/atom-core/compare/v2.8.1...v2.8.2) (2025-03-28)
+
+
+### Bug Fixes
+
+* remove submodules ([bf8e305](https://github.com/hexon-studio/atom-core/commit/bf8e305e0382671f8319d7d167579cef08c4eee0))
+
 ## [2.8.1](https://github.com/hexon-studio/atom-core/compare/v2.8.0...v2.8.1) (2025-03-28)
 
 # [2.8.0](https://github.com/hexon-studio/atom-core/compare/v2.7.1...v2.8.0) (2025-03-28)
