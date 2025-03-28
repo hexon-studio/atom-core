@@ -8,9 +8,7 @@
 		"publish": false
 	},
 	"github": {
-		"release": true,
-		"web": true,
-		"autoGenerate": true
+		"release": true
 	},
 	"plugins": {
 		"@release-it/conventional-changelog": {

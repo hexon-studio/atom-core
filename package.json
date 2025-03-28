@@ -1,5 +1,5 @@
 {
-	"name": "@atom/core",
+	"name": "@hexon-studio/atom-core",
 	"version": "2.7.1",
 	"type": "module",
 	"main": "dist/main.js",
