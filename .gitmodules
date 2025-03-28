@@ -1,0 +1,4 @@
+[submodule "atom-docs"]
+	path = atom-docs
+	url = git@github.com:hexon-studio/atom-docs.git
+	branch = main

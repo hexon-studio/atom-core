@@ -230,6 +230,19 @@ const main = async () => {
 			});
 		});
 
+	query
+		.command("profile")
+		.description("Display detailed information about a player profile")
+		.action(async () => {
+			const globalOpts = parseQueryOptions({
+				kind: "query",
+				...program.opts(),
+				...query.opts(),
+			});
+
+			return runProfileInfo(globalOpts);
+		});
+
 	// Exec commands
 
 	exec
@@ -330,19 +343,6 @@ const main = async () => {
 				});
 			},
 		);
-
-	exec
-		.command("profile-info")
-		.description("Display detailed information about a player profile")
-		.action(async () => {
-			const globalOpts = parseOptions({
-				kind: "exec",
-				...program.opts(),
-				...exec.opts(),
-			});
-
-			return runProfileInfo(globalOpts);
-		});
 
 	exec
 		.command("load-cargo <fleetNameOrAddress>")
