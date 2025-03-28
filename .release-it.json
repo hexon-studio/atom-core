@@ -1,21 +1,21 @@
 {
-  "$schema": "https://unpkg.com/release-it@17/schema/release-it.json",
-  "git": {
-    "requireBranch": "main",
-    "commitMessage": "chore: release v${version}"
-  },
-  "npm": {
-    "publish": false
-  },
-  "github": {
-    "release": true
-  },
-  "plugins": {
-    "@release-it/conventional-changelog": {
-      "preset": {
-        "name": "angular"
-      },
-      "infile": "CHANGELOG.md"
-    }
-  }
+	"$schema": "https://unpkg.com/release-it@17/schema/release-it.json",
+	"git": {
+		"requireBranch": "main",
+		"commitMessage": "chore: release v${version}"
+	},
+	"npm": {
+		"publish": false
+	},
+	"github": {
+		"release": true
+	},
+	"plugins": {
+		"@release-it/conventional-changelog": {
+			"preset": {
+				"name": "angular"
+			},
+			"infile": "CHANGELOG.md"
+		}
+	}
 }
