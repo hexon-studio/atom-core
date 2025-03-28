@@ -1,91 +1,91 @@
 {
-	"name": "@atom/core",
-	"version": "2.7.1",
-	"type": "module",
-	"main": "dist/main.js",
-	"bin": {
-		"atom": "./dist/cli.js"
-	},
-	"exports": {
-		"./package.json": "./package.json",
-		".": {
-			"import": "./dist/main.js",
-			"require": "./dist/main.cjs"
-		},
-		"./errors": {
-			"import": "./dist/errors/index.js",
-			"require": "./dist/errors/index.cjs"
-		},
-		"./utils": {
-			"import": "./dist/utils.js",
-			"require": "./dist/utils.cjs"
-		}
-	},
-	"scripts": {
-		"build": "tsup",
-		"check-exports": "attw --pack . --profile node16",
-		"dev": "tsx src/cli.ts",
-		"typecheck": "tsc --noEmit",
-		"lint": "biome check",
-		"release": "release-it",
-		"test": "vitest --run",
-		"test:watch": "vitest"
-	},
-	"author": "",
-	"license": "ISC",
-	"description": "",
-	"devDependencies": {
-		"@arethetypeswrong/cli": "^0.17.4",
-		"@biomejs/biome": "^1.9.4",
-		"@release-it/conventional-changelog": "^10.0.0",
-		"@total-typescript/ts-reset": "^0.6.1",
-		"@total-typescript/tsconfig": "^1.0.4",
-		"@types/bn.js": "^5.1.6",
-		"@types/mock-fs": "^4.13.4",
-		"@types/node": "22.13.1",
-		"mock-fs": "^5.5.0",
-		"neverthrow": "6.2.2",
-		"release-it": "^18.1.2",
-		"tsup": "^8.4.0",
-		"tsx": "^4.19.3",
-		"typescript": "^5.8.2",
-		"vite-tsconfig-paths": "^5.1.4",
-		"vitest": "^3.0.7"
-	},
-	"dependencies": {
-		"@logtail/pino": "^0.5.2",
-		"@solana/spl-token": "^0.4.13",
-		"@solana/web3.js": "1.98.0",
-		"@staratlas/anchor": "^0.25.1",
-		"@staratlas/atlas-prime": "^0.13.1",
-		"@staratlas/cargo": "^1.1.0",
-		"@staratlas/claim-stake": "^0.12.0",
-		"@staratlas/crafting": "^1.1.0",
-		"@staratlas/data-source": "^0.8.3",
-		"@staratlas/faction-enlistment": "^0.12.0",
-		"@staratlas/factory": "^0.7.1",
-		"@staratlas/galactic-marketplace": "^0.12.3",
-		"@staratlas/player-profile": "^0.11.0",
-		"@staratlas/points": "^1.1.0",
-		"@staratlas/points-store": "^1.1.0",
-		"@staratlas/profile-faction": "^0.6.0",
-		"@staratlas/profile-vault": "^0.11.0",
-		"@staratlas/sage": "^1.8.6",
-		"@staratlas/score": "^0.12.0",
-		"bn.js": "^5.2.1",
-		"bs58": "^5.0.0",
-		"commander": "^13.1.0",
-		"dotenv": "^16.4.7",
-		"effect": "^3.13.6",
-		"pino": "^9.6.0",
-		"uuid": "^11.1.0",
-		"zod": "^3.24.2"
-	},
-	"pnpm": {
-		"overrides": {
-			"@staratlas/player-profile": "^0.11.0",
-			"neverthrow": "6.2.2"
-		}
-	},
-	"packageManager": "pnpm@9.15.5+sha512.845196026aab1cc3f098a0474b64dfbab2afe7a1b4e91dd86895d8e4aa32a7a6d03049e2d0ad770bbe4de023a7122fb68c1a1d6e0d033c7076085f9d5d4800d4"
+  "name": "@hexon-studio/atom-core",
+  "version": "2.7.1",
+  "type": "module",
+  "main": "dist/main.js",
+  "bin": {
+    "atom": "./dist/cli.js"
+  },
+  "exports": {
+    "./package.json": "./package.json",
+    ".": {
+      "import": "./dist/main.js",
+      "require": "./dist/main.cjs"
+    },
+    "./errors": {
+      "import": "./dist/errors/index.js",
+      "require": "./dist/errors/index.cjs"
+    },
+    "./utils": {
+      "import": "./dist/utils.js",
+      "require": "./dist/utils.cjs"
+    }
+  },
+  "scripts": {
+    "build": "tsup",
+    "check-exports": "attw --pack . --profile node16",
+    "dev": "tsx src/cli.ts",
+    "typecheck": "tsc --noEmit",
+    "lint": "biome check",
+    "release": "release-it",
+    "test": "vitest --run",
+    "test:watch": "vitest"
+  },
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "@arethetypeswrong/cli": "^0.17.4",
+    "@biomejs/biome": "^1.9.4",
+    "@release-it/conventional-changelog": "^10.0.0",
+    "@total-typescript/ts-reset": "^0.6.1",
+    "@total-typescript/tsconfig": "^1.0.4",
+    "@types/bn.js": "^5.1.6",
+    "@types/mock-fs": "^4.13.4",
+    "@types/node": "22.13.1",
+    "mock-fs": "^5.5.0",
+    "neverthrow": "6.2.2",
+    "release-it": "^18.1.2",
+    "tsup": "^8.4.0",
+    "tsx": "^4.19.3",
+    "typescript": "^5.8.2",
+    "vite-tsconfig-paths": "^5.1.4",
+    "vitest": "^3.0.7"
+  },
+  "dependencies": {
+    "@logtail/pino": "^0.5.2",
+    "@solana/spl-token": "^0.4.13",
+    "@solana/web3.js": "1.98.0",
+    "@staratlas/anchor": "^0.25.1",
+    "@staratlas/atlas-prime": "^0.13.1",
+    "@staratlas/cargo": "^1.1.0",
+    "@staratlas/claim-stake": "^0.12.0",
+    "@staratlas/crafting": "^1.1.0",
+    "@staratlas/data-source": "^0.8.3",
+    "@staratlas/faction-enlistment": "^0.12.0",
+    "@staratlas/factory": "^0.7.1",
+    "@staratlas/galactic-marketplace": "^0.12.3",
+    "@staratlas/player-profile": "^0.11.0",
+    "@staratlas/points": "^1.1.0",
+    "@staratlas/points-store": "^1.1.0",
+    "@staratlas/profile-faction": "^0.6.0",
+    "@staratlas/profile-vault": "^0.11.0",
+    "@staratlas/sage": "^1.8.6",
+    "@staratlas/score": "^0.12.0",
+    "bn.js": "^5.2.1",
+    "bs58": "^5.0.0",
+    "commander": "^13.1.0",
+    "dotenv": "^16.4.7",
+    "effect": "^3.13.6",
+    "pino": "^9.6.0",
+    "uuid": "^11.1.0",
+    "zod": "^3.24.2"
+  },
+  "pnpm": {
+    "overrides": {
+      "@staratlas/player-profile": "^0.11.0",
+      "neverthrow": "6.2.2"
+    }
+  },
+  "packageManager": "pnpm@9.15.5+sha512.845196026aab1cc3f098a0474b64dfbab2afe7a1b4e91dd86895d8e4aa32a7a6d03049e2d0ad770bbe4de023a7122fb68c1a1d6e0d033c7076085f9d5d4800d4"
 }
