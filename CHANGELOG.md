@@ -1,5 +1,18 @@
 # Changelog
 
+# [2.8.0](https://github.com/hexon-studio/atom-core/compare/v2.7.1...v2.8.0) (2025-03-28)
+
+
+### Bug Fixes
+
+* improve readme and release ([8b29f13](https://github.com/hexon-studio/atom-core/commit/8b29f138573e6e87a46ca8b77f6706a4422899af))
+* lint ([29d309c](https://github.com/hexon-studio/atom-core/commit/29d309c142d51dc8588bd582558fa134497c386e))
+
+
+### Features
+
+* add git submodule ([d4fe14f](https://github.com/hexon-studio/atom-core/commit/d4fe14f515bae74f907dc12f78b44604dc96f156))
+
 ## [2.7.1](https://github.com/hexon-studio/atom-core/compare/v2.7.0...v2.7.1) (2025-03-28)
 
 # [2.7.0](https://github.com/hexon-studio/atom-core/compare/v2.6.0...v2.7.0) (2025-03-20)
