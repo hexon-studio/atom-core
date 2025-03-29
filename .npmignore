@@ -1,0 +1,15 @@
+.dockerignore
+.env*
+.github
+.nvmrc
+.release-it.json
+.vscode
+biome.json
+Dockerfile
+media
+pnpm-lock.yaml
+src 
+tsconfig.json
+tsconfig.types.json
+tsup.config.ts
+vitest.config.ts
