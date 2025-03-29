@@ -37,8 +37,8 @@ importers:
         specifier: ^1.1.0
         version: 1.1.0(bufferutil@4.0.9)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.2)(utf-8-validate@5.0.10)
       '@staratlas/data-source':
-        specifier: ^0.9.0
-        version: 0.9.0(bufferutil@4.0.9)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.2)(utf-8-validate@5.0.10)
+        specifier: ^0.8.3
+        version: 0.8.3(bufferutil@4.0.9)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.2)(utf-8-validate@5.0.10)
       '@staratlas/faction-enlistment':
         specifier: ^0.12.0
         version: 0.12.0(bufferutil@4.0.9)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.2)(utf-8-validate@5.0.10)
@@ -1032,9 +1032,6 @@ packages:
 
   '@staratlas/data-source@0.8.3':
     resolution: {integrity: sha512-iM7EYTKUKLYUD90Xai2FufPdL/4raOizdfbJy1RWfZlzR77Jp0BRTi1Z92iSF1WMEXqRqWR2ZqU6hK0/8N3jyg==}
-
-  '@staratlas/data-source@0.9.0':
-    resolution: {integrity: sha512-WLS6/Abq+0VJFZFQIE0pi2BsSDwU6OQ3c0BsQySIN/SZ38VGeBQLC0gbo0gktYomKDtawYB4qIB2JmrmgvkmQQ==}
 
   '@staratlas/faction-enlistment@0.12.0':
     resolution: {integrity: sha512-QgrXDJHyOm3Mcz8G1TgRRYZWd4U/OQH51HGuX6wXj8F1mQXF0lq8JOiUlkRpNXiXppcqjEY/huEYtIJOYf8heg==}
@@ -4342,23 +4339,6 @@ snapshots:
       - utf-8-validate
 
   '@staratlas/data-source@0.8.3(bufferutil@4.0.9)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.2)(utf-8-validate@5.0.10)':
-    dependencies:
-      '@noble/curves': 1.8.1
-      '@solana/spl-token': 0.4.13(@solana/web3.js@1.98.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))(bufferutil@4.0.9)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.2)(utf-8-validate@5.0.10)
-      '@solana/web3.js': 1.98.0(bufferutil@4.0.9)(utf-8-validate@5.0.10)
-      '@staratlas/anchor': 0.25.1(bufferutil@4.0.9)(utf-8-validate@5.0.10)
-      bs58: 6.0.0
-      camelcase: 8.0.0
-      lodash: 4.17.21
-      neverthrow: 6.2.2
-    transitivePeerDependencies:
-      - bufferutil
-      - encoding
-      - fastestsmallesttextencoderdecoder
-      - typescript
-      - utf-8-validate
-
-  '@staratlas/data-source@0.9.0(bufferutil@4.0.9)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.2)(utf-8-validate@5.0.10)':
     dependencies:
       '@noble/curves': 1.8.1
       '@solana/spl-token': 0.4.13(@solana/web3.js@1.98.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))(bufferutil@4.0.9)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.2)(utf-8-validate@5.0.10)

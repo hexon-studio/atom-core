@@ -61,7 +61,7 @@
 		"@staratlas/cargo": "^1.1.0",
 		"@staratlas/claim-stake": "^0.12.0",
 		"@staratlas/crafting": "^1.1.0",
-		"@staratlas/data-source": "^0.9.0",
+		"@staratlas/data-source": "^0.8.3",
 		"@staratlas/faction-enlistment": "^0.12.0",
 		"@staratlas/factory": "^0.7.1",
 		"@staratlas/galactic-marketplace": "^0.12.3",
