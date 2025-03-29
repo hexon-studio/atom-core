@@ -50,7 +50,7 @@
 		"tsx": "^4.19.3",
 		"typescript": "^5.8.2",
 		"vite-tsconfig-paths": "^5.1.4",
-		"vitest": "^3.0.7"
+		"vitest": "^3.0.9"
 	},
 	"dependencies": {
 		"@logtail/pino": "^0.5.2",
@@ -61,7 +61,7 @@
 		"@staratlas/cargo": "^1.1.0",
 		"@staratlas/claim-stake": "^0.12.0",
 		"@staratlas/crafting": "^1.1.0",
-		"@staratlas/data-source": "^0.8.3",
+		"@staratlas/data-source": "^0.9.0",
 		"@staratlas/faction-enlistment": "^0.12.0",
 		"@staratlas/factory": "^0.7.1",
 		"@staratlas/galactic-marketplace": "^0.12.3",
@@ -76,7 +76,7 @@
 		"bs58": "^5.0.0",
 		"commander": "^13.1.0",
 		"dotenv": "^16.4.7",
-		"effect": "^3.13.6",
+		"effect": "^3.14.2",
 		"pino": "^9.6.0",
 		"uuid": "^11.1.0",
 		"zod": "^3.24.2"
