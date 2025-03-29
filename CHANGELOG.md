@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.8.6](https://github.com/hexon-studio/atom-core/compare/v2.8.5...v2.8.6) (2025-03-29)
+
+
+### Bug Fixes
+
+* sdk option typings ([9b60774](https://github.com/hexon-studio/atom-core/commit/9b60774fbbc97c417524f633b06ea9afb56667a5))
+
 ## [2.8.5](https://github.com/hexon-studio/atom-core/compare/v2.8.4...v2.8.5) (2025-03-29)
 
 
