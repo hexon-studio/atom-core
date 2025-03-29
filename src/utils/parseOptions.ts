@@ -1,6 +1,6 @@
 import { InvalidOptionArgumentError } from "commander";
 import { Boolean as EffectBoolean } from "effect";
-import { type GlobalOptions, cliOptionsDecoder } from "../types";
+import { type GlobalOptions, execOptionsDecoder } from "../types";
 
 export const parseOptions = (maybeGlobalOps: unknown): GlobalOptions => {
 	const {
@@ -11,7 +11,7 @@ export const parseOptions = (maybeGlobalOps: unknown): GlobalOptions => {
 		feeRecipient,
 		feeAtlas,
 		...rest
-	} = cliOptionsDecoder.parse(maybeGlobalOps);
+	} = execOptionsDecoder.parse(maybeGlobalOps);
 
 	if (rest.heliusRpcUrl) {
 		const isHeliusRpc = rest.heliusRpcUrl.includes("helius");

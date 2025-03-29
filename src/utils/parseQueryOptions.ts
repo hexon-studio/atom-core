@@ -1,4 +1,4 @@
-import { type QueryOptions, queryOptionsDecoder } from "../types";
+import { type AtomQueryOptions, queryOptionsDecoder } from "../types";
 
-export const parseQueryOptions = (opts: unknown): QueryOptions =>
+export const parseQueryOptions = (opts: unknown): AtomQueryOptions =>
 	queryOptionsDecoder.parse(opts);

@@ -3,12 +3,12 @@ import { programIds } from "~/constants/programs";
 import type { GameContext } from "~/core/services/GameService";
 import { GameAlreadyInitializedError } from "~/errors";
 import { fetchPlayerProfileAccount } from "~/libs/@staratlas/player-profile";
-import type { GlobalOptions, QueryOptions } from "~/types";
+import type { GlobalOptions } from "~/types";
 import { fetchGameInfoOrAccounts } from "./fetchGameInfoOrAccount";
 
 export const initGame = (
 	contextRef: Ref.Ref<Option.Option<GameContext>>,
-	options: GlobalOptions | QueryOptions,
+	options: GlobalOptions,
 ) =>
 	Effect.gen(function* () {
 		const { playerProfile, commonApiUrl } = options;
