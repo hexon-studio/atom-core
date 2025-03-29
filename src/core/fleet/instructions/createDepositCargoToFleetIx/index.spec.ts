@@ -8,7 +8,7 @@ import { Effect, Exit, Layer, ManagedRuntime, Option, Ref } from "effect";
 import { constant, unsafeCoerce } from "effect/Function";
 import mock from "mock-fs";
 import { findAllPlanets } from "~/core/services/GameService/methods/findPlanets";
-import type { RequiredOptions } from "~/types";
+import type { GlobalOptions } from "~/types";
 import { resourceMintByName } from "~/utils";
 import { createDepositCargoToFleetIx } from ".";
 import { noopPublicKey } from "../../../../constants/tokens";
@@ -30,7 +30,7 @@ const gameContextRef = Ref.unsafeMake(
 		options: {
 			atlasPrime: false,
 			owner: noopPublicKey,
-		} as RequiredOptions,
+		} as GlobalOptions,
 		gameInfo: {} as GameInfo,
 		playerProfile: {} as PlayerProfile,
 		keyIndexes: {

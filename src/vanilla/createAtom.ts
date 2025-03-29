@@ -13,17 +13,21 @@ import { unloadCargo } from "~/core/actions/unloadCargo";
 import { unloadCrew } from "~/core/actions/unloadCrew";
 import { warpToSector } from "~/core/actions/warpToSector";
 import { GameService } from "~/core/services/GameService";
-import type { RequiredOptions } from "~/types";
+import type { SdkOptions } from "~/types";
 import { createMainLiveService } from "~/utils/createMainLiveService";
 import { createAccountsUtils } from "./createAccountsUtils";
 import { createPdasUtils } from "./createPdasUtils";
 import { makeVanilla } from "./makeVanilla";
 
-export const createAtom = (options: Omit<RequiredOptions, "logDisabled">) => {
-	const appLayer = createMainLiveService({
-		...options,
-		logDisabled: true,
-	});
+import dotenv from "dotenv";
+import { parseOptions } from "~/utils/parseOptions";
+
+dotenv.config();
+
+export const createAtom = (options: SdkOptions) => {
+	const parsedOptions = parseOptions({ kind: "exec", ...options });
+
+	const appLayer = createMainLiveService(parsedOptions);
 
 	const runtime = ManagedRuntime.make(appLayer);
 
@@ -49,7 +53,7 @@ export const createAtom = (options: Omit<RequiredOptions, "logDisabled">) => {
 			() =>
 				GameService.pipe(
 					Effect.flatMap((service) =>
-						service.initGame(service.gameContext, options),
+						service.initGame(service.gameContext, parsedOptions),
 					),
 				),
 			runtime,

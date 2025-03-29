@@ -3,11 +3,11 @@ import { Console, Effect, Array as EffectArray, Option } from "effect";
 import { getSagePrograms } from "~/core/programs";
 import { readAllFromSage } from "~/libs/@staratlas/data-source/readAllFromSage";
 import { jsonStringify } from "~/utils/jsonStringify";
-import type { QueryOptions } from "../types";
+import type { AtomQueryOptions } from "../types";
 import { makeAtomCommand } from "./makeAtomCommand";
 
 type Param = {
-	globalOpts: QueryOptions;
+	globalOpts: AtomQueryOptions;
 };
 
 export const runRecipeList = async ({ globalOpts }: Param) =>
