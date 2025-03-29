@@ -15,17 +15,13 @@ import { warpToSector } from "~/core/actions/warpToSector";
 import { GameService } from "~/core/services/GameService";
 import type { SdkOptions } from "~/types";
 import { createMainLiveService } from "~/utils/createMainLiveService";
+import { parseExecOptions } from "~/utils/parseExecOptions";
 import { createAccountsUtils } from "./createAccountsUtils";
 import { createPdasUtils } from "./createPdasUtils";
 import { makeVanilla } from "./makeVanilla";
 
-import dotenv from "dotenv";
-import { parseOptions } from "~/utils/parseOptions";
-
-dotenv.config();
-
 export const createAtom = (options: SdkOptions) => {
-	const parsedOptions = parseOptions({ kind: "exec", ...options });
+	const parsedOptions = parseExecOptions({ kind: "exec", ...options });
 
 	const appLayer = createMainLiveService(parsedOptions);
 

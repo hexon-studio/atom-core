@@ -2,7 +2,7 @@ import { InvalidOptionArgumentError } from "commander";
 import { Boolean as EffectBoolean } from "effect";
 import { type GlobalOptions, execOptionsDecoder } from "../types";
 
-export const parseOptions = (maybeGlobalOps: unknown): GlobalOptions => {
+export const parseExecOptions = (maybeGlobalOps: unknown): GlobalOptions => {
 	const {
 		webhookSecret,
 		webhookUrl,
