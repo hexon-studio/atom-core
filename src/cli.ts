@@ -41,7 +41,7 @@ import {
 	unloadResourceDecoder,
 } from "./utils/decoders";
 import { parseSecretKey } from "./utils/keypair";
-import { parseOptions } from "./utils/parseOptions";
+import { parseExecOptions } from "./utils/parseExecOptions";
 import { parseQueryOptions } from "./utils/parseQueryOptions";
 import { isPublicKey, parsePublicKey } from "./utils/public-key";
 
@@ -271,7 +271,7 @@ const main = async () => {
 			}) => {
 				const { crewAmount, quantity, recipe, sector } = options;
 
-				const globalOpts = parseOptions({
+				const globalOpts = parseExecOptions({
 					kind: "exec",
 					...program.opts(),
 					...exec.opts(),
@@ -318,7 +318,7 @@ const main = async () => {
 				recipe,
 				sector,
 			}: { craftingId: number; recipe: PublicKey; sector: string }) => {
-				const globalOpts = parseOptions({
+				const globalOpts = parseExecOptions({
 					kind: "exec",
 					...program.opts(),
 					...exec.opts(),
@@ -374,7 +374,7 @@ const main = async () => {
 			) => {
 				const resources = options.resources ?? [];
 
-				const globalOpts = parseOptions({
+				const globalOpts = parseExecOptions({
 					kind: "exec",
 					...program.opts(),
 					...exec.opts(),
@@ -437,7 +437,7 @@ const main = async () => {
 			) => {
 				const resources = options.resources ?? [];
 
-				const globalOpts = parseOptions({
+				const globalOpts = parseExecOptions({
 					kind: "exec",
 					...program.opts(),
 					...exec.opts(),
@@ -476,7 +476,7 @@ const main = async () => {
 		.command("start-scan <fleetNameOrAddress>")
 		.description("Start scanning the current sector with a fleet")
 		.action(async (fleetNameOrAddress: string) => {
-			const globalOpts = parseOptions({
+			const globalOpts = parseExecOptions({
 				kind: "exec",
 				...program.opts(),
 				...exec.opts(),
@@ -494,7 +494,7 @@ const main = async () => {
 		.command("dock <fleetNameOrAddress>")
 		.description("Dock a fleet at the starbase")
 		.action(async (fleetNameOrAddress: string) => {
-			const globalOpts = parseOptions({
+			const globalOpts = parseExecOptions({
 				kind: "exec",
 				...program.opts(),
 				...exec.opts(),
@@ -512,7 +512,7 @@ const main = async () => {
 		.command("undock <fleetNameOrAddress>")
 		.description("Undock a fleet from its current starbase")
 		.action(async (fleetNameOrAddress: string) => {
-			const globalOpts = parseOptions({
+			const globalOpts = parseExecOptions({
 				kind: "exec",
 				...program.opts(),
 				...exec.opts(),
@@ -536,7 +536,7 @@ const main = async () => {
 			parsePublicKey,
 		)
 		.action(async (fleetNameOrAddress: string, resourceMint: PublicKey) => {
-			const globalOpts = parseOptions({
+			const globalOpts = parseExecOptions({
 				kind: "exec",
 				...program.opts(),
 				...exec.opts(),
@@ -559,7 +559,7 @@ const main = async () => {
 			"Name or address of the fleet to stop mining with",
 		)
 		.action(async (fleetNameOrAddress: string) => {
-			const globalOpts = parseOptions({
+			const globalOpts = parseExecOptions({
 				kind: "exec",
 				...program.opts(),
 				...exec.opts(),
@@ -583,7 +583,7 @@ const main = async () => {
 			z.coerce.number().parse,
 		)
 		.action(async (fleetNameOrAddress: string, crewAmount: number) => {
-			const globalOpts = parseOptions({
+			const globalOpts = parseExecOptions({
 				kind: "exec",
 				...program.opts(),
 				...exec.opts(),
@@ -617,7 +617,7 @@ const main = async () => {
 				crewAmount: number,
 				options: { allowUnloadRequiredCrew: boolean },
 			) => {
-				const globalOpts = parseOptions({
+				const globalOpts = parseExecOptions({
 					kind: "exec",
 					...program.opts(),
 					...exec.opts(),
@@ -640,7 +640,7 @@ const main = async () => {
 		.argument("<fleetNameOrAddress>", "Name or address of the fleet to warp")
 		.argument("<targetSector>", "Target sector coordinates (format: x,y)")
 		.action(async (fleetNameOrAddress: string, targetSectorArg: string) => {
-			const globalOpts = parseOptions({
+			const globalOpts = parseExecOptions({
 				kind: "exec",
 				...program.opts(),
 				...exec.opts(),
@@ -672,7 +672,7 @@ const main = async () => {
 		.argument("<fleetNameOrAddress>", "Name or address of the fleet to move")
 		.argument("<targetSector>", "Target sector coordinates (format: x,y)")
 		.action(async (fleetNameOrAddress: string, targetSectorArg: string) => {
-			const globalOpts = parseOptions({
+			const globalOpts = parseExecOptions({
 				kind: "exec",
 				...program.opts(),
 				...exec.opts(),
