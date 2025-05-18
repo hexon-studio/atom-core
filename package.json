@@ -37,7 +37,7 @@
 	"devDependencies": {
 		"@arethetypeswrong/cli": "^0.17.4",
 		"@biomejs/biome": "^1.9.4",
-		"@release-it/conventional-changelog": "^10.0.0",
+		"@release-it/conventional-changelog": "^10.0.1",
 		"@total-typescript/ts-reset": "^0.6.1",
 		"@total-typescript/tsconfig": "^1.0.4",
 		"@types/bn.js": "^5.1.6",
@@ -46,14 +46,14 @@
 		"mock-fs": "^5.5.0",
 		"neverthrow": "6.2.2",
 		"release-it": "^18.1.2",
-		"tsup": "^8.4.0",
-		"tsx": "^4.19.3",
-		"typescript": "^5.8.2",
+		"tsup": "^8.5.0",
+		"tsx": "^4.19.4",
+		"typescript": "^5.8.3",
 		"vite-tsconfig-paths": "^5.1.4",
-		"vitest": "^3.0.9"
+		"vitest": "^3.1.3"
 	},
 	"dependencies": {
-		"@logtail/pino": "^0.5.2",
+		"@logtail/pino": "^0.5.4",
 		"@solana/spl-token": "^0.4.13",
 		"@solana/web3.js": "1.98.0",
 		"@staratlas/anchor": "^0.25.1",
@@ -70,16 +70,16 @@
 		"@staratlas/points-store": "^1.1.0",
 		"@staratlas/profile-faction": "^0.6.0",
 		"@staratlas/profile-vault": "^0.11.0",
-		"@staratlas/sage": "^1.8.6",
+		"@staratlas/sage": "^1.8.10",
 		"@staratlas/score": "^0.12.0",
-		"bn.js": "^5.2.1",
+		"bn.js": "^5.2.2",
 		"bs58": "^5.0.0",
 		"commander": "^13.1.0",
-		"dotenv": "^16.4.7",
-		"effect": "^3.14.2",
+		"dotenv": "^16.5.0",
+		"effect": "^3.15.2",
 		"pino": "^9.6.0",
 		"uuid": "^11.1.0",
-		"zod": "^3.24.2"
+		"zod": "^3.24.4"
 	},
 	"pnpm": {
 		"overrides": {

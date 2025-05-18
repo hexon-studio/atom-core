@@ -13,7 +13,7 @@ import {
 	Match,
 	Option,
 } from "effect";
-import { unsafeCoerce } from "effect/Function";
+import { type LazyArg, unsafeCoerce } from "effect/Function";
 import { GameService } from "~/core/services/GameService";
 import { getGameContext } from "~/core/services/GameService/utils";
 import type { SolanaService } from "~/core/services/SolanaService";
@@ -120,7 +120,7 @@ const extractErrorInfo = Match.type<ErrorsUnion>().pipe(
 );
 
 export const makeAtomCommand =
-	<A, E>(self: () => Effect.Effect<A, E, GameService | SolanaService>) =>
+	<A, E>(self: LazyArg<Effect.Effect<A, E, GameService | SolanaService>>) =>
 	async (globalOpts: GlobalOptions) => {
 		const program = Effect.gen(function* () {
 			const service = yield* GameService;
