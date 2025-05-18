@@ -1,7 +1,8 @@
 import type { PublicKey } from "@solana/web3.js";
 import type { InstructionReturn } from "@staratlas/data-source";
+import type { MiscStats } from "@staratlas/sage";
 import { BN } from "bn.js";
-import { Effect, Option, Record } from "effect";
+import { Effect, Option, Record, pipe } from "effect";
 import { getFleetCargoPodInfoByType } from "~/libs/@staratlas/cargo";
 import { fetchFleetAccountByNameOrAddress } from "~/libs/@staratlas/sage";
 import { resourceMintByName } from "~/utils";
@@ -42,13 +43,12 @@ export const startScan = ({
 			);
 		}
 
-		const scanCost = (fleetAccount.data.stats.miscStats as { scanCost: number })
-			.scanCost;
-		const sduPerScan = (
-			fleetAccount.data.stats.miscStats as {
-				sduPerScan: number;
-			}
-		).sduPerScan;
+		const miscStats = fleetAccount.data.stats.miscStats as MiscStats;
+
+		const scanCost = miscStats.scanCost;
+		const sduPerScan = miscStats.sduPerScan;
+
+		const isDataRunner = scanCost === 0;
 
 		if (scanCost) {
 			const foodAmount = yield* getFleetCargoPodInfoByType({
@@ -65,6 +65,7 @@ export const startScan = ({
 
 			if (!hasEnoughFood) {
 				yield* Effect.log("Not enough food for scan");
+
 				return yield* new NotEnoughFoodForScanError({
 					foodAmount: foodAmount.toString(),
 					scanCost: String(scanCost),
@@ -77,9 +78,19 @@ export const startScan = ({
 			fleetAccount,
 		}).pipe(
 			Effect.map((info) => {
-				const diff = info.maxCapacityInCargoUnits.sub(
-					info.totalResourcesAmountInCargoUnits,
+				const foodCargoUnits = pipe(
+					info.resources,
+					Record.get(resourceMintByName("Food").toString()),
+					Option.map((resource) => resource.amountInCargoUnits),
+					Option.getOrElse(() => new BN(0)),
 				);
+
+				const diff = info.maxCapacityInCargoUnits
+					.sub(info.totalResourcesAmountInCargoUnits)
+					// NOTE: if the fleet is a data runner, we need to add the
+					// food cargo units to the total resources amount in cargo units as it's not counted
+					.add(isDataRunner ? foodCargoUnits : new BN(0));
+
 				return diff.gte(new BN(sduPerScan));
 			}),
 		);
