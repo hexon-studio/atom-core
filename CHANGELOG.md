@@ -1,5 +1,7 @@
 # Changelog
 
+## [2.8.8](https://github.com/hexon-studio/atom-core/compare/v2.8.7...v2.8.8) (2025-05-18)
+
 ## [2.8.7](https://github.com/hexon-studio/atom-core/compare/v2.8.6...v2.8.7) (2025-05-18)
 
 
