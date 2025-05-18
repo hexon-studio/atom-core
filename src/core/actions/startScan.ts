@@ -87,9 +87,9 @@ export const startScan = ({
 
 				const diff = info.maxCapacityInCargoUnits
 					.sub(info.totalResourcesAmountInCargoUnits)
-					// NOTE: if the fleet is a data runner, we need to add the
+					// NOTE: if the fleet is not a data runner, we need to add the
 					// food cargo units to the total resources amount in cargo units as it's not counted
-					.add(isDataRunner ? foodCargoUnits : new BN(0));
+					.add(isDataRunner ? new BN(0) : foodCargoUnits);
 
 				return diff.gte(new BN(sduPerScan));
 			}),
