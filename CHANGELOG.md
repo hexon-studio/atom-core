@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.8.7](https://github.com/hexon-studio/atom-core/compare/v2.8.6...v2.8.7) (2025-05-18)
+
+
+### Bug Fixes
+
+* scan errors ([e656686](https://github.com/hexon-studio/atom-core/commit/e656686c411e2cc7bc5b720985947eea2b3f21a5))
+
 ## [2.8.6](https://github.com/hexon-studio/atom-core/compare/v2.8.5...v2.8.6) (2025-03-29)
 
 
