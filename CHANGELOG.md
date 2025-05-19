@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.8.9](https://github.com/hexon-studio/atom-core/compare/v2.8.8...v2.8.9) (2025-05-19)
+
+
+### Bug Fixes
+
+* update mapLimit calculation to increase minimum value ([0a4987f](https://github.com/hexon-studio/atom-core/commit/0a4987fba3d93d6ff2ba3957c485cc16218ac541))
+
 ## [2.8.8](https://github.com/hexon-studio/atom-core/compare/v2.8.7...v2.8.8) (2025-05-18)
 
 ## [2.8.7](https://github.com/hexon-studio/atom-core/compare/v2.8.6...v2.8.7) (2025-05-18)
