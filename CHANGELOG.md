@@ -1,5 +1,12 @@
 # Changelog
 
+# [2.9.0](https://github.com/hexon-studio/atom-core/compare/v2.8.10...v2.9.0) (2025-06-10)
+
+
+### Features
+
+* add fixedLimit parameter to transaction building functions ([5662c73](https://github.com/hexon-studio/atom-core/commit/5662c73e3262de0eb7d2ce9bef0e539c821df0eb))
+
 ## [2.8.10](https://github.com/hexon-studio/atom-core/compare/v2.8.9...v2.8.10) (2025-05-19)
 
 
