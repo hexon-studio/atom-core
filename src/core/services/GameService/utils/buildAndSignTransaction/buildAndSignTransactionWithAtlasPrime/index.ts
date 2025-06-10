@@ -14,7 +14,7 @@ import type { GameService } from "../../..";
 import { buildTransactions } from "./buildTransactions";
 
 export const buildAndSignTransactionWithAtlasPrime: BuildAndSignTransactionWithAtlasPrime =
-	({ ixs, afterIxs, size }) =>
+	({ ixs, afterIxs, size, fixedLimit }) =>
 		EffectArray.match(ixs, {
 			onEmpty: () =>
 				Effect.log("Skip building atlas prime ixs...").pipe(
@@ -28,6 +28,7 @@ export const buildAndSignTransactionWithAtlasPrime: BuildAndSignTransactionWithA
 							buildTransactions({
 								ixs,
 								afterIxs,
+								fixedLimit,
 							}).pipe(Effect.timeout("30 seconds")),
 						),
 					),
@@ -40,6 +41,7 @@ export type BuildAndSignTransactionWithAtlasPrime = (_: {
 	ixs: Array<InstructionReturn>;
 	afterIxs?: Array<InstructionReturn>;
 	size: number;
+	fixedLimit?: number;
 }) => Effect.Effect<
 	TransactionReturn[],
 	| BuildAndSignTransactionError

@@ -113,6 +113,7 @@ export const startScan = ({
 		const txs = yield* GameService.buildAndSignTransaction({
 			ixs,
 			size: 1, // NOTE: scan should be done in a single transaction
+			fixedLimit: 200_000,
 		});
 
 		const signatures = yield* Effect.all(

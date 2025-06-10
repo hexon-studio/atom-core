@@ -16,7 +16,12 @@ import { GameService } from "../../..";
 export const buildTransactions = ({
 	ixs,
 	afterIxs: afterIxsParam = [],
-}: { ixs: Array<InstructionReturn>; afterIxs?: Array<InstructionReturn> }) =>
+	fixedLimit,
+}: {
+	ixs: Array<InstructionReturn>;
+	afterIxs?: Array<InstructionReturn>;
+	fixedLimit?: number;
+}) =>
 	Effect.all([
 		getGameContext(),
 		SolanaService.anchorProvider,
@@ -69,7 +74,10 @@ export const buildTransactions = ({
 							Option.getOrUndefined,
 						),
 						mapLimit: (num: number) => {
-							return num + Math.min(100_000, Math.max(10_000, num * 0.25));
+							return (
+								fixedLimit ??
+								num + Math.min(100_000, Math.max(10_000, num * 0.25))
+							);
 						},
 					});
 
