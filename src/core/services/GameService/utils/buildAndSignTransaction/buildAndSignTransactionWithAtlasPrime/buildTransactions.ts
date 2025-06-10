@@ -20,9 +20,11 @@ import { BuildAndSignTransactionError, BuildOptimalTxError } from "~/errors";
 export const buildTransactions = ({
 	ixs,
 	afterIxs: afterIxsParam = [],
+	fixedLimit,
 }: {
 	ixs: Array<InstructionReturn>;
 	afterIxs?: Array<InstructionReturn>;
+	fixedLimit?: number;
 }) =>
 	Effect.all([
 		getSagePrograms(),
@@ -88,6 +90,7 @@ export const buildTransactions = ({
 							),
 							Option.getOrUndefined,
 						),
+						mapLimit: fixedLimit ? () => fixedLimit : undefined,
 						postArgs: {
 							vault: {
 								funderVaultAuthority: vaultAuthority,

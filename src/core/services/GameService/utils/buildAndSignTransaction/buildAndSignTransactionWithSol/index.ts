@@ -17,6 +17,7 @@ export const buildAndSignTransactionWithSol: BuildAndSignTransactionWithSol = ({
 	ixs,
 	afterIxs,
 	size,
+	fixedLimit,
 }) =>
 	EffectArray.match(ixs, {
 		onEmpty: () =>
@@ -31,6 +32,7 @@ export const buildAndSignTransactionWithSol: BuildAndSignTransactionWithSol = ({
 						buildTransactions({
 							ixs,
 							afterIxs,
+							fixedLimit,
 						}).pipe(Effect.timeout("30 seconds")),
 					),
 				),
@@ -43,6 +45,7 @@ export type BuildAndSignTransactionWithSol = (_: {
 	ixs: Array<InstructionReturn>;
 	afterIxs?: Array<InstructionReturn>;
 	size: number;
+	fixedLimit?: number;
 }) => Effect.Effect<
 	TransactionReturn[],
 	| BuildAndSignTransactionError
