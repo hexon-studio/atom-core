@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.9.1](https://github.com/hexon-studio/atom-core/compare/v2.9.0...v2.9.1) (2025-06-18)
+
+
+### Bug Fixes
+
+* move result assignment to after balance check in makeAtomCommand ([cc46950](https://github.com/hexon-studio/atom-core/commit/cc469503b22a1f98ac3a9ed63de2754811ac4f9f))
+
 # [2.9.0](https://github.com/hexon-studio/atom-core/compare/v2.8.10...v2.9.0) (2025-06-10)
 
 
