@@ -129,8 +129,6 @@ export const makeAtomCommand =
 
 			yield* fireWebhookEvent({ type: "start" });
 
-			const result = yield* self();
-
 			if (globalOpts.kind === "exec") {
 				const checkBalance = globalOpts.atlasPrime
 					? checkAtlasBalance
@@ -138,6 +136,8 @@ export const makeAtomCommand =
 
 				yield* checkBalance();
 			}
+
+			const result = yield* self();
 
 			yield* fireWebhookEvent({
 				type: "success",
