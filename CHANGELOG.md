@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.9.2](https://github.com/hexon-studio/atom-core/compare/v2.9.1...v2.9.2) (2025-06-23)
+
+
+### Bug Fixes
+
+* clarify argument description for crew amount in CLI ([beeb0b3](https://github.com/hexon-studio/atom-core/commit/beeb0b3680b13fb2182a0975cd4973382a1fd3fa))
+
 ## [2.9.1](https://github.com/hexon-studio/atom-core/compare/v2.9.0...v2.9.1) (2025-06-18)
 
 
