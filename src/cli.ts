@@ -579,7 +579,7 @@ const main = async () => {
 		.argument("<fleetNameOrAddress>", "Name or address of the fleet")
 		.argument(
 			"<crewAmount>",
-			"Number of crew members to load",
+			"Number of crew members to load in the fleet",
 			z.coerce.number().parse,
 		)
 		.action(async (fleetNameOrAddress: string, crewAmount: number) => {
