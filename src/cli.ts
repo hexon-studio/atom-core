@@ -45,7 +45,9 @@ import { parseExecOptions } from "./utils/parseExecOptions";
 import { parseQueryOptions } from "./utils/parseQueryOptions";
 import { isPublicKey, parsePublicKey } from "./utils/public-key";
 
-Dotenv.config();
+if (process.env.NODE_ENV !== "production") {
+	Dotenv.config();
+}
 
 const main = async () => {
 	const program = commander
