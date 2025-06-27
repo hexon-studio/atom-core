@@ -8,4 +8,7 @@ export default defineConfig({
 	dts: true,
 	clean: true,
 	minify: true,
+	define: {
+		"process.env.NODE_ENV": '"production"',
+	},
 });
