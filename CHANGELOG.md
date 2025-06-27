@@ -1,5 +1,7 @@
 # Changelog
 
+## [2.9.4](https://github.com/hexon-studio/atom-core/compare/v2.9.3...v2.9.4) (2025-06-27)
+
 ## [2.9.3](https://github.com/hexon-studio/atom-core/compare/v2.9.2...v2.9.3) (2025-06-27)
 
 ## [2.9.2](https://github.com/hexon-studio/atom-core/compare/v2.9.1...v2.9.2) (2025-06-23)
