@@ -5,7 +5,9 @@
 		"commitMessage": "chore: release v${version}"
 	},
 	"npm": {
-		"publish": false
+		"publish": true,
+		"publishPath": "dist",
+		"tag": "latest"
 	},
 	"github": {
 		"release": true
