@@ -34,6 +34,12 @@ jobs:
           cache: 'pnpm'
           node-version-file: '.nvmrc'
 
+      - name: Setup npmrc
+        run: |
+          echo "//registry.npmjs.org/:_authToken=\${NPM_TOKEN}" > ./.npmrc
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+      
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
