@@ -6,7 +6,6 @@
 	},
 	"npm": {
 		"publish": true,
-		"publishPath": "dist",
 		"tag": "latest"
 	},
 	"github": {
